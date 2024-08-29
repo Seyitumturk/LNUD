@@ -1,0 +1,92 @@
+/* client/src/Components/login.css */
+
+:root {
+    --orange: #ed7a2a;
+    --yellow: #f7b329;
+    --blue: #049ebf;
+    --red: #e1262d;
+    --grey: #787878;
+    --text-color: #333;
+    --button-text-color: #fff;
+}
+
+body {
+    background-color: var(--grey);
+    color: var(--text-color);
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 90%;
+    max-width: 400px;
+    background-color: var(--orange);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.login-container h2 {
+    color: var(--button-text-color);
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+.login-container input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.login-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--yellow);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.login-container button:hover {
+    background-color: var(--blue);
+}
+
+.login-container p {
+    color: var(--red);
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 20px;
+    }
+
+    .login-container h2 {
+        font-size: 1.5rem;
+    }
+
+    .login-container input,
+    .login-container button {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+}
