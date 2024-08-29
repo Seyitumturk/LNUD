@@ -11,7 +11,7 @@
 }
 
 body {
-    background-color: var(--grey);
+    background: linear-gradient(135deg, var(--orange), var(--yellow)); /* Gradient background */
     color: var(--text-color);
     font-family: 'Arial', sans-serif;
     margin: 0;
@@ -29,47 +29,66 @@ body {
     justify-content: center;
     width: 90%;
     max-width: 400px;
-    background-color: var(--orange);
-    padding: 30px;
+    background-color: #ffffff;
+    padding: 40px;
     border-radius: 15px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(0, 0, 0, 0.1);
     text-align: center;
+    position: relative; /* Allows for additional positioning of elements like the logo */
+}
+
+.login-container img {
+    width: 100px;
+    margin-bottom: 20px;
 }
 
 .login-container h2 {
-    color: var(--button-text-color);
+    color: var(--orange);
     margin-bottom: 20px;
     font-size: 1.8rem;
+    text-shadow: 1px 1px var(--grey); /* Grey shadow for the title */
 }
 
 .login-container input {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
-    border: none;
+    border: 1px solid var(--grey); /* Grey border for input fields */
     border-radius: 8px;
     font-size: 1rem;
+    background-color: #f8f8f8; /* Light background for input */
+    color: var(--text-color);
+    transition: all 0.3s ease; /* Smooth transition for border and background */
+}
+
+.login-container input:focus {
+    border-color: var(--blue); /* Blue border on focus */
+    outline: none;
+    background-color: #fff;
+    box-shadow: 0 0 5px var(--blue);
 }
 
 .login-container button {
     width: 100%;
     padding: 12px;
-    background-color: var(--yellow);
+    background: linear-gradient(135deg, var(--blue), var(--orange)); /* Gradient button */
     color: var(--button-text-color);
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
     font-size: 1rem;
-    transition: background-color 0.3s ease;
+    transition: background 0.3s ease, transform 0.3s ease; /* Smooth hover effect */
+    margin-top: 10px;
 }
 
 .login-container button:hover {
-    background-color: var(--blue);
+    background: linear-gradient(135deg, var(--orange), var(--yellow)); /* Gradient hover effect */
+    transform: translateY(-2px); /* Subtle lift effect */
 }
 
 .login-container p {
-    color: var(--red);
+    color: var(--red); /* Error messages in red */
     margin-top: 10px;
     font-size: 0.9rem;
 }

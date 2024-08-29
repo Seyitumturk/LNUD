@@ -1,9 +1,9 @@
-// client/src/components/Login.js
+// client/src/Components/Login.js
 import React, { useState } from 'react';
-import { auth } from '../firebase'; // Adjust the path as per your structure
+import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import './login.css'; // Import the styles
+import './login.css'; // Import the CSS file
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -15,7 +15,7 @@ const Login = () => {
         e.preventDefault();
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            navigate('/'); // Redirect to the dashboard on successful login
+            navigate('/');
         } catch (err) {
             setError(err.message);
         }
@@ -23,25 +23,24 @@ const Login = () => {
 
     return (
         <div className="login-container">
-            <div className="login-box">
-                <h2>Login</h2>
-                {error && <p>{error}</p>}
-                <form onSubmit={handleLogin}>
-                    <input 
-                        type="email" 
-                        placeholder="Email" 
-                        value={email} 
-                        onChange={(e) => setEmail(e.target.value)} 
-                    />
-                    <input 
-                        type="password" 
-                        placeholder="Password" 
-                        value={password} 
-                        onChange={(e) => setPassword(e.target.value)} 
-                    />
-                    <button type="submit">Login</button>
-                </form>
-            </div>
+            <img src="/logo.png" alt="Brand Logo" /> {/* Corrected path for public folder */}
+            <h2>Login</h2>
+            {error && <p>{error}</p>}
+            <form onSubmit={handleLogin}>
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+                <button type="submit">Login</button>
+            </form>
         </div>
     );
 };

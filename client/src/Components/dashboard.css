@@ -1,0 +1,135 @@
+/* client/src/Components/dashboard.css */
+
+:root {
+    --primary-dark: #1f2d3d;
+    --secondary-dark: #2a3a4d;
+    --primary-accent: #ed7a2a;
+    --secondary-accent: #f7b329;
+    --text-color: #ffffff;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: var(--primary-dark);
+    height: 100vh;
+    display: flex;
+    /* Make the body a flex container */
+}
+
+.dashboard {
+    display: flex;
+    height: 90%;
+    width: 100%;
+}
+
+.sidebar {
+    width: 200px;
+    height: 100vh;
+    /* Make sidebar full height */
+    background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    position: fixed;
+    /* Fixed position for the sidebar */
+    left: 0;
+    /* Ensure it is aligned to the very left */
+    top: 0;
+    z-index: 1000;
+    /* Keep it above other content */
+}
+
+.sidebar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.sidebar-nav li {
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.sidebar-nav li:hover {
+    background-color: var(--secondary-dark);
+}
+
+.dashboard-content {
+    margin-left: 200px;
+    /* Offset by sidebar width */
+    flex-grow: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    width: calc(100% - 200px);
+    /* Adjust width to account for the sidebar */
+}
+
+.funding-streams {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.funding-box {
+    flex: 1;
+    background-color: var(--secondary-dark);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.funding-box h4 {
+    margin-top: 10px;
+    color: var(--text-color);
+}
+
+.metrics-section {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 20px;
+    flex-grow: 1;
+}
+
+.chart-container,
+.calendar-section {
+    background-color: var(--secondary-dark);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: var(--text-color);
+    flex: 1;
+}
+
+.chart-container h3,
+.calendar-section h3 {
+    color: var(--text-color);
+}
+
+.calendar-section {
+    width: 100%;
+    flex-grow: 1;
+    margin-top: auto;
+}
