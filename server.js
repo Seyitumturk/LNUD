@@ -23,6 +23,7 @@ app.get('/api', (req, res) => {
 });
 
 // Route to edit Excel file
+
 app.post('/api/edit-excel', async (req, res) => {
     const {
         dateSubmitted,
@@ -32,8 +33,20 @@ app.post('/api/edit-excel', async (req, res) => {
         account,
         purchasedWith,
         quantity,
-        costPerUnit
+        costPerUnit,
     } = req.body;
+
+    // Debugging: Log the input data to ensure all values are received correctly
+    console.log('Received Data:', {
+        dateSubmitted,
+        productDescription,
+        fundingStream,
+        sourceGrant,
+        account,
+        purchasedWith,
+        quantity,
+        costPerUnit,
+    });
 
     const workbook = new ExcelJS.Workbook();
     const filePath = path.join(__dirname, 'files', 'PurchaseOrder.xlsx'); // Path to your Excel file
@@ -41,37 +54,20 @@ app.post('/api/edit-excel', async (req, res) => {
 
     const worksheet = workbook.getWorksheet('Purchase Order');
 
-    // Autofill "Date Submitted"
-    worksheet.getCell('B6').value = dateSubmitted; // Date Submitted field
-
-    // Fill in the "Product Description" without validation issues
-    worksheet.getCell('B12').value = productDescription; // Product Description
-
-    // Get allowed values from dropdown options (data validation) for cells C12 and D12
-    const fundingStreamValidation = worksheet.getCell('C12').dataValidation;
-    const sourceGrantValidation = worksheet.getCell('D12').dataValidation;
-
-    // Check if the provided input matches the allowed dropdown values
-    if (fundingStreamValidation && fundingStreamValidation.formula1) {
-        const allowedFundingStreams = fundingStreamValidation.formula1.split(',').map(v => v.trim().replace(/"/g, ''));
-        if (!allowedFundingStreams.includes(fundingStream)) {
-            return res.status(400).send('Invalid Funding Stream selected. Please choose from the dropdown options.');
-        }
+    // Ensure each cell is updated correctly
+    try {
+        worksheet.getCell('B6').value = dateSubmitted;           // Date Submitted field
+        worksheet.getCell('B12').value = productDescription;     // Product Description
+        worksheet.getCell('C12').value = fundingStream;          // Funding Stream (Dropdown)
+        worksheet.getCell('D12').value = sourceGrant;            // Source / Grant (Dropdown)
+        worksheet.getCell('E12').value = account;                // Account (First part of merged cell)
+        worksheet.getCell('F12').value = account;                // Account (Second part of merged cell)
+        worksheet.getCell('G12').value = purchasedWith;          // Purchased With
+        worksheet.getCell('H12').value = quantity;               // QTY
+        worksheet.getCell('I12').value = costPerUnit;            // Cost per Unit
+    } catch (error) {
+        console.error('Error writing to Excel cells:', error);
     }
-    if (sourceGrantValidation && sourceGrantValidation.formula1) {
-        const allowedSourceGrants = sourceGrantValidation.formula1.split(',').map(v => v.trim().replace(/"/g, ''));
-        if (!allowedSourceGrants.includes(sourceGrant)) {
-            return res.status(400).send('Invalid Source / Grant selected. Please choose from the dropdown options.');
-        }
-    }
-
-    // Write valid data to cells
-    worksheet.getCell('C12').value = fundingStream; // Funding Stream
-    worksheet.getCell('D12').value = sourceGrant;   // Source / Grant
-    worksheet.getCell('E12').value = account;       // Account
-    worksheet.getCell('F12').value = purchasedWith; // Purchased With
-    worksheet.getCell('G12').value = quantity;      // QTY
-    worksheet.getCell('H12').value = costPerUnit;   // Cost per Unit
 
     const modifiedFilePath = path.join(__dirname, 'files', 'ModifiedPurchaseOrder.xlsx');
     await workbook.xlsx.writeFile(modifiedFilePath);

@@ -6,7 +6,6 @@ const ExcelChatBot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [step, setStep] = useState(1);
     const [conversation, setConversation] = useState([]);
-    const [input, setInput] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [data, setData] = useState({
         productDescription: '',
@@ -19,6 +18,37 @@ const ExcelChatBot = () => {
     });
 
     const chatLogRef = useRef(null); // Reference to the chat log container
+
+    // Dropdown options for Funding Stream
+    const fundingStreamOptions = [
+        'Whole Foods Foundation',
+        'NSERC ',
+        'UNB via TD',
+        'ISEDC',
+        'UEC'
+    ];
+
+    // Dropdown options for Source / Grant based on Funding Stream selection
+    const sourceGrantOptions = {
+        'Whole Foods Foundation': ['Whole Kids Garden Grant'],
+        'NSERC ': ['PromoScience 2023'],
+        'UNB via TD': ['TD Challenge Award (External)'],
+        'ISEDC': ['IIPP'],
+        'UEC': [
+            'Windhorse Grand Opening',
+            'Orange Bracelet',
+            'MCF Digital Acceleration',
+            'FPIC-ESDC',
+            'Asitu’lisk HWA Treatment',
+            'Youth Farmers Market',
+            'Modernizing Traditional',
+            'Grow With The Flow',
+            'CERI',
+            'Science & Innovation',
+            'Pathways to Engineering',
+            'Collegiate Prep Supplement'
+        ]
+    };
 
     // Effect to handle the first question when the chatbot opens
     useEffect(() => {
@@ -40,26 +70,23 @@ const ExcelChatBot = () => {
             setConversation([]); // Reset conversation when closing
             setStep(1); // Reset steps when closing
             setSubmitted(false);
-            setInput('');
         }
     };
 
-    const handleUserInput = async (e) => {
-        e.preventDefault();
-        if (!input) return;
-
+    const handleUserInput = (input) => {
         let newConversation = [...conversation, { sender: 'user', text: input }];
         let newData = { ...data };
 
         switch (step) {
             case 1:
                 newData.productDescription = input;
-                newConversation.push({ sender: 'bot', text: 'What is the Funding Stream?' });
+                newConversation.push({ sender: 'bot', text: 'What is the Funding Stream?', options: fundingStreamOptions });
                 setStep(2);
                 break;
             case 2:
                 newData.fundingStream = input;
-                newConversation.push({ sender: 'bot', text: 'What is the Source / Grant?' });
+                const grants = sourceGrantOptions[input];
+                newConversation.push({ sender: 'bot', text: 'What is the Source / Grant?', options: grants });
                 setStep(3);
                 break;
             case 3:
@@ -94,7 +121,6 @@ const ExcelChatBot = () => {
 
         setData(newData);
         setConversation(newConversation);
-        setInput('');
     };
 
     const handleSubmit = async (formData) => {
@@ -120,6 +146,18 @@ const ExcelChatBot = () => {
         }
     };
 
+    const renderOptions = (options) => {
+        return (
+            <div className="options-container">
+                {options.map((option, index) => (
+                    <button key={index} className="option-button" onClick={() => handleUserInput(option)}>
+                        {option}
+                    </button>
+                ))}
+            </div>
+        );
+    };
+
     return (
         <div className="excel-chatbot-container">
             {!isOpen && (
@@ -139,20 +177,19 @@ const ExcelChatBot = () => {
                             {conversation.map((msg, index) => (
                                 <div key={index} className={msg.sender === 'user' ? 'user' : 'assistant'}>
                                     <p>{msg.text}</p>
+                                    {msg.options && renderOptions(msg.options)}
                                 </div>
                             ))}
                         </div>
-                        {step <= 7 && (
-                            <form onSubmit={handleUserInput} className="chat-input-container">
+                        {step === 1 || (step > 3 && step <= 7) ? (
+                            <form onSubmit={(e) => { e.preventDefault(); handleUserInput(e.target.elements[0].value); }} className="chat-input-container">
                                 <textarea
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
                                     rows="2"
                                     placeholder="Type your answer here..."
                                 />
                                 <button type="submit" className="send-button">Send</button>
                             </form>
-                        )}
+                        ) : null}
                         {submitted && <p>Thank you! Your purchase order is ready for download.</p>}
                     </div>
                 </div>
