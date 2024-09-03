@@ -7,6 +7,35 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* index.css */
+html,
+body {
+  margin: 0;
+  /* Remove default margin */
+  padding: 0;
+  /* Remove default padding */
+  width: 100%;
+  /* Full width */
+  height: 100%;
+  /* Full height */
+  overflow-x: hidden;
+  /* Prevent horizontal overflow */
+  box-sizing: border-box;
+  /* Include padding and borders in width calculation */
+}
+
+#root {
+  width: 100%;
+
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+  /* Inherit box-sizing to ensure consistency */
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

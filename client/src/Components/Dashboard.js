@@ -121,7 +121,9 @@ const Dashboard = () => {
             </div>
 
             {/* Excel Chatbot Component */}
-            <ExcelChatBot />
+            <div className="excel-chat-bot">
+                <ExcelChatBot />
+            </div>
         </div>
     );
 };
