@@ -1,12 +1,12 @@
-// client/src/Components/Dashboard.js
+// src/components/Dashboard.js
 import React, { useState } from 'react';
 import { Chart as ChartJS, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import { Calendar } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import 'react-circular-progressbar/dist/styles.css';
 import './dashboard.css'; // Import the CSS file for dashboard styling
+import ExcelChatBot from './ExcelChatBot'; // Import the ChatBot component
 
 // Register the required components for Chart.js
 ChartJS.register(
@@ -44,16 +44,23 @@ const Dashboard = () => {
         ],
     };
 
-    // Funding data with progress
+    // Funding data as info boxes
     const fundingData = [
-        { name: 'Foundation Funding - NSERC', percentage: 75, color: '#ed7a2a' },
-        { name: 'Private Donors', percentage: 50, color: '#f7b329' },
-        { name: 'Government Grants - STEAM Program', percentage: 90, color: '#049ebf' },
+        { name: 'Foundation Funding - NSERC', color: '#ed7a2a' },
+        { name: 'Private Donors', color: '#f7b329' },
+        { name: 'Government Grants - STEAM Program', color: '#049ebf' },
+        { name: 'Corporate Sponsorships', color: '#e1262d' },  // Added new funding source
+    ];
+
+    const currentProjects = [
+        { title: 'Project A: Curriculum Development', description: 'Focusing on creating new modules for STEM subjects' },
+        { title: 'Project B: Workshop Coordination', description: 'Organizing community workshops for skills development' },
+        { title: 'Project C: Community Outreach', description: 'Engaging with local communities to raise awareness' },
+        { title: 'Project D: Resource Allocation', description: 'Ensuring efficient allocation of educational resources' }
     ];
 
     const onCalendarChange = (date) => {
         setDate(date);
-        // Function to handle booking and send email (can be implemented later)
     };
 
     return (
@@ -72,22 +79,19 @@ const Dashboard = () => {
 
             {/* Main Content */}
             <div className="dashboard-content">
-                {/* Funding Streams with Circular Progress */}
-                <div className="funding-streams">
-                    {fundingData.map((funding, index) => (
-                        <div className="funding-box" key={index}>
-                            <CircularProgressbar
-                                value={funding.percentage}
-                                text={`${funding.percentage}%`}
-                                styles={buildStyles({
-                                    textColor: '#fff',
-                                    pathColor: funding.color,
-                                    trailColor: '#333',
-                                })}
-                            />
-                            <h4>{funding.name}</h4>
-                        </div>
-                    ))}
+                {/* Funding Streams and Doughnut Chart */}
+                <div className="top-section">
+                    <div className="funding-streams">
+                        {fundingData.map((funding, index) => (
+                            <div className="funding-info-box" key={index} style={{ backgroundColor: funding.color }}>
+                                <h4>{funding.name}</h4>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="chart-container">
+                        <h3>Funding Breakdown</h3>
+                        <Doughnut data={doughnutChartData} />
+                    </div>
                 </div>
 
                 {/* Metrics Section */}
@@ -96,18 +100,28 @@ const Dashboard = () => {
                         <h3>Total Hours Overview</h3>
                         <Bar data={barChartData} />
                     </div>
-                    <div className="chart-container">
-                        <h3>Funding Breakdown</h3>
-                        <Doughnut data={doughnutChartData} />
+                    <div className="project-list">
+                        <h3>Current Projects</h3>
+                        <ul>
+                            {currentProjects.map((project, index) => (
+                                <li key={index}>
+                                    <h4 className="project-title">{project.title}</h4>
+                                    <p className="project-description">{project.description}</p>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </div>
 
-                {/* Booking Calendar Section at the Bottom */}
+                {/* Booking Calendar Section */}
                 <div className="calendar-section">
                     <h3>Booking Calendar</h3>
                     <Calendar onChange={onCalendarChange} value={date} />
                 </div>
             </div>
+
+            {/* Excel Chatbot Component */}
+            <ExcelChatBot />
         </div>
     );
 };

@@ -1,135 +1,148 @@
-/* client/src/Components/dashboard.css */
-
-:root {
-    --primary-dark: #1f2d3d;
-    --secondary-dark: #2a3a4d;
-    --primary-accent: #ed7a2a;
-    --secondary-accent: #f7b329;
-    --text-color: #ffffff;
-}
-
 body {
     margin: 0;
-    padding: 0;
     font-family: 'Arial', sans-serif;
-    background-color: var(--primary-dark);
-    height: 100vh;
+    background-color: #1f1f1f;
+    color: #fff;
     display: flex;
-    /* Make the body a flex container */
+    /* Ensure the body uses flexbox */
 }
 
 .dashboard {
     display: flex;
-    height: 90%;
+    height: 100vh;
+    /* Full viewport height */
     width: 100%;
 }
 
 .sidebar {
-    width: 200px;
+    position: fixed;
+    /* Fixed position for sticking to the left */
+    top: 0;
+    left: 0;
+    width: 250px;
+    background-color: #2d2d2d;
+    padding: 20px;
     height: 100vh;
-    /* Make sidebar full height */
-    background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
-    color: var(--text-color);
+    color: #f7b329;
+    /* Yellow */
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 20px 0;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-    position: fixed;
-    /* Fixed position for the sidebar */
-    left: 0;
-    /* Ensure it is aligned to the very left */
-    top: 0;
-    z-index: 1000;
-    /* Keep it above other content */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    /* Slight shadow for separation */
 }
 
 .sidebar-brand {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1.5em;
     margin-bottom: 20px;
+    color: #ed7a2a;
+    /* Orange */
 }
 
 .sidebar-nav {
     list-style: none;
     padding: 0;
-    width: 100%;
-    text-align: center;
+    flex-grow: 1;
+    /* Ensure the nav grows */
 }
 
 .sidebar-nav li {
-    padding: 10px;
+    margin: 10px 0;
     cursor: pointer;
-    transition: background 0.3s;
+    color: #f7b329;
+    /* Yellow */
 }
 
 .sidebar-nav li:hover {
-    background-color: var(--secondary-dark);
+    color: #049ebf;
+    /* Blue */
 }
 
 .dashboard-content {
-    margin-left: 200px;
-    /* Offset by sidebar width */
-    flex-grow: 1;
+    margin-left: 300px;
+    /* Push content to the right to accommodate fixed sidebar */
     padding: 20px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    overflow-y: auto;
-    width: calc(100% - 200px);
-    /* Adjust width to account for the sidebar */
+    height: 100vh;
+    max-width: calc(100vw-200px);
+    box-sizing: border-box;
+    /* Include padding in height */
+}
+
+.top-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
 
 .funding-streams {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    gap: 20px;
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
-.funding-box {
-    flex: 1;
-    background-color: var(--secondary-dark);
+.funding-info-box {
+    padding: 15px;
+    border-radius: 8px;
+    color: #fff;
+    width: 200px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.chart-container {
+    background-color: #2d2d2d;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    color: var(--text-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.funding-box h4 {
-    margin-top: 10px;
-    color: var(--text-color);
+    border-radius: 8px;
+    width: 45%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .metrics-section {
     display: flex;
     justify-content: space-between;
-    width: 100%;
     gap: 20px;
-    flex-grow: 1;
 }
 
-.chart-container,
-.calendar-section {
-    background-color: var(--secondary-dark);
+.project-list {
+    background-color: #2d2d2d;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    color: var(--text-color);
-    flex: 1;
+    border-radius: 8px;
+    width: 45%;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.chart-container h3,
-.calendar-section h3 {
-    color: var(--text-color);
+.project-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.project-list li {
+    padding: 15px;
+    border-bottom: 1px solid #3a3a3a;
+    margin-bottom: 10px;
+}
+
+.project-title {
+    margin: 0;
+    color: #f7b329;
+    /* Yellow */
+    font-weight: bold;
+}
+
+.project-description {
+    margin: 5px 0 0;
+    color: #787878;
+    /* Grey */
 }
 
 .calendar-section {
-    width: 100%;
-    flex-grow: 1;
-    margin-top: auto;
+    background-color: #2d2d2d;
+    padding: 20px;
+    border-radius: 8px;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }

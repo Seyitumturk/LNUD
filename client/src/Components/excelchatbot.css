@@ -1,0 +1,165 @@
+:root {
+    --orange: #ed7a2a;
+    --yellow: #f7b329;
+    --blue: #049ebf;
+    --red: #e1262d;
+    --grey: #787878;
+    --text-color: #333;
+    --button-text-color: #fff;
+}
+
+.excel-chatbot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 1000;
+    transition: all 0.3s ease-in-out;
+}
+
+.excel-chatbot-toggle {
+    background-color: var(--blue);
+    color: var(--button-text-color);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.excel-chatbot-toggle:hover {
+    background-color: var(--orange);
+    transform: translateY(-2px);
+}
+
+.excel-chatbot {
+    background-color: white;
+    border: 1px solid var(--grey);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    height: 350px;
+    /* Default height */
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    position: relative;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.excel-chatbot-header {
+    font-weight: bold;
+    padding: 10px;
+    text-align: center;
+    color: var(--text-color);
+    position: relative;
+    border-bottom: 1px solid var(--grey);
+}
+
+.close-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}
+
+.close-button:hover {
+    color: var(--red);
+}
+
+.excel-chatbot-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+    padding: 10px;
+}
+
+.chat-log {
+    flex-grow: 1;
+    max-height: 150px;
+    /* Adjusted height */
+    overflow-y: auto;
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid var(--grey);
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    transition: background-color 0.3s ease;
+}
+
+.chat-input-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    /* Space between textarea and button */
+}
+
+textarea {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--grey);
+    border-radius: 5px;
+    resize: none;
+    transition: border-color 0.3s ease;
+}
+
+textarea:focus {
+    border-color: var(--blue);
+}
+
+.send-button {
+    background-color: var(--blue);
+    color: var(--button-text-color);
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.send-button:hover {
+    background-color: var(--orange);
+    transform: translateY(-2px);
+}
+
+.assistant {
+    color: var(--text-color);
+    background-color: #f1f1f1;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 5px;
+    text-align: left;
+    max-width: 80%;
+    align-self: flex-start;
+}
+
+.user {
+    color: var(--button-text-color);
+    background-color: var(--blue);
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 5px;
+    text-align: right;
+    max-width: 80%;
+    align-self: flex-end;
+}
