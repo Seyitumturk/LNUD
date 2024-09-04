@@ -1,5 +1,5 @@
-// src/components/Dashboard.js
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom'; // Import Link from React Router
 import { Chart as ChartJS, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { Calendar } from 'react-calendar';
@@ -53,10 +53,10 @@ const Dashboard = () => {
     ];
 
     const currentProjects = [
-        { title: 'Project A: Curriculum Development', description: 'Focusing on creating new modules for STEM subjects' },
-        { title: 'Project B: Workshop Coordination', description: 'Organizing community workshops for skills development' },
-        { title: 'Project C: Community Outreach', description: 'Engaging with local communities to raise awareness' },
-        { title: 'Project D: Resource Allocation', description: 'Ensuring efficient allocation of educational resources' }
+        { title: 'Community Event in Wagmatcook Elder Center - Waltes Game Play : Cultural Workshop', description: 'Join us for a cultural workshop on traditional practices' },
+        { title: 'News B: Funding Received', description: 'New funding received for community development projects' },
+        { title: 'Event C: Volunteer Program', description: 'Looking for volunteers for our upcoming events' },
+        { title: 'Update D: New Partnership', description: 'Announcing a new partnership with local schools' }
     ];
 
     const onCalendarChange = (date) => {
@@ -71,9 +71,10 @@ const Dashboard = () => {
                 <ul className="sidebar-nav">
                     <li>Dashboard</li>
                     <li>Community Info</li>
-                    <li>Funding Streams</li>
-                    <li>Calendar</li>
-                    <li>Settings</li>
+                    <Link to="/inventory">
+                        <li>Inventory</li>
+                    </Link>
+                    <li>LMS</li>
                 </ul>
             </div>
 
@@ -101,7 +102,7 @@ const Dashboard = () => {
                         <Bar data={barChartData} />
                     </div>
                     <div className="project-list">
-                        <h3>Current Projects</h3>
+                        <h3>News from Communities </h3>
                         <ul>
                             {currentProjects.map((project, index) => (
                                 <li key={index}>

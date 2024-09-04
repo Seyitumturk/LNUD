@@ -3,12 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.0.2",
+    "@mui/material": "^6.0.2",
+    "@react-three/drei": "^9.112.0",
+    "@react-three/fiber": "^8.17.6",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.5",
     "chart.js": "^4.4.4",
+    "echarts": "^5.5.1",
     "firebase": "^10.13.1",
+    "openai": "^4.57.1",
     "react": "^18.3.1",
     "react-calendar": "^5.0.0",
     "react-chartjs-2": "^5.2.0",
@@ -17,7 +25,11 @@
     "react-firebase-hooks": "^5.1.1",
     "react-router-dom": "^6.26.1",
     "react-scripts": "^5.0.1",
-    "web-vitals": "^2.1.4"
+    "recharts": "^2.12.7",
+    "three": "^0.168.0",
+    "three-stdlib": "^2.32.2",
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
