@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './excelchatbot.css'; // Import the CSS file for chatbot styling
 
-const ExcelChatBot = () => {
-    const [isOpen, setIsOpen] = useState(false);
+const ExcelChatBot = ({ isOpen, toggleChatbot }) => { // Accept `isOpen` and `toggleChatbot` as props
     const [step, setStep] = useState(1);
     const [conversation, setConversation] = useState([]);
     const [submitted, setSubmitted] = useState(false);
@@ -63,15 +62,6 @@ const ExcelChatBot = () => {
             chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight;
         }
     }, [conversation]);
-
-    const toggleChatbot = () => {
-        setIsOpen(!isOpen);
-        if (!isOpen) {
-            setConversation([]); // Reset conversation when closing
-            setStep(1); // Reset steps when closing
-            setSubmitted(false);
-        }
-    };
 
     const handleUserInput = (input) => {
         let newConversation = [...conversation, { sender: 'user', text: input }];
@@ -158,42 +148,34 @@ const ExcelChatBot = () => {
         );
     };
 
-    return (
-        <div className="excel-chatbot-container">
-            {!isOpen && (
-                <button className="excel-chatbot-toggle" onClick={toggleChatbot}>
-                    Chat with Us
-                </button>
-            )}
+    if (!isOpen) return null; // Do not render if not open
 
-            {isOpen && (
-                <div className="excel-chatbot">
-                    <div className="excel-chatbot-header">
-                        Purchase Order ChatBot
-                        <button className="close-button" onClick={toggleChatbot}>✖</button>
-                    </div>
-                    <div className="excel-chatbot-body">
-                        <div className="chat-log" ref={chatLogRef}>
-                            {conversation.map((msg, index) => (
-                                <div key={index} className={msg.sender === 'user' ? 'user' : 'assistant'}>
-                                    <p>{msg.text}</p>
-                                    {msg.options && renderOptions(msg.options)}
-                                </div>
-                            ))}
+    return (
+        <div className="excel-chatbot">
+            <div className="excel-chatbot-header">
+                Purchase Order ChatBot
+                <button className="close-button" onClick={toggleChatbot}>✖</button>
+            </div>
+            <div className="excel-chatbot-body">
+                <div className="chat-log" ref={chatLogRef}>
+                    {conversation.map((msg, index) => (
+                        <div key={index} className={msg.sender === 'user' ? 'user' : 'assistant'}>
+                            <p>{msg.text}</p>
+                            {msg.options && renderOptions(msg.options)}
                         </div>
-                        {step === 1 || (step > 3 && step <= 7) ? (
-                            <form onSubmit={(e) => { e.preventDefault(); handleUserInput(e.target.elements[0].value); }} className="chat-input-container">
-                                <textarea
-                                    rows="2"
-                                    placeholder="Type your answer here..."
-                                />
-                                <button type="submit" className="send-button">Send</button>
-                            </form>
-                        ) : null}
-                        {submitted && <p>Thank you! Your purchase order is ready for download.</p>}
-                    </div>
+                    ))}
                 </div>
-            )}
+                {step === 1 || (step > 3 && step <= 7) ? (
+                    <form onSubmit={(e) => { e.preventDefault(); handleUserInput(e.target.elements[0].value); }} className="chat-input-container">
+                        <textarea
+                            rows="2"
+                            placeholder="Type your answer here..."
+                        />
+                        <button type="submit" className="send-button">Send</button>
+                    </form>
+                ) : null}
+                {submitted && <p>Thank you! Your purchase order is ready for download.</p>}
+            </div>
         </div>
     );
 };

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Import Link from React Router
-import { Chart as ChartJS, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
-import { Calendar } from 'react-calendar';
+import { Link } from 'react-router-dom';
+import { Chart as ChartJS, LineElement, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend, PointElement } from 'chart.js';
+import { Line, Doughnut } from 'react-chartjs-2';
 import 'react-calendar/dist/Calendar.css';
 import 'react-circular-progressbar/dist/styles.css';
 import './dashboard.css'; // Import the CSS file for dashboard styling
@@ -10,8 +9,10 @@ import ExcelChatBot from './ExcelChatBot'; // Import the ChatBot component
 
 // Register the required components for Chart.js
 ChartJS.register(
+    LineElement,
     BarElement,
     ArcElement,
+    PointElement,
     CategoryScale,
     LinearScale,
     Tooltip,
@@ -19,21 +20,74 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
-    const [date, setDate] = useState(new Date());
+    const [isChatOpen, setIsChatOpen] = useState(false); // State to manage the chatbot modal
+    const toggleChatbot = () => setIsChatOpen(!isChatOpen); // Toggling function for the chatbot
 
-    // Sample data for charts
-    const barChartData = {
-        labels: ['Curriculum Development', 'Delivery Hours', 'Meetings', 'Workshops'],
+    // Sample data for the new line chart
+    const lineChartData = {
+        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August'],
         datasets: [
             {
-                label: 'Total Hours',
-                data: [120, 200, 80, 150],
-                backgroundColor: ['#ed7a2a', '#f7b329', '#049ebf', '#e1262d'],
-                borderWidth: 1,
+                label: 'Curriculum Development',
+                data: [120, 150, 180, 220, 200, 250, 270, 300],
+                borderColor: '#ed7a2a',
+                fill: false,
+                tension: 0.4,
+            },
+            {
+                label: 'Delivery Hours',
+                data: [180, 220, 200, 260, 300, 320, 330, 340],
+                borderColor: '#f7b329',
+                fill: false,
+                tension: 0.4,
+            },
+            {
+                label: 'Meetings',
+                data: [80, 90, 100, 120, 150, 170, 180, 200],
+                borderColor: '#049ebf',
+                fill: false,
+                tension: 0.4,
+            },
+            {
+                label: 'Workshops',
+                data: [150, 170, 160, 180, 200, 230, 260, 280],
+                borderColor: '#e1262d',
+                fill: false,
+                tension: 0.4,
             },
         ],
     };
 
+    // Options for a modern-looking line chart
+    const lineChartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+            },
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false,
+                },
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    display: true,
+                    color: 'rgba(255, 255, 255, 0.1)',
+                },
+            },
+        },
+    };
+
+    // Sample data for doughnut chart
     const doughnutChartData = {
         labels: ['Government Funding', 'Private Funding'],
         datasets: [
@@ -44,87 +98,178 @@ const Dashboard = () => {
         ],
     };
 
-    // Funding data as info boxes
+    // Updated funding data with new streams, logos, and visual progress indicators
     const fundingData = [
-        { name: 'Foundation Funding - NSERC', color: '#ed7a2a' },
-        { name: 'Private Donors', color: '#f7b329' },
-        { name: 'Government Grants - STEAM Program', color: '#049ebf' },
-        { name: 'Corporate Sponsorships', color: '#e1262d' },  // Added new funding source
+        {
+            name: 'ISEDC',
+            color: '#049ebf',
+            logo: '/Canada.png', // Path to logo in public folder
+            requirements: [
+                { text: 'Funding for innovation and economic development', progress: 85 },
+                { text: 'Projects must align with national policy priorities', progress: 45 },
+                { text: 'Annual audits and reviews required', progress: 60 }
+            ]
+        }, {
+            name: 'Whole Foods Foundation',
+            color: '#ed7a2a',
+            logo: '/wholefoods-logo.png', // Path to logo in public folder
+            requirements: [
+                { text: 'Focus on sustainable agriculture and food education', progress: 80 },
+                { text: 'Annual grant renewal based on impact reports', progress: 60 },
+                { text: 'Community engagement events required', progress: 40 }
+            ]
+        },
+        {
+            name: 'NSERC',
+            color: '#f7b329',
+            logo: '/nserc-logo.png', // Path to logo in public folder
+            requirements: [
+                { text: 'Research-based funding for STEM projects', progress: 90 },
+                { text: 'Progress reports bi-annually', progress: 50 },
+                { text: 'Collaboration with accredited institutions required', progress: 70 }
+            ]
+        },
+        {
+            name: 'UNB via TD',
+            color: '#e1262d',
+            logo: '/TD.png', // Path to logo in public folder
+            requirements: [
+                { text: 'Partnerships with local educational bodies', progress: 65 },
+                { text: 'Focus on community development initiatives', progress: 75 },
+                { text: 'Quarterly impact assessments', progress: 55 }
+            ]
+        },
+
+        {
+            name: 'UEC',
+            color: '#3cb44b',
+            logo: '/logo.png', // Path to logo in public folder
+            requirements: [
+                { text: 'Support for cultural and educational programs', progress: 70 },
+                { text: 'Bi-annual performance reviews', progress: 50 },
+                { text: 'Reports on usage of funds and outcomes', progress: 80 }
+            ]
+        }
     ];
 
     const currentProjects = [
-        { title: 'Community Event in Wagmatcook Elder Center - Waltes Game Play : Cultural Workshop', description: 'Join us for a cultural workshop on traditional practices' },
+        { title: 'Community Event in Wagmatcook Elder Center - Waltes Game Play: Cultural Workshop', description: 'Join us for a cultural workshop on traditional practices' },
         { title: 'News B: Funding Received', description: 'New funding received for community development projects' },
         { title: 'Event C: Volunteer Program', description: 'Looking for volunteers for our upcoming events' },
         { title: 'Update D: New Partnership', description: 'Announcing a new partnership with local schools' }
     ];
 
-    const onCalendarChange = (date) => {
-        setDate(date);
-    };
-
     return (
         <div className="dashboard">
-            {/* Sidebar */}
+            {/* Modern Sidebar */}
             <div className="sidebar">
-                <div className="sidebar-brand">Ulnooweg</div>
+                <div className="sidebar-brand">
+                    <img src="/company-logo.png" alt="Company Logo" className="company-logo" /> {/* Replace with actual logo path */}
+                </div>
                 <ul className="sidebar-nav">
-                    <li>Dashboard</li>
-                    <li>Community Info</li>
-                    <Link to="/inventory">
-                        <li>Inventory</li>
-                    </Link>
-                    <li>LMS</li>
+                    <li><Link to="/" className="sidebar-item">Dashboard</Link></li>
+                    <li><Link to="/community" className="sidebar-item">Community Info</Link></li>
+                    <li><Link to="/inventory" className="sidebar-item">Inventory</Link></li>
+                    <li><Link to="/lms" className="sidebar-item">LMS</Link></li>
                 </ul>
             </div>
 
             {/* Main Content */}
             <div className="dashboard-content">
-                {/* Funding Streams and Doughnut Chart */}
-                <div className="top-section">
-                    <div className="funding-streams">
-                        {fundingData.map((funding, index) => (
-                            <div className="funding-info-box" key={index} style={{ backgroundColor: funding.color }}>
-                                <h4>{funding.name}</h4>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="chart-container">
-                        <h3>Funding Breakdown</h3>
-                        <Doughnut data={doughnutChartData} />
-                    </div>
-                </div>
-
-                {/* Metrics Section */}
-                <div className="metrics-section">
-                    <div className="chart-container">
-                        <h3>Total Hours Overview</h3>
-                        <Bar data={barChartData} />
-                    </div>
-                    <div className="project-list">
-                        <h3>News from Communities </h3>
-                        <ul>
-                            {currentProjects.map((project, index) => (
-                                <li key={index}>
-                                    <h4 className="project-title">{project.title}</h4>
-                                    <p className="project-description">{project.description}</p>
-                                </li>
+                {/* Four Equal Blocks */}
+                <div className="grid-container">
+                    {/* Block 1: Funding Streams with Scrollable Container */}
+                    <div className="grid-block glass-card">
+                        <h3>Funding Streams</h3>
+                        <div className="funding-streams-grid scrollable">
+                            {fundingData.map((funding, index) => (
+                                <div className="funding-info-box glass-card" key={index} style={{ backgroundColor: funding.color }}>
+                                    <div className="funding-logo-container">
+                                        <img
+                                            src={funding.logo}
+                                            alt={`${funding.name} logo`}
+                                            className="funding-logo"
+                                            style={funding.name === 'UEC' ? { maxWidth: '80%', maxHeight: '60px' } : {}}
+                                        />
+                                    </div>
+                                    <h4>{funding.name}</h4>
+                                    <ul className="requirements-list">
+                                        {funding.requirements.map((req, reqIndex) => (
+                                            <li key={reqIndex} className="requirement-item">
+                                                {req.text}
+                                                <div className="progress-bar-container">
+                                                    <div
+                                                        className="progress-bar"
+                                                        style={{ width: `${req.progress}%` }}
+                                                    />
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             ))}
-                        </ul>
+                            {/* Add a placeholder card for the 6th slot to keep a 3x2 grid */}
+                            <div className="funding-info-box glass-card placeholder-card">
+                                <h4>Coming Soon</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Block 2: Line Graph (Total Hours Overview) */}
+                    <div className="grid-block glass-card">
+                        <h3>Total Hours Overview</h3>
+                        <div className="chart-container center-content">
+                            <Line data={lineChartData} options={lineChartOptions} />
+                        </div>
+                    </div>
+
+                    {/* Block 3: Doughnut Chart (Funding Breakdown) */}
+                    <div className="grid-block glass-card">
+                        <h3>Funding Breakdown</h3>
+                        <div className="chart-container center-content">
+                            <Doughnut data={doughnutChartData} />
+                        </div>
+                    </div>
+
+                    {/* Block 4: News Section (Modern Data-Driven) */}
+                    <div className="grid-block glass-card">
+                        <h3>News from Communities</h3>
+                        <div className="news-section modern-news-section">
+                            {currentProjects.map((project, index) => (
+                                <div key={index} className="news-item">
+                                    <div className="news-header">
+                                        <h4>{project.title}</h4>
+                                        <p>{project.description}</p>
+                                    </div>
+                                    <div className="news-details">
+                                        <span>Impact Score: {Math.floor(Math.random() * 100)}</span>
+                                        <span>Date: {new Date().toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Booking Calendar Section */}
-                <div className="calendar-section">
-                    <h3>Booking Calendar</h3>
-                    <Calendar onChange={onCalendarChange} value={date} />
+            {/* Glassmorphic Chat Button at the Bottom-Right Corner */}
+            <button
+                className="glass-chat-button"
+                onClick={toggleChatbot} // Opens the chat modal directly
+            >
+                Pipanimi – Ask me
+            </button>
+
+            {/* Modern Chat Modal */}
+            {isChatOpen && (
+                <div className="chat-modal">
+                    <div className="chat-modal-content">
+                        <button className="close-button" onClick={toggleChatbot}>✖</button> {/* Close button to toggle off */}
+                        <ExcelChatBot isOpen={isChatOpen} toggleChatbot={toggleChatbot} /> {/* Modern chat UI component */}
+                    </div>
                 </div>
-            </div>
+            )}
 
-            {/* Excel Chatbot Component */}
-            <div className="excel-chat-bot">
-                <ExcelChatBot />
-            </div>
         </div>
     );
 };

@@ -141,35 +141,55 @@ const InventoryCheck = () => {
     const [isModalOpen, setModalOpen] = useState(false);
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [checkedOutItems, setCheckedOutItems] = useState([]);
-
     useEffect(() => {
-        renderCharts();
+        // Initialize ECharts instances
+        const lineChart = echarts.init(document.getElementById('lineChart'), 'dark');
+        const pieChart = echarts.init(document.getElementById('pieChart'), 'dark');
+
+        // Render charts
+        renderCharts(lineChart, pieChart);
+
+        // Handle window resize for responsiveness
+        const handleResize = () => {
+            lineChart.resize();
+            pieChart.resize();
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        // Clean up the resize listener on component unmount
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
     }, []);
-    const renderCharts = () => {
+
+    const renderCharts = (lineChart, pieChart) => {
+        // Example data for each category with monthly checkout counts
         const lineChartData = {
-            "Dash Items": [5, 8, 10, 15, 20, 16, 25, 30, 40, 38, 45, 50],
-            "Tablet Items": [2, 5, 8, 10, 18, 22, 27, 25, 30, 28, 35, 40],
-            "Robotic Arms": [1, 2, 3, 4, 5, 10, 12, 14, 16, 18, 20, 25],
-            "VR Headsets": [4, 6, 8, 12, 15, 14, 20, 22, 28, 32, 30, 35],
-            "Other Equipment": [6, 9, 12, 15, 18, 20, 25, 28, 35, 40, 45, 48]
+            "Dash Items": [5, 8, 10, 15, 20, 16, 25, 30, 40, 38, 45, 50],  // Example data; replace with real historical data
+            "Tablet Items": [2, 5, 8, 10, 18, 22, 27, 25, 30, 28, 35, 40], // Example data
+            "Robotic Arms": [1, 2, 3, 4, 5, 10, 12, 14, 16, 18, 20, 25],   // Example data
+            "VR Headsets": [4, 6, 8, 12, 15, 14, 20, 22, 28, 32, 30, 35],  // Example data
+            "Other Equipment": [6, 9, 12, 15, 18, 20, 25, 28, 35, 40, 45, 48] // Example data
         };
 
         const lineChartSeries = Object.entries(lineChartData).map(([category, data]) => ({
             name: category,
             type: 'line',
-            smooth: true,
+            smooth: true, // Smooth lines for better visual appeal
             data,
             itemStyle: {
-                color: getCategoryColor(category),
+                color: getCategoryColor(category), // Custom function to determine color per category
             },
-            areaStyle: {
+            areaStyle: { // Optional: Add area below the line for emphasis
                 opacity: 0.1,
             },
         }));
 
-        // Initialize Line Chart
-        const lineChart = echarts.init(document.getElementById('lineChart'), 'dark');
+        // Configure and set options for the line chart
         lineChart.setOption({
+
+
             tooltip: {
                 trigger: 'axis',
                 formatter: function (params) {
@@ -188,7 +208,7 @@ const InventoryCheck = () => {
             grid: { left: '3%', right: '3%', bottom: '3%', containLabel: true },
             xAxis: {
                 type: 'category',
-                data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], // Example months
                 axisLabel: { color: '#ccc' },
             },
             yAxis: {
@@ -198,16 +218,24 @@ const InventoryCheck = () => {
             series: lineChartSeries,
         });
 
-        // Initialize Pie Chart
+        // Example data for pie chart with category distribution
         const chartData = Object.entries(categorizedItems).map(([category, { color, items }]) => ({
             name: category,
             value: items.length,
         }));
 
-        const pieChart = echarts.init(document.getElementById('pieChart'), 'dark');
+        // Configure and set options for the pie chart
         pieChart.setOption({
-            tooltip: { trigger: 'item' },
-            legend: { orient: 'vertical', left: 'left', textStyle: { color: '#ccc' } },
+
+            tooltip: {
+                trigger: 'item',
+                formatter: '{b}: {c} items ({d}%)',  // Show category name, item count, and percentage
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                textStyle: { color: '#ccc' }
+            },
             series: [
                 {
                     name: 'Inventory Distribution',
@@ -220,28 +248,32 @@ const InventoryCheck = () => {
                         borderWidth: 2,
                     },
                     label: {
+                        show: true,
+                        formatter: '{b}: {c} items',  // Show category name and item count
                         color: '#ccc',
                     },
                 },
             ],
         });
+
     };
 
-    // Function to determine color per category
+
+    // Function to determine color per category for the line chart
     const getCategoryColor = (category) => {
         switch (category) {
             case 'Dash Items':
-                return '#ffeb3b';
+                return '#ffeb3b'; // Yellow
             case 'Tablet Items':
-                return '#03a9f4';
+                return '#03a9f4'; // Light Blue
             case 'Robotic Arms':
-                return '#8bc34a';
+                return '#8bc34a'; // Light Green
             case 'VR Headsets':
-                return '#e91e63';
+                return '#e91e63'; // Pink
             case 'Other Equipment':
-                return '#ff5722';
+                return '#ff5722'; // Deep Orange
             default:
-                return '#ccc';
+                return '#ccc'; // Default color
         }
     };
 
@@ -278,6 +310,10 @@ const InventoryCheck = () => {
             <Box className="chart-wrapper line-chart-wrapper" style={{ marginTop: '20px' }}>
                 {/* Background div for Line Chart */}
                 <Box className="glassmorphism-bg" style={{ padding: '20px', borderRadius: '12px', marginBottom: '20px' }}>
+                    <Typography variant="h5" align="center" style={{ color: '#fff', marginBottom: '20px' }}>
+                        Checked-Out Items Over Time
+                    </Typography>
+
                     <div id="lineChart" style={{ width: '100%', height: '400px' }}></div>
                 </Box>
             </Box>
@@ -285,10 +321,13 @@ const InventoryCheck = () => {
             {/* Data Visualization - Pie Chart and Latest Checked-Out Items */}
             <Box className="chart-wrapper" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                 {/* Pie Chart for Category Distribution */}
-                <Box className="glassmorphism-bg" style={{ width: '48%', height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', borderRadius: '12px' }}>
-                    <div id="pieChart" style={{ width: '100%', height: '100%' }}></div>
+                <Box className="glassmorphism-bg" style={{ width: '48%', height: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', borderRadius: '12px' }}>
+                    {/* Title for Pie Chart with margin bottom, aligned above */}
+                    <Typography variant="h5" align="center" style={{ color: '#fff', marginBottom: '20px' }}>
+                        Inventory Distribution by Category
+                    </Typography>
+                    <div id="pieChart" style={{ width: '100%', height: '400px' }}></div>
                 </Box>
-
                 {/* Latest Checked-Out Items Section */}
                 <Box className="glassmorphism-bg" style={{ width: '48%', padding: '20px', borderRadius: '12px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <Typography variant="h5" style={{ color: '#ed7a2a' }}>Latest Checked-Out Items</Typography>

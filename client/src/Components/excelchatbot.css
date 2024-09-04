@@ -4,8 +4,11 @@
     --blue: #049ebf;
     --red: #e1262d;
     --grey: #787878;
+    --light-grey: #f9f9f9;
     --text-color: #333;
     --button-text-color: #fff;
+    --chat-background: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
 }
 
 .excel-chatbot-container {
@@ -17,68 +20,54 @@
     transition: all 0.3s ease-in-out;
 }
 
-.excel-chatbot-toggle {
-    background-color: var(--blue);
-    color: var(--button-text-color);
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.excel-chatbot-toggle:hover {
-    background-color: var(--orange);
-    transform: translateY(-2px);
-}
-
 .excel-chatbot {
-    background-color: white;
-    border: 1px solid var(--grey);
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: var(--chat-background);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     width: 300px;
-    height: 350px;
-    /* Default height */
+    max-height: 400px;
     display: flex;
     flex-direction: column;
-    opacity: 0;
     animation: fadeIn 0.5s forwards;
     transition: max-height 0.3s ease, opacity 0.3s ease;
     position: relative;
+    overflow: hidden;
+    /* Hide overflow for clean edges */
 }
 
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: scale(0.9);
+        transform: translateY(10%);
     }
 
     to {
         opacity: 1;
-        transform: scale(1);
+        transform: translateY(0);
     }
 }
 
 .excel-chatbot-header {
     font-weight: bold;
-    padding: 10px;
+    padding: 12px;
     text-align: center;
-    color: var(--text-color);
+    color: var(--button-text-color);
+    background-color: var(--blue);
+    border-bottom: 1px solid var(--glass-border);
     position: relative;
-    border-bottom: 1px solid var(--grey);
 }
 
 .close-button {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 10px;
+    right: 10px;
     background: none;
     border: none;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
-    color: var(--text-color);
+    color: var(--button-text-color);
     transition: color 0.3s ease;
 }
 
@@ -91,40 +80,46 @@
     flex-direction: column;
     flex-grow: 1;
     overflow: hidden;
-    padding: 10px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+    /* Add blur for glass effect */
 }
 
 .chat-log {
     flex-grow: 1;
-    max-height: 150px;
-    /* Adjusted height */
+    max-height: 200px;
+    /* Adjusted height for better readability */
     overflow-y: auto;
     margin-bottom: 10px;
-    padding: 5px;
-    border: 1px solid var(--grey);
-    border-radius: 5px;
-    background-color: #f9f9f9;
+    padding: 10px;
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    background-color: var(--light-grey);
     transition: background-color 0.3s ease;
 }
 
 .chat-input-container {
     display: flex;
     align-items: center;
-    gap: 5px;
-    /* Space between textarea and button */
+    gap: 10px;
+    /* Increase space between textarea and button */
+    padding-top: 10px;
 }
 
 textarea {
     flex: 1;
     padding: 10px;
     border: 1px solid var(--grey);
-    border-radius: 5px;
+    border-radius: 8px;
     resize: none;
-    transition: border-color 0.3s ease;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
 }
 
 textarea:focus {
     border-color: var(--blue);
+    background-color: rgba(255, 255, 255, 1);
 }
 
 .send-button {
@@ -132,9 +127,10 @@ textarea:focus {
     color: var(--button-text-color);
     padding: 8px 15px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 .send-button:hover {
@@ -144,24 +140,26 @@ textarea:focus {
 
 .assistant {
     color: var(--text-color);
-    background-color: #f1f1f1;
-    padding: 8px 12px;
-    border-radius: 10px;
-    margin-bottom: 5px;
+    background-color: rgba(240, 240, 240, 0.9);
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-bottom: 8px;
     text-align: left;
     max-width: 80%;
     align-self: flex-start;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .user {
     color: var(--button-text-color);
     background-color: var(--blue);
-    padding: 8px 12px;
-    border-radius: 10px;
-    margin-bottom: 5px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-bottom: 8px;
     text-align: right;
     max-width: 80%;
     align-self: flex-end;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .options-container {
@@ -179,6 +177,7 @@ textarea:focus {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .option-button:hover {
