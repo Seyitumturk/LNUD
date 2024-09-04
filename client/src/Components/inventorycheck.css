@@ -1,26 +1,35 @@
-body,
-html {
+html,
+body {
     margin: 0;
+    /* Remove any default margin */
     padding: 0;
+    /* Remove any default padding */
+    width: 100%;
+    /* Ensure full width */
     height: 100%;
+    /* Full height to prevent vertical scroll issues */
     overflow-x: hidden;
-    overflow-y: auto;
-    background-color: #1e1e1e;
-    /* Dark background */
+    /* Prevent horizontal overflow */
 }
 
 .inventory-container {
     padding: 40px;
-    max-width: 1200px;
+    /* Adjust padding to control spacing around content */
+    max-width: 95%;
+    /* Changed from 100% to 95% to fill more of the background */
     margin: 0 auto;
+    /* Center the container */
     margin-top: 50px;
-    height: calc(100vh - 150px);
+    height: calc(100vh - 100px);
+    /* Adjusted height to keep it centered */
     overflow-y: auto;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     background-color: #1e1e1e;
     /* Dark background */
+    border-radius: 10px;
+    /* Optional: Rounded corners */
 }
 
 .search-filter-container {
@@ -71,13 +80,52 @@ html {
 .data-visualization {
     margin-bottom: 20px;
     display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
+    flex-direction: column;
+    /* Adjust to column layout for better stacking */
+    gap: 20px;
+    /* Adds space between the charts */
+}
+
+.glassmorphism-bg {
+    background-color: rgba(255, 255, 255, 0.1);
+    /* Semi-transparent white */
+    backdrop-filter: blur(10px);
+    /* Glassmorphism effect */
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    /* Subtle shadow for depth */
+}
+
+@media (min-width: 768px) {
+    .data-visualization {
+        flex-direction: row;
+        /* Switch to row layout for larger screens */
+        justify-content: space-between;
+    }
+
+    .checked-out-section {
+        width: 45%;
+        /* Set width when side by side with pie chart */
+    }
+
+    #pieChart {
+        width: 45%;
+        /* Adjust width of the pie chart to match checked-out section */
+    }
 }
 
 .inventory-category {
     margin-bottom: 30px;
     flex-grow: 1;
+}
+
+.checked-out-section {
+    background-color: #333;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    color: #fff;
 }
 
 .inventory-grid {

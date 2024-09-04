@@ -140,43 +140,70 @@ const InventoryCheck = () => {
     const [filterCategory, setFilterCategory] = useState('');
     const [isModalOpen, setModalOpen] = useState(false);
     const [searchExpanded, setSearchExpanded] = useState(false);
+    const [checkedOutItems, setCheckedOutItems] = useState([]);
 
     useEffect(() => {
         renderCharts();
     }, []);
-
     const renderCharts = () => {
-        // Prepare chart data
-        const chartData = Object.entries(categorizedItems).map(([category, { color, items }]) => ({
+        const lineChartData = {
+            "Dash Items": [5, 8, 10, 15, 20, 16, 25, 30, 40, 38, 45, 50],
+            "Tablet Items": [2, 5, 8, 10, 18, 22, 27, 25, 30, 28, 35, 40],
+            "Robotic Arms": [1, 2, 3, 4, 5, 10, 12, 14, 16, 18, 20, 25],
+            "VR Headsets": [4, 6, 8, 12, 15, 14, 20, 22, 28, 32, 30, 35],
+            "Other Equipment": [6, 9, 12, 15, 18, 20, 25, 28, 35, 40, 45, 48]
+        };
+
+        const lineChartSeries = Object.entries(lineChartData).map(([category, data]) => ({
             name: category,
-            value: items.length,
+            type: 'line',
+            smooth: true,
+            data,
+            itemStyle: {
+                color: getCategoryColor(category),
+            },
+            areaStyle: {
+                opacity: 0.1,
+            },
         }));
 
-        // Bar Chart
-        const barChart = echarts.init(document.getElementById('barChart'), 'dark');
-        barChart.setOption({
-            tooltip: {},
+        // Initialize Line Chart
+        const lineChart = echarts.init(document.getElementById('lineChart'), 'dark');
+        lineChart.setOption({
+            tooltip: {
+                trigger: 'axis',
+                formatter: function (params) {
+                    let tooltipText = `<strong>${params[0].axisValue}</strong><br/>`;
+                    params.forEach(param => {
+                        tooltipText += `${param.marker} ${param.seriesName}: ${param.data} times checked out<br/>`;
+                    });
+                    return tooltipText;
+                }
+            },
+            legend: {
+                data: Object.keys(lineChartData),
+                textStyle: { color: '#ccc' },
+                top: '5%',
+            },
+            grid: { left: '3%', right: '3%', bottom: '3%', containLabel: true },
             xAxis: {
                 type: 'category',
-                data: chartData.map((item) => item.name),
+                data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 axisLabel: { color: '#ccc' },
             },
             yAxis: {
                 type: 'value',
                 axisLabel: { color: '#ccc' },
             },
-            series: [
-                {
-                    data: chartData.map((item) => item.value),
-                    type: 'bar',
-                    itemStyle: {
-                        color: '#049ebf', // Use your brand blue color
-                    },
-                },
-            ],
+            series: lineChartSeries,
         });
 
-        // Pie Chart
+        // Initialize Pie Chart
+        const chartData = Object.entries(categorizedItems).map(([category, { color, items }]) => ({
+            name: category,
+            value: items.length,
+        }));
+
         const pieChart = echarts.init(document.getElementById('pieChart'), 'dark');
         pieChart.setOption({
             tooltip: { trigger: 'item' },
@@ -200,6 +227,25 @@ const InventoryCheck = () => {
         });
     };
 
+    // Function to determine color per category
+    const getCategoryColor = (category) => {
+        switch (category) {
+            case 'Dash Items':
+                return '#ffeb3b';
+            case 'Tablet Items':
+                return '#03a9f4';
+            case 'Robotic Arms':
+                return '#8bc34a';
+            case 'VR Headsets':
+                return '#e91e63';
+            case 'Other Equipment':
+                return '#ff5722';
+            default:
+                return '#ccc';
+        }
+    };
+
+
     const handleItemClick = (item) => {
         setCheckoutItem(item);
         document.querySelector('.checkout-section').style.display = 'block';
@@ -221,25 +267,45 @@ const InventoryCheck = () => {
             (filterCategory === '' || filterCategory === category)
         ),
     }));
-
     return (
         <Box className="inventory-container" style={{ backgroundColor: '#1e1e1e' }}>
             {/* Title */}
-            <Typography variant="h4" gutterBottom align="center" style={{ color: '#f7b329' }}>
+            <Typography variant="h4" gutterBottom align="left" style={{ color: '#f7b329' }}>
                 Inventory Management
             </Typography>
 
-            {/* Data Visualization - Total Assets */}
-            <Box className="data-visualization">
-                {/* Bar Chart for Totals */}
-                <div id="barChart" style={{ width: '500px', height: '300px' }}></div>
+            {/* Data Visualization - Line Chart for Most Checked-Out Items */}
+            <Box className="chart-wrapper line-chart-wrapper" style={{ marginTop: '20px' }}>
+                {/* Background div for Line Chart */}
+                <Box className="glassmorphism-bg" style={{ padding: '20px', borderRadius: '12px', marginBottom: '20px' }}>
+                    <div id="lineChart" style={{ width: '100%', height: '400px' }}></div>
+                </Box>
+            </Box>
 
+            {/* Data Visualization - Pie Chart and Latest Checked-Out Items */}
+            <Box className="chart-wrapper" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                 {/* Pie Chart for Category Distribution */}
-                <div id="pieChart" style={{ width: '400px', height: '400px' }}></div>
+                <Box className="glassmorphism-bg" style={{ width: '48%', height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', borderRadius: '12px' }}>
+                    <div id="pieChart" style={{ width: '100%', height: '100%' }}></div>
+                </Box>
+
+                {/* Latest Checked-Out Items Section */}
+                <Box className="glassmorphism-bg" style={{ width: '48%', padding: '20px', borderRadius: '12px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <Typography variant="h5" style={{ color: '#ed7a2a' }}>Latest Checked-Out Items</Typography>
+                    {checkedOutItems.length > 0 ? (
+                        <ul>
+                            {checkedOutItems.map((item, index) => (
+                                <li key={index}>{`${item.item.itemName} checked out by ${item.checkedOutBy} on ${item.date}`}</li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <Typography variant="body1" style={{ color: '#fff' }}>No items checked out recently.</Typography>
+                    )}
+                </Box>
             </Box>
 
             {/* Search Bar and Filter Options */}
-            <Box className="search-filter-container">
+            <Box className="search-filter-container" style={{ marginTop: '20px', marginBottom: '20px' }}>
                 <TextField
                     label="Search Items"
                     variant="standard"
@@ -256,19 +322,18 @@ const InventoryCheck = () => {
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
                     className="filter-dropdown"
-                    style={{ color: '#fff', backgroundColor: '#333', borderColor: '#049ebf' }}
+                    style={{ color: '#fff', backgroundColor: '#333', borderColor: '#049ebf', marginLeft: '10px', padding: '10px' }}
                 >
                     <option value="">All Categories</option>
                     {Object.entries(categorizedItems).map(([category, { color }], idx) => (
                         <option value={category} key={idx}>
-                            <span className="color-circle" style={{ backgroundColor: color }}></span>
                             {category}
                         </option>
                     ))}
                 </select>
                 <Button
                     variant="contained"
-                    style={{ backgroundColor: '#ed7a2a', color: '#fff', minWidth: '200px' }}
+                    style={{ backgroundColor: '#ed7a2a', color: '#fff', marginLeft: '20px', padding: '10px 20px' }}
                     onClick={handleCheckoutButtonClick}
                 >
                     Checkout Items
@@ -278,7 +343,7 @@ const InventoryCheck = () => {
             {/* Inventory List */}
             <Box>
                 {filteredItems.map(({ category, color, items }, idx) => (
-                    <Box key={idx} className="inventory-category">
+                    <Box key={idx} className="inventory-category" style={{ marginBottom: '30px' }}>
                         <Typography variant="h5" gutterBottom style={{ color: '#f7b329' }}>
                             {category}
                         </Typography>
@@ -359,6 +424,8 @@ const InventoryCheck = () => {
             )}
         </Box>
     );
+
+
 };
 
 export default InventoryCheck;
