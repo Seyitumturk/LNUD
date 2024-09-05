@@ -28,7 +28,7 @@ app.get('/api', (req, res) => {
 
 // ENDPOINTS 
 
-// Route to edit Excel file (existing logic)
+// ROUTES TO EDIT EXCEL FILES 
 app.post('/api/edit-excel', async (req, res) => {
     const {
         dateSubmitted,
@@ -39,9 +39,9 @@ app.post('/api/edit-excel', async (req, res) => {
         purchasedWith,
         quantity,
         costPerUnit,
-        employeeName,  // Entity Name in Excel
+        employeeName, 
         email,
-        adminNotes  // Notes to Admin
+        adminNotes  
     } = req.body;
 
     console.log('Received Data:', {
@@ -102,6 +102,99 @@ app.post('/api/edit-excel', async (req, res) => {
     }
 });
 
+app.post('/api/edit-expense-report', async (req, res) => {
+    const {
+        employeeName,
+        employeeEmail,
+        province,
+        dateSubmitted,
+        monthOfExpenses,
+        description,
+        fundingStream,
+        sourceGrant,
+        dateOfExpense,
+        travel,
+        kms,
+        breakfast,
+        lunch,
+        dinner,
+    } = req.body;
+
+    console.log('Received Data:', {
+        employeeName,
+        employeeEmail,
+        province,
+        dateSubmitted,
+        monthOfExpenses,
+        description,
+        fundingStream,
+        sourceGrant,
+        dateOfExpense,
+        travel,
+        kms,
+        breakfast,
+        lunch,
+        dinner,
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const filePath = path.join(__dirname, 'files', 'PurchaseOrder.xlsx'); // Use the same Excel file
+
+    try {
+        await workbook.xlsx.readFile(filePath);
+        const worksheet = workbook.getWorksheet('Expense Report'); // Use the 'Expense Report' worksheet
+
+        // Set values for the employee information section (merged cells C+D)
+        worksheet.getCell('C4').value = employeeName;          // Employee Name
+        worksheet.getCell('C5').value = employeeEmail;         // Employee Email
+        worksheet.getCell('C6').value = province;              // Province/Territory of Residence
+        worksheet.getCell('C7').value = dateSubmitted;         // Date Submitted (auto-filled)
+        worksheet.getCell('C8').value = monthOfExpenses;       // Month of Expenses
+
+        // Set values for the expense details starting from row 13
+        worksheet.getCell('B13').value = description;          // Description or Reason for Trip
+        worksheet.getCell('C13').value = fundingStream;        // Funding Stream
+        worksheet.getCell('D13').value = sourceGrant;          // Source / Grant
+        
+        // Ensure Date of Expense follows strict format
+        const formattedDateOfExpense = new Date(dateOfExpense).toISOString().split('T')[0]; // Format YYYY-MM-DD
+        worksheet.getCell('E13').value = formattedDateOfExpense; // Date of Expense (Y/M/D)
+        
+        // Set Travel and Kms only if travel is "Yes"
+        worksheet.getCell('F13').value = travel;               // Travel (Yes/No)
+        if (travel.toLowerCase() === 'yes') {
+            worksheet.getCell('G13').value = kms;              // Kms
+        }
+
+        // Select the dropdown options for Breakfast, Lunch, and Dinner
+        const setDropdownValue = (cell, value) => {
+            const validValues = ['X', '✓']; // Assuming these are the valid values in the dropdown
+            if (validValues.includes(value)) {
+                worksheet.getCell(cell).value = value;
+            } else {
+                console.error(`Invalid value '${value}' for cell ${cell}. It must be 'X' or '✓'.`);
+            }
+        };
+
+        setDropdownValue('J13', breakfast); // Set Breakfast from dropdown
+        setDropdownValue('K13', lunch);     // Set Lunch from dropdown
+        setDropdownValue('L13', dinner);    // Set Dinner from dropdown
+
+        const modifiedFilePath = path.join(__dirname, 'files', 'ModifiedExpenseReport.xlsx');
+        await workbook.xlsx.writeFile(modifiedFilePath);
+
+        // Send the modified file as a download
+        res.download(modifiedFilePath, 'ModifiedExpenseReport.xlsx', (err) => {
+            if (err) {
+                console.error('Error downloading file:', err);
+                res.status(500).send('Error downloading file');
+            }
+        });
+    } catch (error) {
+        console.error('Error writing to Excel cells:', error);
+        res.status(500).send('Error writing to Excel file.');
+    }
+});
 
 
 const jsonSchema = {

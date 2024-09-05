@@ -6,18 +6,29 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
     const [step, setStep] = useState(1);
     const [conversation, setConversation] = useState([]);
     const [submitted, setSubmitted] = useState(false);
+    const [currentForm, setCurrentForm] = useState(''); // State to track the current form (Purchase Order or Expense Report)
     const [data, setData] = useState({
-        productDescription: '',
+        // Shared fields for both forms
         fundingStream: '',
         sourceGrant: '',
         account: '',
+        // Purchase Order-specific fields
+        productDescription: '',
         purchasedWith: '',
         quantity: '',
         costPerUnit: '',
         employeeName: '',
         email: '',
-        dateSubmitted: '',  // Auto-generated date will be handled in the handleSubmit function
-        adminNotes: '',  // New field for notes to admin
+        dateSubmitted: '',
+        adminNotes: '',
+        // Expense Report-specific fields
+        description: '',
+        dateOfExpense: '',
+        travel: '',
+        kms: '',
+        breakfast: '',
+        lunch: '',
+        dinner: '',
     });
     const [inputValue, setInputValue] = useState(''); // State to manage the text input value
     const chatLogRef = useRef(null); // Reference to the chat log container
@@ -53,10 +64,52 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
         ]
     };
 
+    // Dropdown options for Meals (using actual symbols)
+    const mealOptions = ['X', '✓']; // X or Checkmark symbol
+
+    // Manually provided Account options
+    const accountOptions = [
+        'Accounting and Legal',
+        'Admin Fee',
+        'Advertising & Promotion',
+        'Amortization Expense',
+        'Conference Fees',
+        'Consulting',
+        'Courier & Postage',
+        'Dues & Subscriptions',
+        'Project Supplies',
+        'Elders Honorarium',
+        'Elders Travel',
+        'Equipment - Computer',
+        'Furniture - Office',
+        'Participants Materials',
+        'Auto Leasing',
+        'Fuel',
+        'Insurance',
+        'Marketing and Communications',
+        'Maintenance and Repairs',
+        'Meetings',
+        'Office Supplies',
+        'Rent',
+        'Software',
+        'Catering Expense',
+        'Speakers',
+        'Service Contracts',
+        'Telephone',
+        'Training and Development',
+        'Travel - Board of Directors',
+        'Travel - Staff',
+        'Travel - Others',
+        'Utilities',
+        'Hospitality/Food',
+        'Special Events',
+        'Project Cost Equipment & Rental'
+    ];
+
     // Initial options for the chatbot
     const initialOptions = [
-        'Purchase Order',  // Option for editing Excel files
-        'Expense Reports'  // Another option (not coded yet)
+        'Purchase Order',  // Option for editing Purchase Order
+        'Expense Report'   // Option for editing Expense Report
     ];
 
     // Effect to handle the first question when the chatbot opens
@@ -79,13 +132,16 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
 
         if (step === 1) {  // Initial step to choose between options
             if (input === 'Purchase Order') {
+                setCurrentForm('PurchaseOrder');
                 newConversation.push({ sender: 'bot', text: 'What is the Product Description?' });
-                setStep(2);  // Proceed to the next step for editing Excel
-            } else if (input === 'Expense Reports') {
-                newConversation.push({ sender: 'bot', text: 'Feature coming soon!' });
-                setStep(1);  // Remain on the same step until implemented
+                setStep(2);  // Proceed to the next step for Purchase Order
+            } else if (input === 'Expense Report') {
+                setCurrentForm('ExpenseReport');
+                newConversation.push({ sender: 'bot', text: 'What is the Description or Reason for Trip?' });
+                setStep(100);  // Proceed to the next step for Expense Report
             }
-        } else {  // Proceed with Excel editing steps
+        } else if (currentForm === 'PurchaseOrder') {
+            // Purchase Order Logic
             switch (step) {
                 case 2:
                     newData.productDescription = input;
@@ -100,7 +156,7 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
                     break;
                 case 4:
                     newData.sourceGrant = input;
-                    newConversation.push({ sender: 'bot', text: 'What is the Account?' });
+                    newConversation.push({ sender: 'bot', text: 'What is the Account?', options: accountOptions });
                     setStep(5);
                     break;
                 case 5:
@@ -114,7 +170,6 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
                     setStep(7);
                     break;
                 case 7:
-                    newData.quantity = input;
                     if (isNaN(input) || input.trim() === '') {
                         newConversation.push({ sender: 'bot', text: 'Please enter a valid numeric value for Quantity.' });
                     } else {
@@ -124,7 +179,6 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
                     }
                     break;
                 case 8:
-                    newData.costPerUnit = input;
                     if (isNaN(input) || input.trim() === '') {
                         newConversation.push({ sender: 'bot', text: 'Please enter a valid numeric value for Cost per Unit.' });
                     } else {
@@ -147,7 +201,70 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
                     newData.adminNotes = input;  // Capture the new "admin notes" field
                     newConversation.push({ sender: 'bot', text: 'Thank you! Processing your input... File will be downloaded shortly.' });
                     setStep(12);
-                    handleSubmit(newData);  // Call handleSubmit with the complete data
+                    handlePurchaseOrderSubmit(newData);  // Call handlePurchaseOrderSubmit with the complete data
+                    break;
+                default:
+                    break;
+            }
+        } else if (currentForm === 'ExpenseReport') {
+            // Expense Report Logic
+            switch (step) {
+                case 100:
+                    newData.description = input;
+                    newConversation.push({ sender: 'bot', text: 'What is the Funding Stream?', options: fundingStreamOptions });
+                    setStep(101);
+                    break;
+                case 101:
+                    newData.fundingStream = input;
+                    const grants = sourceGrantOptions[input];
+                    newConversation.push({ sender: 'bot', text: 'What is the Source / Grant?', options: grants });
+                    setStep(102);
+                    break;
+                case 102:
+                    newData.sourceGrant = input;
+                    newConversation.push({ sender: 'bot', text: 'What is the Date of Expense (Y/M/D)?' });
+                    setStep(103);
+                    break;
+                case 103:
+                    newData.dateOfExpense = input;
+                    newConversation.push({ sender: 'bot', text: 'Please select the Account:', options: accountOptions });
+                    setStep(104);
+                    break;
+                case 104:
+                    newData.account = input;
+                    newConversation.push({ sender: 'bot', text: 'Is this Travel Expense? (Yes/No)' });
+                    setStep(105);
+                    break;
+                case 105:
+                    newData.travel = input;
+                    if (input.toLowerCase() === 'yes') {
+                        newConversation.push({ sender: 'bot', text: 'Enter Kms:' });
+                        setStep(106);  // Unlock next fields if Travel is "Yes"
+                    } else {
+                        newConversation.push({ sender: 'bot', text: 'Enter Breakfast (X or ✓):', options: mealOptions });
+                        setStep(107); // Proceed to meals section if Travel is "No"
+                    }
+                    break;
+                case 106:
+                    newData.kms = input;
+                    newConversation.push({ sender: 'bot', text: 'Enter Breakfast (X or ✓):', options: mealOptions });
+                    setStep(107);
+                    break;
+                case 107:
+                    newData.breakfast = input;
+                    newConversation.push({ sender: 'bot', text: 'Enter Lunch (X or ✓):', options: mealOptions });
+                    setStep(108);
+                    break;
+                case 108:
+                    newData.lunch = input;
+                    newConversation.push({ sender: 'bot', text: 'Enter Dinner (X or ✓):', options: mealOptions });
+                    setStep(109);
+                    break;
+                case 109:
+                    newData.dinner = input;
+                    newConversation.push({ sender: 'bot', text: 'Thank you! Processing your input... File will be downloaded shortly.' });
+                    setStep(110);
+                    handleExpenseReportSubmit(newData);  // Call handleExpenseReportSubmit with the complete data
                     break;
                 default:
                     break;
@@ -159,16 +276,13 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
         setInputValue('');  // Clear input after sending
     };
 
-    const handleSubmit = async (formData) => {
-        // Ensure the date is formatted correctly
-        const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
-
+    const handlePurchaseOrderSubmit = async (formData) => {
+        // Submit logic for Purchase Order
         try {
             const response = await axios.post(
                 'http://localhost:5000/api/edit-excel',
                 {
                     ...formData,
-                    dateSubmitted: formData.dateSubmitted || today, // Use provided date or today's date
                     totalCost: formData.quantity * formData.costPerUnit, // Calculate total cost
                 },
                 { responseType: 'blob' }
@@ -178,6 +292,28 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
             const link = document.createElement('a');
             link.href = url;
             link.setAttribute('download', 'ModifiedPurchaseOrder.xlsx');
+            document.body.appendChild(link);
+            link.click();
+
+            setSubmitted(true);
+        } catch (error) {
+            console.error('Error editing Excel file:', error);
+        }
+    };
+
+    const handleExpenseReportSubmit = async (formData) => {
+        // Submit logic for Expense Report
+        try {
+            const response = await axios.post(
+                'http://localhost:5000/api/edit-expense-report',
+                formData,
+                { responseType: 'blob' }
+            );
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'ModifiedExpenseReport.xlsx');
             document.body.appendChild(link);
             link.click();
 
@@ -204,7 +340,7 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
     return (
         <div className="excel-chatbot">
             <div className="excel-chatbot-header">
-                Purchase Order ChatBot
+                {currentForm === 'PurchaseOrder' ? 'Purchase Order ChatBot' : 'Expense Report ChatBot'}
             </div>
             <div className="excel-chatbot-body">
                 <div className="chat-log" ref={chatLogRef}>
@@ -226,7 +362,7 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
                         <button type="submit" className="send-button">Send</button>
                     </form>
                 )}
-                {submitted && <p>Thank you! Your purchase order is ready for download.</p>}
+                {submitted && <p>Thank you! Your {currentForm === 'PurchaseOrder' ? 'purchase order' : 'expense report'} is ready for download.</p>}
             </div>
         </div>
     );
