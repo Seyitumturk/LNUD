@@ -28,6 +28,81 @@ app.get('/api', (req, res) => {
 
 // ENDPOINTS 
 
+// Route to edit Excel file (existing logic)
+app.post('/api/edit-excel', async (req, res) => {
+    const {
+        dateSubmitted,
+        productDescription,
+        fundingStream,
+        sourceGrant,
+        account,
+        purchasedWith,
+        quantity,
+        costPerUnit,
+        employeeName,  // Entity Name in Excel
+        email,
+        adminNotes  // Notes to Admin
+    } = req.body;
+
+    console.log('Received Data:', {
+        dateSubmitted,
+        productDescription,
+        fundingStream,
+        sourceGrant,
+        account,
+        purchasedWith,
+        quantity,
+        costPerUnit,
+        employeeName,
+        email,
+        adminNotes
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    const filePath = path.join(__dirname, 'files', 'PurchaseOrder.xlsx'); // Path to your Excel file
+
+    try {
+        await workbook.xlsx.readFile(filePath);
+        const worksheet = workbook.getWorksheet('Purchase Order');
+
+        // Ensure each cell is updated correctly
+        worksheet.getCell('B6').value = dateSubmitted;           // Date Submitted field
+        worksheet.getCell('B12').value = productDescription;     // Product Description
+        worksheet.getCell('C12').value = fundingStream;          // Funding Stream (Dropdown)
+        worksheet.getCell('D12').value = sourceGrant;            // Source / Grant (Dropdown)
+        worksheet.getCell('E12').value = account;                // Account (First part of merged cell)
+        worksheet.getCell('F12').value = account;                // Account (Second part of merged cell)
+        worksheet.getCell('G12').value = purchasedWith;          // Purchased With
+        worksheet.getCell('H12').value = quantity;               // QTY
+        worksheet.getCell('I12').value = costPerUnit;            // Cost per Unit
+        
+        // Set values directly for already merged cells
+        worksheet.getCell('C4').value = employeeName;            // Entity Name in merged cells C4:D4
+        worksheet.getCell('C5').value = email;                   // Email in merged cells C5:D5
+        worksheet.getCell('C6').value = dateSubmitted;           // Date in merged cells C6:D6
+
+        // Set Notes to Admin spanning G, H, I, J for rows 7, 8, and 9
+        worksheet.getCell('G7').value = adminNotes;              // Notes to Admin (Row 7)
+        worksheet.getCell('G8').value = adminNotes;              // Notes to Admin (Row 8)
+        worksheet.getCell('G9').value = adminNotes;              // Notes to Admin (Row 9)
+
+        const modifiedFilePath = path.join(__dirname, 'files', 'ModifiedPurchaseOrder.xlsx');
+        await workbook.xlsx.writeFile(modifiedFilePath);
+
+        // Send the modified file as a download
+        res.download(modifiedFilePath, 'ModifiedPurchaseOrder.xlsx', (err) => {
+            if (err) {
+                console.error('Error downloading file:', err);
+                res.status(500).send('Error downloading file');
+            }
+        });
+    } catch (error) {
+        console.error('Error writing to Excel cells:', error);
+        res.status(500).send('Error writing to Excel file.');
+    }
+});
+
+
 
 const jsonSchema = {
     type: 'object',
@@ -93,63 +168,6 @@ app.post('/api/organize-inventory', async (req, res) => {
     } catch (error) {
         console.error('Error organizing inventory data with GPT-4o:', error);
         res.status(500).send('Error organizing inventory data.');
-    }
-});
-// Route to edit Excel file (existing logic)
-app.post('/api/edit-excel', async (req, res) => {
-    const {
-        dateSubmitted,
-        productDescription,
-        fundingStream,
-        sourceGrant,
-        account,
-        purchasedWith,
-        quantity,
-        costPerUnit,
-    } = req.body;
-
-    console.log('Received Data:', {
-        dateSubmitted,
-        productDescription,
-        fundingStream,
-        sourceGrant,
-        account,
-        purchasedWith,
-        quantity,
-        costPerUnit,
-    });
-
-    const workbook = new ExcelJS.Workbook();
-    const filePath = path.join(__dirname, 'files', 'PurchaseOrder.xlsx'); // Path to your Excel file
-
-    try {
-        await workbook.xlsx.readFile(filePath);
-        const worksheet = workbook.getWorksheet('Purchase Order');
-
-        // Ensure each cell is updated correctly
-        worksheet.getCell('B6').value = dateSubmitted;           // Date Submitted field
-        worksheet.getCell('B12').value = productDescription;     // Product Description
-        worksheet.getCell('C12').value = fundingStream;          // Funding Stream (Dropdown)
-        worksheet.getCell('D12').value = sourceGrant;            // Source / Grant (Dropdown)
-        worksheet.getCell('E12').value = account;                // Account (First part of merged cell)
-        worksheet.getCell('F12').value = account;                // Account (Second part of merged cell)
-        worksheet.getCell('G12').value = purchasedWith;          // Purchased With
-        worksheet.getCell('H12').value = quantity;               // QTY
-        worksheet.getCell('I12').value = costPerUnit;            // Cost per Unit
-
-        const modifiedFilePath = path.join(__dirname, 'files', 'ModifiedPurchaseOrder.xlsx');
-        await workbook.xlsx.writeFile(modifiedFilePath);
-
-        // Send the modified file as a download
-        res.download(modifiedFilePath, 'ModifiedPurchaseOrder.xlsx', (err) => {
-            if (err) {
-                console.error('Error downloading file:', err);
-                res.status(500).send('Error downloading file');
-            }
-        });
-    } catch (error) {
-        console.error('Error writing to Excel cells:', error);
-        res.status(500).send('Error writing to Excel file.');
     }
 });
 
@@ -231,47 +249,7 @@ app.post('/api/manage-inventory', async (req, res) => {
     }
 });
 
-// Route to manage inventory in Excel file (preserved and improved)
-app.post('/api/manage-inventory', async (req, res) => {
-    const { action, itemId, itemName, quantity, location } = req.body;
 
-    const workbook = new ExcelJS.Workbook();
-    const filePath = path.join(__dirname, 'files', 'InventoryTemplate.xlsx');
-
-    try {
-        await workbook.xlsx.readFile(filePath);
-        const worksheet = workbook.getWorksheet('Inventory');
-
-        if (!worksheet) {
-            return res.status(404).send('Worksheet named "Inventory" not found in Excel file.');
-        }
-
-        if (action === 'add') {
-            const lastRow = worksheet.lastRow;
-            const nextRow = worksheet.getRow(lastRow.number + 1);
-            nextRow.getCell('A').value = itemId;
-            nextRow.getCell('B').value = itemName;
-            nextRow.getCell('C').value = quantity;
-            nextRow.getCell('D').value = location;
-            nextRow.commit();
-        } else if (action === 'export') {
-            // Implement export logic if needed
-        }
-
-        const modifiedFilePath = path.join(__dirname, 'files', 'UpdatedInventory.xlsx');
-        await workbook.xlsx.writeFile(modifiedFilePath);
-
-        res.download(modifiedFilePath, 'UpdatedInventory.xlsx', (err) => {
-            if (err) {
-                console.error('Error downloading inventory file:', err);
-                res.status(500).send('Error downloading inventory file');
-            }
-        });
-    } catch (error) {
-        console.error('Error managing inventory in Excel:', error);
-        res.status(500).send('Error managing inventory in Excel.');
-    }
-});
 
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === 'production') {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './excelchatbot.css'; // Import the CSS file for chatbot styling
 
-const ExcelChatBot = ({ isOpen, toggleChatbot }) => { // Accept `isOpen` and `toggleChatbot` as props
+const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
     const [step, setStep] = useState(1);
     const [conversation, setConversation] = useState([]);
     const [submitted, setSubmitted] = useState(false);
@@ -14,8 +14,12 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => { // Accept `isOpen` and `to
         purchasedWith: '',
         quantity: '',
         costPerUnit: '',
+        employeeName: '',
+        email: '',
+        dateSubmitted: '',  // Auto-generated date will be handled in the handleSubmit function
+        adminNotes: '',  // New field for notes to admin
     });
-
+    const [inputValue, setInputValue] = useState(''); // State to manage the text input value
     const chatLogRef = useRef(null); // Reference to the chat log container
 
     // Dropdown options for Funding Stream
@@ -49,10 +53,16 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => { // Accept `isOpen` and `to
         ]
     };
 
+    // Initial options for the chatbot
+    const initialOptions = [
+        'Purchase Order',  // Option for editing Excel files
+        'Expense Reports'  // Another option (not coded yet)
+    ];
+
     // Effect to handle the first question when the chatbot opens
     useEffect(() => {
         if (isOpen && conversation.length === 0) {
-            setConversation([{ sender: 'bot', text: 'What is the Product Description?' }]);
+            setConversation([{ sender: 'bot', text: 'Welcome! How can I assist you today?', options: initialOptions }]);
         }
     }, [isOpen, conversation]);
 
@@ -67,59 +77,100 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => { // Accept `isOpen` and `to
         let newConversation = [...conversation, { sender: 'user', text: input }];
         let newData = { ...data };
 
-        switch (step) {
-            case 1:
-                newData.productDescription = input;
-                newConversation.push({ sender: 'bot', text: 'What is the Funding Stream?', options: fundingStreamOptions });
-                setStep(2);
-                break;
-            case 2:
-                newData.fundingStream = input;
-                const grants = sourceGrantOptions[input];
-                newConversation.push({ sender: 'bot', text: 'What is the Source / Grant?', options: grants });
-                setStep(3);
-                break;
-            case 3:
-                newData.sourceGrant = input;
-                newConversation.push({ sender: 'bot', text: 'What is the Account?' });
-                setStep(4);
-                break;
-            case 4:
-                newData.account = input;
-                newConversation.push({ sender: 'bot', text: 'What was the item Purchased With?' });
-                setStep(5);
-                break;
-            case 5:
-                newData.purchasedWith = input;
-                newConversation.push({ sender: 'bot', text: 'What is the Quantity (QTY)?' });
-                setStep(6);
-                break;
-            case 6:
-                newData.quantity = input;
-                newConversation.push({ sender: 'bot', text: 'What is the Cost per Unit?' });
-                setStep(7);
-                break;
-            case 7:
-                newData.costPerUnit = input;
-                newConversation.push({ sender: 'bot', text: 'Thank you! Processing your input... Click the button below to download the modified Excel file.' });
-                setStep(8);
-                handleSubmit(newData); // Call handleSubmit with the final data
-                break;
-            default:
-                break;
+        if (step === 1) {  // Initial step to choose between options
+            if (input === 'Purchase Order') {
+                newConversation.push({ sender: 'bot', text: 'What is the Product Description?' });
+                setStep(2);  // Proceed to the next step for editing Excel
+            } else if (input === 'Expense Reports') {
+                newConversation.push({ sender: 'bot', text: 'Feature coming soon!' });
+                setStep(1);  // Remain on the same step until implemented
+            }
+        } else {  // Proceed with Excel editing steps
+            switch (step) {
+                case 2:
+                    newData.productDescription = input;
+                    newConversation.push({ sender: 'bot', text: 'What is the Funding Stream?', options: fundingStreamOptions });
+                    setStep(3);
+                    break;
+                case 3:
+                    newData.fundingStream = input;
+                    const grants = sourceGrantOptions[input];
+                    newConversation.push({ sender: 'bot', text: 'What is the Source / Grant?', options: grants });
+                    setStep(4);
+                    break;
+                case 4:
+                    newData.sourceGrant = input;
+                    newConversation.push({ sender: 'bot', text: 'What is the Account?' });
+                    setStep(5);
+                    break;
+                case 5:
+                    newData.account = input;
+                    newConversation.push({ sender: 'bot', text: 'What was the item Purchased With?' });
+                    setStep(6);
+                    break;
+                case 6:
+                    newData.purchasedWith = input;
+                    newConversation.push({ sender: 'bot', text: 'What is the Quantity (QTY)?' });
+                    setStep(7);
+                    break;
+                case 7:
+                    newData.quantity = input;
+                    if (isNaN(input) || input.trim() === '') {
+                        newConversation.push({ sender: 'bot', text: 'Please enter a valid numeric value for Quantity.' });
+                    } else {
+                        newData.quantity = parseFloat(input); // Convert to numeric
+                        newConversation.push({ sender: 'bot', text: 'What is the Cost per Unit?' });
+                        setStep(8);
+                    }
+                    break;
+                case 8:
+                    newData.costPerUnit = input;
+                    if (isNaN(input) || input.trim() === '') {
+                        newConversation.push({ sender: 'bot', text: 'Please enter a valid numeric value for Cost per Unit.' });
+                    } else {
+                        newData.costPerUnit = parseFloat(input); // Convert to numeric
+                        newConversation.push({ sender: 'bot', text: 'What is your Employee Name?' });
+                        setStep(9);
+                    }
+                    break;
+                case 9:
+                    newData.employeeName = input;
+                    newConversation.push({ sender: 'bot', text: 'Please provide your Email Address.' });
+                    setStep(10);
+                    break;
+                case 10:
+                    newData.email = input;
+                    newConversation.push({ sender: 'bot', text: 'Any notes to admin?' });
+                    setStep(11);
+                    break;
+                case 11:
+                    newData.adminNotes = input;  // Capture the new "admin notes" field
+                    newConversation.push({ sender: 'bot', text: 'Thank you! Processing your input... File will be downloaded shortly.' });
+                    setStep(12);
+                    handleSubmit(newData);  // Call handleSubmit with the complete data
+                    break;
+                default:
+                    break;
+            }
         }
 
         setData(newData);
         setConversation(newConversation);
+        setInputValue('');  // Clear input after sending
     };
 
     const handleSubmit = async (formData) => {
+        // Ensure the date is formatted correctly
         const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
 
         try {
             const response = await axios.post(
                 'http://localhost:5000/api/edit-excel',
-                { ...formData, dateSubmitted: today },
+                {
+                    ...formData,
+                    dateSubmitted: formData.dateSubmitted || today, // Use provided date or today's date
+                    totalCost: formData.quantity * formData.costPerUnit, // Calculate total cost
+                },
                 { responseType: 'blob' }
             );
 
@@ -154,7 +205,6 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => { // Accept `isOpen` and `to
         <div className="excel-chatbot">
             <div className="excel-chatbot-header">
                 Purchase Order ChatBot
-                <button className="close-button" onClick={toggleChatbot}>✖</button>
             </div>
             <div className="excel-chatbot-body">
                 <div className="chat-log" ref={chatLogRef}>
@@ -165,15 +215,17 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => { // Accept `isOpen` and `to
                         </div>
                     ))}
                 </div>
-                {step === 1 || (step > 3 && step <= 7) ? (
-                    <form onSubmit={(e) => { e.preventDefault(); handleUserInput(e.target.elements[0].value); }} className="chat-input-container">
+                {!conversation[conversation.length - 1]?.options && (
+                    <form onSubmit={(e) => { e.preventDefault(); handleUserInput(inputValue); }} className="chat-input-container">
                         <textarea
                             rows="2"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
                             placeholder="Type your answer here..."
                         />
                         <button type="submit" className="send-button">Send</button>
                     </form>
-                ) : null}
+                )}
                 {submitted && <p>Thank you! Your purchase order is ready for download.</p>}
             </div>
         </div>
