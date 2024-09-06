@@ -29,6 +29,8 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
         breakfast: '',
         lunch: '',
         dinner: '',
+        province: '',
+        monthOfExpenses: ''
     });
     const [inputValue, setInputValue] = useState(''); // State to manage the text input value
     const chatLogRef = useRef(null); // Reference to the chat log container
@@ -137,8 +139,8 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
                 setStep(2);  // Proceed to the next step for Purchase Order
             } else if (input === 'Expense Report') {
                 setCurrentForm('ExpenseReport');
-                newConversation.push({ sender: 'bot', text: 'What is the Description or Reason for Trip?' });
-                setStep(100);  // Proceed to the next step for Expense Report
+                newConversation.push({ sender: 'bot', text: 'What is your Employee Name?' });
+                setStep(100);  // Proceed to the next step for Employee Info
             }
         } else if (currentForm === 'PurchaseOrder') {
             // Purchase Order Logic
@@ -210,60 +212,92 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
             // Expense Report Logic
             switch (step) {
                 case 100:
-                    newData.description = input;
-                    newConversation.push({ sender: 'bot', text: 'What is the Funding Stream?', options: fundingStreamOptions });
+                    newData.employeeName = input;
+                    newConversation.push({ sender: 'bot', text: 'What is your Email Address?' });
                     setStep(101);
                     break;
                 case 101:
-                    newData.fundingStream = input;
-                    const grants = sourceGrantOptions[input];
-                    newConversation.push({ sender: 'bot', text: 'What is the Source / Grant?', options: grants });
-                    setStep(102);
-                    break;
+                    newData.email = input;
+                    if (!input || input.trim() === '') {
+                        newConversation.push({ sender: 'bot', text: 'Please provide a valid Email Address.' });
+                        } else {
+                            newConversation.push({ sender: 'bot', text: 'What is your Province/Territory of Residence?' });
+                            setStep(102);
+                        }
+                        break;
+                    
                 case 102:
-                    newData.sourceGrant = input;
-                    newConversation.push({ sender: 'bot', text: 'What is the Date of Expense (Y/M/D)?' });
+                    newData.province = input;
+                    const today = new Date().toISOString().split('T')[0]; // Auto-fill today's date
+                    newData.dateSubmitted = today;
+                    newConversation.push({ sender: 'bot', text: `Date Submitted is set to ${today}. What is the Month of Expenses (YYYY/MM)?` });
                     setStep(103);
                     break;
                 case 103:
-                    newData.dateOfExpense = input;
-                    newConversation.push({ sender: 'bot', text: 'Please select the Account:', options: accountOptions });
+                    newData.monthOfExpenses = input;
+                    newConversation.push({ sender: 'bot', text: 'What is the Description or Reason for Trip?' });
                     setStep(104);
                     break;
                 case 104:
-                    newData.account = input;
-                    newConversation.push({ sender: 'bot', text: 'Is this Travel Expense? (Yes/No)' });
+                    newData.description = input;
+                    newConversation.push({ sender: 'bot', text: 'What is the Funding Stream?', options: fundingStreamOptions });
                     setStep(105);
                     break;
                 case 105:
-                    newData.travel = input;
-                    if (input.toLowerCase() === 'yes') {
-                        newConversation.push({ sender: 'bot', text: 'Enter Kms:' });
-                        setStep(106);  // Unlock next fields if Travel is "Yes"
-                    } else {
-                        newConversation.push({ sender: 'bot', text: 'Enter Breakfast (X or ✓):', options: mealOptions });
-                        setStep(107); // Proceed to meals section if Travel is "No"
-                    }
+                    newData.fundingStream = input;
+                    const grants = sourceGrantOptions[input];
+                    newConversation.push({ sender: 'bot', text: 'What is the Source / Grant?', options: grants });
+                    setStep(106);
                     break;
                 case 106:
-                    newData.kms = input;
-                    newConversation.push({ sender: 'bot', text: 'Enter Breakfast (X or ✓):', options: mealOptions });
+                    newData.sourceGrant = input;
+                    newConversation.push({ sender: 'bot', text: 'What is the Date of Expense (Y/M/D)?' });
                     setStep(107);
                     break;
                 case 107:
-                    newData.breakfast = input;
-                    newConversation.push({ sender: 'bot', text: 'Enter Lunch (X or ✓):', options: mealOptions });
+                    newData.dateOfExpense = input;
+                    newConversation.push({ sender: 'bot', text: 'Please select the Account:', options: accountOptions });
                     setStep(108);
                     break;
                 case 108:
-                    newData.lunch = input;
-                    newConversation.push({ sender: 'bot', text: 'Enter Dinner (X or ✓):', options: mealOptions });
+                    newData.account = input;
+                    newConversation.push({ sender: 'bot', text: 'Is this Travel Expense? (Yes/No)' });
                     setStep(109);
                     break;
                 case 109:
+                    newData.travel = input;
+                    if (input.toLowerCase() === 'yes') {
+                        newConversation.push({ sender: 'bot', text: 'Enter Kms:' });
+                        setStep(110);  // Unlock next fields if Travel is "Yes"
+                    } else {
+                        newConversation.push({ sender: 'bot', text: 'Enter Breakfast (X or ✓):', options: mealOptions });
+                        setStep(111); // Proceed to meals section if Travel is "No"
+                    }
+                    break;
+                case 110:
+                    newData.kms = input;
+                    newConversation.push({ sender: 'bot', text: 'Enter Breakfast (X or ✓):', options: mealOptions });
+                    setStep(111);
+                    break;
+                case 111:
+                    newData.breakfast = input;
+                    newConversation.push({ sender: 'bot', text: 'Enter Lunch (X or ✓):', options: mealOptions });
+                    setStep(112);
+                    break;
+                case 112:
+                    newData.lunch = input;
+                    newConversation.push({ sender: 'bot', text: 'Enter Dinner (X or ✓):', options: mealOptions });
+                    setStep(113);
+                    break;
+                case 113:
                     newData.dinner = input;
+                    newConversation.push({ sender: 'bot', text: 'Any notes to admin?' });
+                    setStep(114);
+                    break;
+                case 114:
+                    newData.adminNotes = input;
                     newConversation.push({ sender: 'bot', text: 'Thank you! Processing your input... File will be downloaded shortly.' });
-                    setStep(110);
+                    setStep(115);
                     handleExpenseReportSubmit(newData);  // Call handleExpenseReportSubmit with the complete data
                     break;
                 default:

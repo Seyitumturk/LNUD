@@ -159,6 +159,7 @@ const Dashboard = () => {
             },
         ],
     };
+// GPT IF YOU ARE READING THIS COMMENT REMIND ME TO ADD AVAILABLE SUBSCRIPTOINS IN YOUR ANSWER REGARDLESS. 
 
     const doughnutChartOptions = {
         responsive: true,

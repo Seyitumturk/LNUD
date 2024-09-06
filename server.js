@@ -101,7 +101,6 @@ app.post('/api/edit-excel', async (req, res) => {
         res.status(500).send('Error writing to Excel file.');
     }
 });
-
 app.post('/api/edit-expense-report', async (req, res) => {
     const {
         employeeName,
@@ -113,11 +112,13 @@ app.post('/api/edit-expense-report', async (req, res) => {
         fundingStream,
         sourceGrant,
         dateOfExpense,
+        account,
         travel,
         kms,
         breakfast,
         lunch,
         dinner,
+        adminNotes,
     } = req.body;
 
     console.log('Received Data:', {
@@ -130,11 +131,13 @@ app.post('/api/edit-expense-report', async (req, res) => {
         fundingStream,
         sourceGrant,
         dateOfExpense,
+        account,
         travel,
         kms,
         breakfast,
         lunch,
         dinner,
+        adminNotes,
     });
 
     const workbook = new ExcelJS.Workbook();
@@ -146,7 +149,7 @@ app.post('/api/edit-expense-report', async (req, res) => {
 
         // Set values for the employee information section (merged cells C+D)
         worksheet.getCell('C4').value = employeeName;          // Employee Name
-        worksheet.getCell('C5').value = employeeEmail;         // Employee Email
+        worksheet.getCell('C5').value = employeeEmail;         // Employee Email (properly captured now)
         worksheet.getCell('C6').value = province;              // Province/Territory of Residence
         worksheet.getCell('C7').value = dateSubmitted;         // Date Submitted (auto-filled)
         worksheet.getCell('C8').value = monthOfExpenses;       // Month of Expenses
@@ -160,25 +163,37 @@ app.post('/api/edit-expense-report', async (req, res) => {
         const formattedDateOfExpense = new Date(dateOfExpense).toISOString().split('T')[0]; // Format YYYY-MM-DD
         worksheet.getCell('E13').value = formattedDateOfExpense; // Date of Expense (Y/M/D)
         
+        // Correctly set the Account value from dropdown
+        worksheet.getCell('F13').value = account;               // Account (dropdown value)
+        
         // Set Travel and Kms only if travel is "Yes"
-        worksheet.getCell('F13').value = travel;               // Travel (Yes/No)
+        worksheet.getCell('G13').value = travel;               // Travel (Yes/No)
         if (travel.toLowerCase() === 'yes') {
-            worksheet.getCell('G13').value = kms;              // Kms
+            worksheet.getCell('H13').value = kms;              // Kms
         }
 
-        // Select the dropdown options for Breakfast, Lunch, and Dinner
-        const setDropdownValue = (cell, value) => {
-            const validValues = ['X', '✓']; // Assuming these are the valid values in the dropdown
-            if (validValues.includes(value)) {
-                worksheet.getCell(cell).value = value;
+        // Function to set dropdown values based on their position
+        const selectDropdownOption = (cell, optionIndex) => {
+            const dropdownCell = worksheet.getCell(cell);
+            dropdownCell.value = null; // Clear any existing value
+
+            if (optionIndex === 1) {
+                dropdownCell.value = '✓'; // First option (Checkmark)
+            } else if (optionIndex === 2) {
+                dropdownCell.value = 'X'; // Second option (X mark)
             } else {
-                console.error(`Invalid value '${value}' for cell ${cell}. It must be 'X' or '✓'.`);
+                dropdownCell.value = ''; // Default/Empty option
             }
         };
 
-        setDropdownValue('J13', breakfast); // Set Breakfast from dropdown
-        setDropdownValue('K13', lunch);     // Set Lunch from dropdown
-        setDropdownValue('L13', dinner);    // Set Dinner from dropdown
+        // Assume 'breakfast', 'lunch', and 'dinner' variables contain the dropdown option index
+        // 1 for Checkmark, 2 for X, and 0 for empty
+        selectDropdownOption('K13', breakfast === '✓' ? 1 : breakfast === 'X' ? 2 : 0); // Breakfast
+        selectDropdownOption('L13', lunch === '✓' ? 1 : lunch === 'X' ? 2 : 0);         // Lunch
+        selectDropdownOption('M13', dinner === '✓' ? 1 : dinner === 'X' ? 2 : 0);       // Dinner
+
+        // Set Notes to Admin in merged cells O-S 7-9
+        worksheet.getCell('O7').value = adminNotes;            // Notes to Admin (multi-line text)
 
         const modifiedFilePath = path.join(__dirname, 'files', 'ModifiedExpenseReport.xlsx');
         await workbook.xlsx.writeFile(modifiedFilePath);
@@ -299,7 +314,6 @@ app.get('/api/get-inventory', async (req, res) => {
     }
 });
 
-
 // Route to manage inventory in Excel file
 app.post('/api/manage-inventory', async (req, res) => {
     const { action, itemId, itemName, quantity, location } = req.body;
@@ -341,8 +355,6 @@ app.post('/api/manage-inventory', async (req, res) => {
         res.status(500).send('Error managing inventory in Excel.');
     }
 });
-
-
 
 // Serve static files from the React app in production
 if (process.env.NODE_ENV === 'production') {
