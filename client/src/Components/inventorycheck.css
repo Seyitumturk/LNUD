@@ -152,17 +152,19 @@ body {
 }
 
 .checkout-section {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 300px;
-    background-color: #1e1e1e;
-    padding: 20px;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: absolute; /* Changed from fixed to absolute */
+    width: 350px;
+    background-color: rgba(30, 30, 30, 0.9); /* Dark translucent background */
+    padding: 25px;
+    border-radius: 12px; /* Rounded corners for a modern look */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Larger shadow for more depth */
     display: none;
     z-index: 1000;
+    color: #fff; /* Set text color to white for better readability */
+    backdrop-filter: blur(10px); /* Add a glassmorphism effect */
+    transition: top 0.3s ease, left 0.3s ease; /* Smooth animation for repositioning */
 }
+
 
 .modal {
     position: fixed;
@@ -170,11 +172,14 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 400px;
-    background-color: #1e1e1e;
-    padding: 20px;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: rgba(30, 30, 30, 0.9); /* Dark translucent background */
+    padding: 30px;
+    border-radius: 12px; /* Rounded corners */
+    border: none; /* Remove border */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Larger shadow */
     z-index: 2000;
+    color: #fff; /* Set text color to white */
+    backdrop-filter: blur(15px); /* Glassmorphism effect */
 }
 
 .modal-header {
@@ -182,10 +187,52 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    color: #fff;
+    color: #ed7a2a; /* Your brand accent color for headers */
 }
+
 
 .modal-body {
     margin-bottom: 20px;
     color: #fff;
+}.modal-header h6 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.modal-body input,
+.modal-body button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 8px; /* Rounded input fields */
+    border: none;
+    background-color: #333; /* Dark background for input fields */
+    color: #fff; /* White text for inputs */
+}
+
+.modal-body input::placeholder {
+    color: #ccc; /* Lighter color for placeholders */
+}
+
+.modal-body button {
+    background-color: #ed7a2a; /* Brand color for buttons */
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.modal-body button:hover {
+    background-color: #f28b36; /* Lighter shade for hover effect */
+}
+
+.icon-button {
+    color: #ed7a2a; /* Brand color for close icon */
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.icon-button:hover {
+    transform: rotate(90deg); /* Rotate animation on hover */
 }

@@ -14,6 +14,8 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import * as echarts from 'echarts'; // Import ECharts
 import './inventorycheck.css'; // Import the new CSS file
+import { Link } from 'react-router-dom';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 
 // Categorize inventory items with color coding
 const categorizedItems = {
@@ -24,16 +26,16 @@ const categorizedItems = {
             { itemId: 'Jakej – Lobster', itemName: 'Dash - Jakej - 0002H' },
             { itemId: 'Kitpu – Eagle', itemName: 'Dash - Kitpu - 0003H' },
             { itemId: 'Klitaw – Raspberry', itemName: 'Dash - Klitaw - 0004H' },
-            { itemId: 'Ma’kit – Margaret', itemName: "Dash - Ma'kit - 0005H" },
+            { itemId: 'Ma\'kit – Margaret', itemName: "Dash - Ma\'kit - 0005H" },
             { itemId: 'Mali – Mary', itemName: 'Dash - Mali - 0006H' },
             { itemId: 'Mattio – Matthew', itemName: 'Dash - Mattio - 0007H' },
-            { itemId: 'Mise’l – Michael', itemName: "Dash - Mise'l - 0008H" },
+            { itemId: 'Mise\'l – Michael', itemName: "Dash - Mise\'l - 0008H" },
             { itemId: 'Muin – Bear', itemName: 'Dash - Muin - 0009H' },
             { itemId: 'Plamu – Salmon', itemName: 'Dash - Plamu - 00010H' },
             { itemId: 'Qalipu – Caribou', itemName: 'Dash - Qalipu - 00011H' },
             { itemId: 'Sipu – River', itemName: 'Dash - Sipu - 00012H' },
-            { itemId: 'Mimike’j – Butterfly', itemName: "Dash - Mimike'j - 00013H" },
-            { itemId: 'Tia’m – Moose', itemName: "Dash - Tia'm - 00014H" },
+            { itemId: 'Mimike\'j – Butterfly', itemName: "Dash - Mimike\'j - 00013H" },
+            { itemId: 'Tia\'m – Moose', itemName: "Dash - Tia\'m - 00014H" },
             { itemId: 'Tuma – Thomas', itemName: 'Dash - Tuma - 00015H' },
             { itemId: 'Waspu – Seal', itemName: 'Dash - Waspu - 00016H' },
         ],
@@ -45,16 +47,16 @@ const categorizedItems = {
             { itemId: 'Jakej – Lobster', itemName: 'Tablet - Jakej - 00021H' },
             { itemId: 'Kitpu – Eagle', itemName: 'Tablet - Kitpu - 00022H' },
             { itemId: 'Klitaw – Raspberry', itemName: 'Tablet - Klitaw - 00023H' },
-            { itemId: 'Ma’kit – Margaret', itemName: "Tablet - Ma'kit - 00024H" },
+            { itemId: 'Ma\'kit – Margaret', itemName: "Tablet - Ma\'kit - 00024H" },
             { itemId: 'Mali – Mary', itemName: 'Tablet - Mali - 00025H' },
             { itemId: 'Mattio – Matthew', itemName: 'Tablet - Mattio - 00026H' },
-            { itemId: 'Mise’l – Michael', itemName: "Tablet - Mise'l - 00027H" },
+            { itemId: 'Mise\'l – Michael', itemName: "Tablet - Mise\'l - 00027H" },
             { itemId: 'Muin – Bear', itemName: 'Tablet - Muin - 00028H' },
             { itemId: 'Plamu – Salmon', itemName: 'Tablet - Plamu - 00029H' },
             { itemId: 'Qalipu – Caribou', itemName: 'Tablet- Qalipu - 00030H' },
             { itemId: 'Sipu – River', itemName: 'Tablet - Sipu - 00031H' },
-            { itemId: 'Mimike’j – Butterfly', itemName: "Tablet - Mimike'j - 00032H" },
-            { itemId: 'Tia’m – Moose', itemName: "Tablet - Tia'm - 00033H" },
+            { itemId: 'Mimike\'j – Butterfly', itemName: "Tablet - Mimike\'j - 00032H" },
+            { itemId: 'Tia\'m – Moose', itemName: "Tablet - Tia\'m - 00033H" },
             { itemId: 'Tuma – Thomas', itemName: 'Tablet - Tuma - 00034H' },
             { itemId: 'Waspu – Seal', itemName: 'Tablet - Waspu - 00035H' },
         ],
@@ -278,19 +280,37 @@ const InventoryCheck = () => {
     };
 
 
-    const handleItemClick = (item) => {
+    const handleItemClick = (item, event) => {
         setCheckoutItem(item);
-        document.querySelector('.checkout-section').style.display = 'block';
+        const checkoutSection = document.querySelector('.checkout-section');
+    
+        // Get the position of the clicked element
+        const rect = event.currentTarget.getBoundingClientRect();
+        const modalHeight = checkoutSection.offsetHeight; // Get the modal height
+    
+        // Calculate the top position to ensure the modal is fully visible
+        let topPosition = rect.top + window.scrollY;
+        if (topPosition + modalHeight > window.innerHeight + window.scrollY) {
+            topPosition = window.innerHeight + window.scrollY - modalHeight - 20; // Adjust to be above the bottom
+        }
+    
+        // Set modal position
+        checkoutSection.style.display = 'block';
+        checkoutSection.style.top = `${topPosition}px`;  // Adjusted Y position
+        checkoutSection.style.left = `${rect.right + 10}px`;  // Place it 10px to the right of the item
     };
-
+    
+    
     const handleCheckoutButtonClick = () => {
         setModalOpen(true);
     };
 
     const handleModalClose = () => {
         setModalOpen(false);
+        const checkoutSection = document.querySelector('.checkout-section');
+        checkoutSection.style.display = 'none';  // Hide the modal
     };
-
+    
     const filteredItems = Object.entries(categorizedItems).map(([category, { color, items }]) => ({
         category,
         color,
@@ -301,10 +321,7 @@ const InventoryCheck = () => {
     }));
     return (
         <Box className="inventory-container" style={{ backgroundColor: '#1e1e1e' }}>
-            {/* Title */}
-            <Typography variant="h4" gutterBottom align="left" style={{ color: '#f7b329' }}>
-                Inventory Management
-            </Typography>
+          
 
             {/* Data Visualization - Line Chart for Most Checked-Out Items */}
             <Box className="chart-wrapper line-chart-wrapper" style={{ marginTop: '20px' }}>
@@ -321,13 +338,19 @@ const InventoryCheck = () => {
             {/* Data Visualization - Pie Chart and Latest Checked-Out Items */}
             <Box className="chart-wrapper" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                 {/* Pie Chart for Category Distribution */}
-                <Box className="glassmorphism-bg" style={{ width: '48%', height: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', borderRadius: '12px' }}>
-                    {/* Title for Pie Chart with margin bottom, aligned above */}
-                    <Typography variant="h5" align="center" style={{ color: '#fff', marginBottom: '20px' }}>
-                        Inventory Distribution by Category
-                    </Typography>
-                    <div id="pieChart" style={{ width: '100%', height: '400px' }}></div>
-                </Box>
+        {/* Pie Chart for Category Distribution */}
+            <Box className="glassmorphism-bg" style={{ width: '48%', height: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', borderRadius: '12px' }}>
+                {/* Title for Pie Chart with margin bottom, aligned above */}
+                <Typography variant="h5" align="center" style={{ color: '#fff', marginBottom: '20px' }}>
+                    Inventory Distribution by Category
+                </Typography>
+                <div id="pieChart" style={{ width: '100%', height: '400px' }}></div>
+                {/* Total number of items */}
+                <Typography variant="body1" align="right" style={{ color: '#fff', marginTop: '10px', alignSelf: 'flex-end' }}>
+                    Total Items: {Object.values(categorizedItems).reduce((sum, { items }) => sum + items.length, 0)}
+                </Typography>
+            </Box>
+
                 {/* Latest Checked-Out Items Section */}
                 <Box className="glassmorphism-bg" style={{ width: '48%', padding: '20px', borderRadius: '12px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <Typography variant="h5" style={{ color: '#ed7a2a' }}>Latest Checked-Out Items</Typography>
@@ -343,8 +366,9 @@ const InventoryCheck = () => {
                 </Box>
             </Box>
 
+            
             {/* Search Bar and Filter Options */}
-            <Box className="search-filter-container" style={{ marginTop: '20px', marginBottom: '20px' }}>
+            <Box className="search-filter-container" style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
                 <TextField
                     label="Search Items"
                     variant="standard"
@@ -372,10 +396,42 @@ const InventoryCheck = () => {
                 </select>
                 <Button
                     variant="contained"
-                    style={{ backgroundColor: '#ed7a2a', color: '#fff', marginLeft: '20px', padding: '10px 20px' }}
+                    style={{
+                        backgroundColor: '#ed7a2a',
+                        color: '#fff',
+                        marginLeft: '20px',
+                        padding: '12px 48px',  // Increased padding here
+                        borderRadius: '20px',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.3s ease',
+                        whiteSpace: 'nowrap',
+                    }}
                     onClick={handleCheckoutButtonClick}
                 >
                     Checkout Items
+                </Button>
+            </Box>
+
+            {/* Title and Generate Barcodes button */}
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                <Typography variant="h4" gutterBottom align="left" style={{ color: '#f7b329' }}>
+                    Inventory Management
+                </Typography>
+                <Button
+                    component={Link}
+                    to="/barcode"
+                    variant="contained"
+                    startIcon={<QrCodeScannerIcon />}
+                    style={{
+                        backgroundColor: '#049ebf',
+                        color: '#fff',
+                        padding: '10px 20px',
+                        borderRadius: '20px',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.3s ease',
+                    }}
+                >
+                    Generate Barcodes
                 </Button>
             </Box>
 
@@ -408,8 +464,8 @@ const InventoryCheck = () => {
                                                 transition: 'transform 0.3s, box-shadow 0.3s',
                                                 borderRadius: '8px',
                                             }}
-                                            onClick={() => handleItemClick(item)}
-                                        >
+                                            onClick={(event) => handleItemClick(item, event)}
+                                            >
                                             <CardContent>
                                                 <Typography variant="h6" gutterBottom style={{ color: '#333' }}>
                                                     {item.itemName}
@@ -425,42 +481,89 @@ const InventoryCheck = () => {
             </Box>
 
             {/* Checkout Section */}
-            <Box className="checkout-section">
-                {checkoutItem ? (
-                    <>
-                        <Typography variant="h6" gutterBottom>Checkout Item: {checkoutItem.itemName}</Typography>
-                        <TextField label="Reason for Use" variant="outlined" fullWidth margin="normal" />
-                        <TextField label="Estimated Use Time" variant="outlined" fullWidth margin="normal" />
-                        <TextField label="Your Name" variant="outlined" fullWidth margin="normal" />
-                        <Button variant="contained" color="primary" fullWidth>Submit</Button>
-                    </>
-                ) : (
-                    <Typography variant="body1">Click an item to check out.</Typography>
-                )}
-            </Box>
+{/* Checkout Section */}
+<Box className="checkout-section">
+    {checkoutItem ? (
+        <>
+            <Typography variant="h6" gutterBottom style={{ color: '#ed7a2a' }}>Checkout Item: {checkoutItem.itemName}</Typography>
+            <TextField
+                label="Reason for Use"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                InputProps={{
+                    style: {
+                        backgroundColor: '#333', // Dark background for input field
+                        color: '#fff', // White text
+                    },
+                }}
+                InputLabelProps={{
+                    style: { color: '#ccc' }, // Lighter color for label
+                }}
+            />
+            <TextField
+                label="Estimated Use Time"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                InputProps={{
+                    style: {
+                        backgroundColor: '#333', // Dark background for input field
+                        color: '#fff', // White text
+                    },
+                }}
+                InputLabelProps={{
+                    style: { color: '#ccc' }, // Lighter color for label
+                }}
+            />
+            <TextField
+                label="Your Name"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                InputProps={{
+                    style: {
+                        backgroundColor: '#333', // Dark background for input field
+                        color: '#fff', // White text
+                    },
+                }}
+                InputLabelProps={{
+                    style: { color: '#ccc' }, // Lighter color for label
+                }}
+            />
+            <Button variant="contained" color="primary" fullWidth style={{ marginTop: '20px', backgroundColor: '#ed7a2a' }}>
+                Submit
+            </Button>
+        </>
+    ) : (
+        <Typography variant="body1" style={{ color: '#fff' }}>Click an item to check out.</Typography>
+    )}
+</Box>
 
             {/* Checkout Modal */}
-            {isModalOpen && (
-                <Box className="modal">
-                    <Box className="modal-header">
-                        <Typography variant="h6">Checkout Items</Typography>
-                        <IconButton onClick={handleModalClose}>
-                            <CloseIcon />
-                        </IconButton>
+                {isModalOpen && (
+                    <Box className="modal">
+                        <Box className="modal-header">
+                            <Typography variant="h6">Checkout Items</Typography>
+                            <IconButton className="icon-button" onClick={handleModalClose}>
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+                        <Box className="modal-body">
+                            <TextField
+                                label="Search Items to Checkout"
+                                variant="outlined"
+                                fullWidth
+                                margin="normal"
+                                InputProps={{ style: { backgroundColor: '#333', color: '#fff' } }} // Ensure consistent styling
+                                InputLabelProps={{ style: { color: '#ccc' } }}
+                            />
+                            <Button variant="contained" color="primary" fullWidth onClick={handleModalClose}>
+                                Checkout Selected Items
+                            </Button>
+                        </Box>
                     </Box>
-                    <Box className="modal-body">
-                        <TextField
-                            label="Search Items to Checkout"
-                            variant="outlined"
-                            fullWidth
-                            margin="normal"
-                        />
-                        <Button variant="contained" color="primary" fullWidth onClick={handleModalClose}>
-                            Checkout Selected Items
-                        </Button>
-                    </Box>
-                </Box>
-            )}
+                )}
         </Box>
     );
 
