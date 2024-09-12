@@ -6,6 +6,7 @@ import 'react-calendar/dist/Calendar.css';
 import 'react-circular-progressbar/dist/styles.css';
 import './dashboard.css'; // Import the CSS file for dashboard styling
 import ExcelChatBot from './ExcelChatBot'; // Import the ChatBot component
+import Sidebar from './Sidebar'; // Import the new Sidebar component
 
 // Register the required components for Chart.js
 ChartJS.register(
@@ -194,18 +195,7 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard">
-            {/* Modern Sidebar */}
-            <div className="sidebar">
-                <div className="sidebar-brand">
-                    <img src="/logo.png" alt="Company Logo" className="company-logo" /> {/* Replace with actual logo path */}
-                </div>
-                <ul className="sidebar-nav">
-                    <li><Link to="/" className="sidebar-item">Dashboard</Link></li>
-                    <li><Link to="/community" className="sidebar-item">Community Info</Link></li>
-                    <li><Link to="/inventory" className="sidebar-item">Inventory</Link></li>
-                    <li><Link to="/lms" className="sidebar-item">LMS</Link></li>
-                </ul>
-            </div>
+            <Sidebar /> {/* Use the new Sidebar component */}
 
             {/* Main Content */}
             <div className="dashboard-content">

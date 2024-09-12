@@ -1,0 +1,121 @@
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.course-card {
+  background-size: cover;
+  background-position: center;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 450px;
+  display: flex;
+  flex-direction: column;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.course-card.featured {
+  border: 2px solid #f7b329;
+}
+
+.featured-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #f7b329;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.course-card-content {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  margin: 10px;
+}
+
+.course-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+
+.course-instructor,
+.course-duration,
+.course-level,
+.course-description {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  margin-bottom: 0.25rem;
+}
+
+.featured-badge {
+  background-color: #ffd700;
+  color: #333;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  align-self: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.course-progress {
+  margin-top: auto;
+  background-color: rgba(255, 255, 255, 0.2);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4caf50;
+}
+
+.progress-text {
+  font-size: 0.8rem;
+  color: #e0e0e0;
+  margin-top: 0.25rem;
+}
+
+.enroll-button {
+  width: calc(100% - 20px);
+  padding: 0.75rem;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 10px;
+}
+
+.enroll-button:hover {
+  background-color: #3a7bc8;
+}
+
+.lms-title {
+  text-align: center;
+  color: #ffffff;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
