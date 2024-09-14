@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaBook, FaBoxes, FaComments, FaMapMarkedAlt, FaTools, FaLanguage, FaAngleLeft, FaAngleRight, FaTree } from 'react-icons/fa';
+import { FaHome, FaBook, FaBoxes, FaComments, FaMapMarkedAlt, FaTools, FaLanguage, FaChevronLeft, FaChevronRight, FaTree } from 'react-icons/fa';
 import './sidebar.css';
 
 const Sidebar = () => {
@@ -30,7 +30,7 @@ const Sidebar = () => {
 
     const sidebarItems = [
         { path: '/', icon: FaHome, label: 'Dashboard' },
-        { path: '/lms', icon: FaBook, label: 'Courses' },
+        { path: '/lms', icon: FaBook, label: 'ALP' },
         { path: '/inventory', icon: FaBoxes, label: 'Inventory' },
         { path: '/pipinami', icon: FaComments, label: 'Pipinami' }, // Changed from 'AI Chat' to 'Pipinami'
         { path: '/community-map', icon: FaMapMarkedAlt, label: 'Community Map' },
@@ -45,7 +45,7 @@ const Sidebar = () => {
                 <div className="sidebar-logo-container">
                     <img src="/logo.png" alt="Logo" />
                 </div>
-                {!isCollapsed && <h2>LNUD V.0.1</h2>}
+                <h2>LNUD V.0.1</h2>
             </div>
             <nav className="sidebar-nav">
                 {sidebarItems.map((item) => (
@@ -67,7 +67,7 @@ const Sidebar = () => {
                 </div>
             )}
             <button className="sidebar-toggle" onClick={toggleSidebar}>
-                {isCollapsed ? <FaAngleRight /> : <FaAngleLeft />}
+                {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
             </button>
         </div>
     );

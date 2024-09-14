@@ -220,12 +220,12 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
                     newData.email = input;
                     if (!input || input.trim() === '') {
                         newConversation.push({ sender: 'bot', text: 'Please provide a valid Email Address.' });
-                        } else {
-                            newConversation.push({ sender: 'bot', text: 'What is your Province/Territory of Residence?' });
-                            setStep(102);
-                        }
-                        break;
-                    
+                    } else {
+                        newConversation.push({ sender: 'bot', text: 'What is your Province/Territory of Residence?' });
+                        setStep(102);
+                    }
+                    break;
+
                 case 102:
                     newData.province = input;
                     const today = new Date().toISOString().split('T')[0]; // Auto-fill today's date

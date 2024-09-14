@@ -1,7 +1,7 @@
 // client/src/ProtectedRoute.js
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { auth } from '../firebase'; // Update the path
+import { auth } from '../../firebase'; // Update the path
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 const ProtectedRoute = ({ children }) => {

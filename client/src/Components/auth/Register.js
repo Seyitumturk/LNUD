@@ -1,6 +1,6 @@
 // client/src/Register.js
 import React, { useState } from 'react';
-import { auth } from '../firebase'; // Update the path
+import { auth } from '../../firebase'; // Update the path
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 const Register = () => {

@@ -8,7 +8,8 @@ body {
     /* Ensure full width */
     height: 100%;
     /* Full height to prevent vertical scroll issues */
-    overflow-x: hidden;
+    overflow: hidden;
+    /* Change from overflow-x: hidden to overflow: hidden */
     /* Prevent horizontal overflow */
     background-color: #1e1e1e;
     /* Dark gray background for the entire page */
@@ -24,8 +25,8 @@ body {
     /* Changed from 95% to 100% */
     margin: 0;
     margin-top: 50px;
-    height: 100vh;
-    /* Full viewport height */
+    height: calc(100vh - 50px);
+    /* Adjust for the top margin */
     overflow: hidden;
     /* Prevent scrolling on the container */
     box-sizing: border-box;
@@ -43,10 +44,11 @@ body {
     /* Match the sidebar width */
     width: calc(100% - 270px);
     /* Adjust width to account for sidebar */
+    height: calc(100vh - 50px);
+    /* Adjust to match inventory-container */
+    /* Ensure full height */
     overflow-y: auto;
     /* Allow scrolling within the content area */
-    height: 100vh;
-    /* Ensure full height */
     background-color: #1e1e1e;
     /* Ensure dark background */
 }
@@ -290,4 +292,48 @@ body {
     left: 0;
     top: 0;
     z-index: 1000;
+}
+
+.solid-chat-button.glass-chat-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #049ebf;
+    border: 5px solid #ff9800;
+    border-radius: 20px;
+    padding: 15px 30px;
+    color: #ffffff;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.solid-chat-button.glass-chat-button:hover {
+    background-color: #e68a00;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.chat-modal {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 500px;
+    max-height: 400px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
 }

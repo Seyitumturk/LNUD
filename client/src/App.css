@@ -16,6 +16,7 @@ body {
   /* Full height to prevent vertical scroll issues */
   overflow-x: hidden;
   /* Prevent horizontal overflow */
+  background-color: #1e1e1e; /* Dark gray background */
 }
 
 *,
@@ -57,4 +58,10 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #1e1e1e; /* Ensure dark background for the entire app */
 }

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import Sidebar from './Sidebar';
-import './lms.css';
-import './courseCard.css';
+import { /* other imports */ } from '@mui/material';
+import Sidebar from '../layout/Sidebar';
+import ExcelChatBot from '../pipinami/ExcelChatBot'; // Import the ChatBot component
+import './lms.css'; // Make sure to import the CSS file
 
 const CourseCard = ({ title, instructor, duration, level, description, featured, progress, bgImage }) => (
   <div className={`course-card ${featured ? 'featured' : ''}`} style={{ backgroundImage: `url(${bgImage})` }}>
+    <div className="course-card-overlay"></div>
     <div className="course-card-content">
       {featured && <div className="featured-badge">Featured</div>}
       <h3 className="course-title">{title}</h3>
@@ -26,6 +28,8 @@ const CourseCard = ({ title, instructor, duration, level, description, featured,
 const LMS = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState('All');
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const toggleChatbot = () => setIsChatOpen(!isChatOpen);
 
   const courses = [
     { id: 1, title: "Introduction to Mi'kmaq Language", instructor: "Dr. Emily Johnson", duration: "8 weeks", level: "Beginner", description: "Learn the basics of Mi'kmaq language and culture.", featured: true, bgImage: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
@@ -42,7 +46,7 @@ const LMS = () => {
   );
 
   return (
-    <div className="lms-page">
+    <div className="lms-container">
       <Sidebar />
       <div className="lms-content">
         <h1 className="lms-title">Learning Management System</h1>
@@ -70,6 +74,23 @@ const LMS = () => {
             <CourseCard key={course.id} {...course} />
           ))}
         </div>
+        
+        {/* Add the chat button */}
+        <button
+          className="solid-chat-button glass-chat-button"
+          onClick={toggleChatbot}
+        >
+          Pipanimi – Ask me
+        </button>
+
+        {/* Add the chat modal */}
+        {isChatOpen && (
+          <div className="chat-modal">
+            <div className="chat-modal-content">
+              <ExcelChatBot isOpen={isChatOpen} toggleChatbot={toggleChatbot} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
