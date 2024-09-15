@@ -10,6 +10,11 @@ import {
   TextField,
   Button,
   IconButton,
+  Avatar,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import * as echarts from 'echarts'; // Import ECharts
@@ -342,7 +347,7 @@ const InventoryCheck = () => {
               Checked-Out Items Over Time
             </Typography>
 
-            <div id="lineChart" style={{ width: '100%', height: '400px' }}></div>
+            <div id="lineChart" style={{ width: '100%', height: '400px', borderRadius: '18px', overflow: 'hidden' }}></div>
           </Box>
         </Box>
 
@@ -354,28 +359,70 @@ const InventoryCheck = () => {
             <Typography variant="h5" align="center" style={{ color: '#fff', marginBottom: '20px' }}>
               Inventory Distribution by Category
             </Typography>
-            <div id="pieChart" style={{ width: '100%', height: '400px' }}></div>
+            <div id="pieChart" style={{ width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#1e1e1e' }}></div>
             {/* Total number of items */}
             <Typography variant="body1" align="right" style={{ color: '#fff', marginTop: '10px', alignSelf: 'flex-end' }}>
               Total Items: {Object.values(categorizedItems).reduce((sum, { items }) => sum + items.length, 0)}
             </Typography>
           </Box>
-
           {/* Latest Checked-Out Items Section */}
-          <Box className="glassmorphism-bg" style={{ width: '48%', padding: '20px', borderRadius: '12px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <Typography variant="h5" style={{ color: '#ed7a2a' }}>Latest Checked-Out Items</Typography>
-            {checkedOutItems.length > 0 ? (
-              <ul>
-                {checkedOutItems.map((item, index) => (
-                  <li key={index}>{`${item.item.itemName} checked out by ${item.checkedOutBy} on ${item.date}`}</li>
-                ))}
-              </ul>
-            ) : (
-              <Typography variant="body1" style={{ color: '#fff' }}>No items checked out recently.</Typography>
-            )}
+          <Box className="glassmorphism-bg" style={{ width: '48%', padding: '20px', borderRadius: '12px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', maxHeight: '600px', overflow: 'hidden' }}>
+            <Typography variant="h5" style={{ color: '#ccc', marginBottom: '20px', paddingLeft: '10px' }}>Latest Checked-Out Items</Typography>
+            <Box style={{ overflowY: 'scroll', height: '100%', paddingRight: '10px' }}>
+              {[...Array(20)].map((_, index) => (
+                <Box key={index} className="glassmorphism-bg" style={{
+                  padding: '20px',
+                  borderRadius: '10px',
+                  marginBottom: '15px',
+                  backgroundColor: 'rgba(30, 30, 30, 0.7)',
+                  backdropFilter: 'blur(10px)',
+                  animation: `fadeInOut ${5 + index % 5}s infinite`,
+                  transition: 'all 0.3s ease'
+                }}>
+                  <Box display="flex" alignItems="flex-start">
+                    <Avatar alt={`User ${index + 1}`} src={`https://i.pravatar.cc/150?img=${index + 10}`} style={{ width: '70px', height: '70px', marginRight: '25px' }} />
+                    <Box flexGrow={1} display="flex" justifyContent="space-between" alignItems="center">
+                      <Box>
+                        <Typography variant="body1" style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '5px' }}>
+                          {`${['Dash - Elsapet', 'Tablet - Jakej', 'VR Headset', 'Robotic Arm', 'Mbot', 'Osmo Genius Kit', 'Blue Bot', 'Micro:bit'][index % 8]} checked out`}
+                        </Typography>
+                        <Typography variant="body2" style={{ color: '#ccc', marginBottom: '3px' }}>
+                          {`by ${['Ada Lovelace', 'Alan Turing', 'Grace Hopper', 'Linus Torvalds', 'Tim Berners-Lee', 'Guido van Rossum', 'Margaret Hamilton', 'Vint Cerf'][index % 8]}`}
+                        </Typography>
+                        <Typography variant="body2" style={{ color: '#aaa' }}>
+                          {new Date(Date.now() - index * 900000).toLocaleString()}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" flexDirection="column" alignItems="flex-end">
+                        <Box style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '8px 12px', borderRadius: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
+                          <Typography variant="body2" style={{ color: '#4CAF50', marginBottom: '3px' }}>
+                            Est. return
+                          </Typography>
+                          <Typography variant="body2" style={{ color: '#fff' }}>
+                            {new Date(Date.now() + (index + 1) * 3600000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </Typography>
+                        </Box>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          style={{
+                            color: '#ed7a2a',
+                            borderColor: '#ed7a2a',
+                            borderRadius: '20px',
+                            padding: '5px 10px',
+                            fontSize: '0.7rem'
+                          }}
+                        >
+                          Request Early Return
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
           </Box>
         </Box>
-
 
         {/* Search Bar and Filter Options */}
         <Box className="search-filter-container" style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
@@ -388,11 +435,11 @@ const InventoryCheck = () => {
             onFocus={() => setSearchExpanded(true)}
             onBlur={() => setSearchExpanded(false)}
             className={`search-input ${searchExpanded ? 'expanded' : ''}`}
-            InputProps={{
-              style: { color: '#fff' },
-              inputProps: { style: { marginRight: '20px' } } // Add margin to the right of the placeholder text
+            sx={{
+              input: { color: '#fff', paddingLeft: '20px' },
+              '& .MuiInputLabel-root': { color: '#ccc', marginLeft: '10px' },
+              '& .MuiInputLabel-shrink': { transform: 'translate(0, -1.5px) scale(0.75)' }
             }}
-            InputLabelProps={{ style: { color: '#ccc' } }}
           />
           <select
             value={filterCategory}

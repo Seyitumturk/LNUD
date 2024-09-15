@@ -32,12 +32,16 @@ const Sidebar = () => {
         { path: '/', icon: FaHome, label: 'Dashboard' },
         { path: '/lms', icon: FaBook, label: 'ALP' },
         { path: '/inventory', icon: FaBoxes, label: 'Inventory' },
-        { path: '/pipinami', icon: FaComments, label: 'Pipinami' }, // Changed from 'AI Chat' to 'Pipinami'
         { path: '/community-map', icon: FaMapMarkedAlt, label: 'Community Map' },
         { path: '/makerspaces', icon: FaTools, label: 'Makerspaces' },
         { path: '/language', icon: FaLanguage, label: 'Language' },
-        { path: '/asitulisk', icon: FaTree, label: 'Asitulisk' }, // New item
+        { path: '/asitulisk', icon: FaTree, label: 'Asitulisk' },
     ];
+
+    // Add this condition to hide sidebar on chat page
+    if (location.pathname === '/chat') {
+        return null;
+    }
 
     return (
         <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
@@ -60,6 +64,8 @@ const Sidebar = () => {
                     </Link>
                 ))}
             </nav>
+
+
             {!isCollapsed && (
                 <div className="sidebar-fact">
                     <h3>Did you know?</h3>

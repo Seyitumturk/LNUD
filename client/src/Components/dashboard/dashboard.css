@@ -196,6 +196,8 @@ body {
     gap: 20px;
     height: 100vh;
     box-sizing: border-box;
+    background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%);
+
 }
 
 .news-section-scrollable {

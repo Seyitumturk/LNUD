@@ -6,6 +6,7 @@
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: #ffffff;
     padding: 20px;
+
     display: flex;
     flex-direction: column;
     font-family: 'Poppins', sans-serif;
@@ -247,4 +248,20 @@
     .funding-stream-card {
         height: 100%;
     }
+}
+
+.pipinami-link {
+    background-color: #f7b329;
+    color: #1e3c72;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.pipinami-link:hover,
+.pipinami-link.active {
+    background-color: #e6a00f;
+}
+
+.sidebar.collapsed .pipinami-link {
+    background-color: #f7b329;
 }

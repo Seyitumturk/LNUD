@@ -11,8 +11,13 @@ body {
     overflow: hidden;
     /* Change from overflow-x: hidden to overflow: hidden */
     /* Prevent horizontal overflow */
-    background-color: #1e1e1e;
-    /* Dark gray background for the entire page */
+    background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%) !important;
+    /* Darker background for a more modern look */
+}
+
+body {
+    min-height: 100vh;
+    /* Ensure the body takes at least the full viewport height */
 }
 
 .inventory-container {
@@ -24,14 +29,15 @@ body {
     max-width: 100%;
     /* Changed from 95% to 100% */
     margin: 0;
-    margin-top: 50px;
-    height: calc(100vh - 50px);
-    /* Adjust for the top margin */
+    margin-top: 0;
+    /* Remove top margin */
+    height: 100vh;
+    /* Use full viewport height */
     overflow: hidden;
     /* Prevent scrolling on the container */
     box-sizing: border-box;
-    background-color: #1e1e1e;
-    /* Ensure dark background */
+    background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%);
+    /* Slightly lighter dark shade */
     border-radius: 0;
     /* Remove border radius */
     /* Optional: Rounded corners */
@@ -40,17 +46,17 @@ body {
 .inventory-content {
     flex-grow: 1;
     padding: 40px;
-    margin-left: 270px;
+    margin-left: 300px;
     /* Match the sidebar width */
     width: calc(100% - 270px);
     /* Adjust width to account for sidebar */
-    height: calc(100vh - 50px);
-    /* Adjust to match inventory-container */
+    height: 100vh;
+    /* Use full viewport height */
     /* Ensure full height */
     overflow-y: auto;
     /* Allow scrolling within the content area */
-    background-color: #1e1e1e;
-    /* Ensure dark background */
+    background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%);
+    /* Match the container background */
 }
 
 .search-filter-container {
@@ -64,10 +70,15 @@ body {
     border-bottom: 2px solid var(--grey);
     transition: border-color 0.3s ease, width 0.3s ease;
     color: #fff;
+    background-color: transparent !important;
+    border-bottom: 2px solid #14ffec;
+    /* Modern cyan border */
 }
 
 .search-input.expanded {
     border-color: var(--blue);
+    border-color: #0d7377;
+    /* Teal color when expanded */
 }
 
 .filter-dropdown {
@@ -80,6 +91,8 @@ body {
     transition: border-color 0.3s ease;
     display: flex;
     align-items: center;
+    background-color: #2a2a2a;
+    /* Darker dropdown background */
 }
 
 .filter-dropdown option {
@@ -105,16 +118,19 @@ body {
     /* Adjust to column layout for better stacking */
     gap: 20px;
     /* Adds space between the charts */
+    color: #14ffec;
+    /* Vibrant cyan for text */
 }
 
 .glassmorphism-bg {
-    background-color: rgba(255, 255, 255, 0.1);
-    /* Semi-transparent white */
+    background-color: rgba(18, 18, 18, 0.8);
+    /* Darker semi-transparent background */
     backdrop-filter: blur(10px);
     /* Glassmorphism effect */
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    /* More pronounced shadow */
     /* Subtle shadow for depth */
 }
 
@@ -133,6 +149,10 @@ body {
     #pieChart {
         width: 45%;
         /* Adjust width of the pie chart to match checked-out section */
+        background-color: #1a1a1a;
+        /* Dark background for the chart */
+        color: #14ffec;
+        /* Modern color for chart elements */
     }
 }
 
@@ -142,7 +162,8 @@ body {
 }
 
 .checked-out-section {
-    background-color: #333;
+    background-color: #2a2a2a;
+    /* Darker background for sections */
     padding: 20px;
     border-radius: 8px;
     margin-top: 20px;
@@ -163,6 +184,8 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     /* Rounded corners for a modern look */
+    background-color: #2a2a2a;
+    /* Darker card background */
 }
 
 .inventory-card:hover {
@@ -199,7 +222,8 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 400px;
-    background-color: rgba(30, 30, 30, 0.9);
+    background-color: rgba(18, 18, 18, 0.9);
+    /* Darker translucent background */
     /* Dark translucent background */
     padding: 30px;
     border-radius: 12px;
@@ -220,7 +244,8 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    color: #ed7a2a;
+    color: #14ffec;
+    /* Modern cyan for headers */
     /* Your brand accent color for headers */
 }
 
@@ -255,7 +280,8 @@ body {
 }
 
 .modal-body button {
-    background-color: #ed7a2a;
+    background-color: #0d7377;
+    /* Modern teal for buttons */
     /* Brand color for buttons */
     color: #fff;
     font-weight: bold;
@@ -264,12 +290,14 @@ body {
 }
 
 .modal-body button:hover {
-    background-color: #f28b36;
+    background-color: #14ffec;
+    /* Lighter shade on hover */
     /* Lighter shade for hover effect */
 }
 
 .icon-button {
-    color: #ed7a2a;
+    color: #14ffec;
+    /* Modern cyan for icons */
     /* Brand color for close icon */
     cursor: pointer;
     transition: transform 0.3s ease;
@@ -298,8 +326,10 @@ body {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background-color: #049ebf;
-    border: 5px solid #ff9800;
+    background-color: #0d7377;
+    /* Modern teal color */
+    border: 5px solid #14ffec;
+    /* Vibrant cyan border */
     border-radius: 20px;
     padding: 15px 30px;
     color: #ffffff;
@@ -310,7 +340,8 @@ body {
 }
 
 .solid-chat-button.glass-chat-button:hover {
-    background-color: #e68a00;
+    background-color: #14ffec;
+    /* Lighter shade on hover */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
@@ -320,7 +351,8 @@ body {
     right: 20px;
     width: 500px;
     max-height: 400px;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(18, 18, 18, 0.8);
+    /* Darker translucent background */
     backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 20px;
@@ -336,4 +368,29 @@ body {
     flex-direction: column;
     height: 100%;
     overflow-y: auto;
+}
+
+.search-input::placeholder {
+    text-align: left;
+    color: white !important;
+}
+
+/* Change Checkout Times title color to white */
+.checked-out-section h2 {
+    color: #fff;
+    /* Set title color to white */
+}
+
+/* Align all graph titles to the left */
+.data-visualization h2,
+#pieChart h2 {
+    text-align: left;
+    /* Align titles to the left */
+}
+
+/* Align all graph titles to the left */
+.chart-wrapper h5,
+.donut-chart h5 {
+    text-align: left;
+    /* Align titles to the left */
 }

@@ -7,13 +7,21 @@
     --input-border-color: #ddd; /* Input underline color */
 }
 
+.excel-chatbot-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+}
+
 .excel-chatbot-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 350px;
-    max-width: 90%;
-    z-index: 1000;
+    width: 80%;
+    max-width: 800px;
+    height: 80vh;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease-in-out;
 }
 

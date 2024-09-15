@@ -8,50 +8,58 @@ import ProtectedRoute from './Components/auth/ProtectedRoute';
 import InventoryCheck from './Components/inventory/InventoryCheck'; // Updated path
 import BarcodeSheet from './Components/inventory/Barcode';
 import LMS from './Components/lms/LMS';
-// import ExcelChatbot from './Components/pipinami/ExcelChatbot'; // Add this import
+import ExcelChatBot from './Components/pipinami/ExcelChatBot'; // Import the ExcelChatBot component
+import Sidebar from './Components/layout/Sidebar'; // Add this import
+import './Components/pipinami/chat.css'; // Import the new CSS file
 
 function App() {
     return (
-        <div className="App" style={{ backgroundColor: '#1e1e1e', minHeight: '100vh' }}>
+        <div className="App">
             <Router>
-                <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route
-                        path="/"
-                        element={
-                            <ProtectedRoute>
-                                <Dashboard />
-                            </ProtectedRoute>
-                        }
-                    />
-                    {/* Route for the Inventory Check Page */}
-                    <Route
-                        path="/inventory"
-                        element={
-                            <ProtectedRoute>
-                                <InventoryCheck />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/lms"
-                        element={
-                            <ProtectedRoute>
-                                <LMS />
-                            </ProtectedRoute>
-                        }
-                    />
-                    {/* Route for the Barcode Page */}
-                    <Route
-                        path="/barcode"
-                        element={
-                            <ProtectedRoute>
-                                <BarcodeSheet />
-                            </ProtectedRoute>
-                        }
-                    />
-                </Routes>
+                <div className="app-container">
+                    <Sidebar />
+                    <div className="main-content">
+                        <Routes>
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                            <Route
+                                path="/"
+                                element={
+                                    <ProtectedRoute>
+                                        <Dashboard />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            {/* Route for the Inventory Check Page */}
+                            <Route
+                                path="/inventory"
+                                element={
+                                    <ProtectedRoute>
+                                        <InventoryCheck />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/lms"
+                                element={
+                                    <ProtectedRoute>
+                                        <LMS />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            {/* Route for the Barcode Page */}
+                            <Route
+                                path="/barcode"
+                                element={
+                                    <ProtectedRoute>
+                                        <BarcodeSheet />
+                                    </ProtectedRoute>
+                                }
+                            />
+
+                        </Routes>
+                    </div>
+                </div>
             </Router>
         </div>
     );

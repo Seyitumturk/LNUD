@@ -6,7 +6,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #1e1e1e; /* Dark gray background */
+  background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%) !important;
 }
 
 /* index.css */
@@ -23,7 +23,7 @@ body {
   overflow-x: hidden;
   /* Prevent horizontal overflow */
   box-sizing: border-box;
-  /* Include padding and borders in width calculation */
+  background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%) !important;
 }
 
 #root {

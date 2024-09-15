@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { /* other imports */ } from '@mui/material';
 import Sidebar from '../layout/Sidebar';
 import ExcelChatBot from '../pipinami/ExcelChatBot'; // Import the ChatBot component
@@ -29,7 +29,48 @@ const LMS = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState('All');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState([]);
+  const [careerChoice, setCareerChoice] = useState('');
+  const [generatedPathway, setGeneratedPathway] = useState(null);
+
+  useEffect(() => {
+    // Fetch AI recommendations when the component mounts
+    fetchAiRecommendations();
+  }, []);
+
   const toggleChatbot = () => setIsChatOpen(!isChatOpen);
+
+  const fetchAiRecommendations = async () => {
+    // This is a placeholder function. In a real implementation,
+    // you would call your backend API that interfaces with GPT-4.
+    try {
+      const response = await fetch('/api/ai-recommendations');
+      const data = await response.json();
+      setAiRecommendations(data.recommendations);
+    } catch (error) {
+      console.error('Error fetching AI recommendations:', error);
+    }
+  };
+
+  const handleGeneratePathway = async (e) => {
+    e.preventDefault();
+    // This is a placeholder function. In a real implementation,
+    // you would call your AI backend to generate the pathway.
+    try {
+      // Simulating an API call
+      const response = await new Promise(resolve => setTimeout(() => resolve({
+        pathway: [
+          { id: 'course1', title: 'Introduction to ' + careerChoice },
+          { id: 'course2', title: 'Advanced ' + careerChoice + ' Techniques' },
+          { id: 'course3', title: careerChoice + ' in Practice' },
+        ]
+      }), 1000));
+
+      setGeneratedPathway(response.pathway);
+    } catch (error) {
+      console.error('Error generating pathway:', error);
+    }
+  };
 
   const courses = [
     { id: 1, title: "Introduction to Mi'kmaq Language", instructor: "Dr. Emily Johnson", duration: "8 weeks", level: "Beginner", description: "Learn the basics of Mi'kmaq language and culture.", featured: true, bgImage: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
@@ -49,7 +90,7 @@ const LMS = () => {
     <div className="lms-container">
       <Sidebar />
       <div className="lms-content">
-        <h1 className="lms-title">Learning Management System</h1>
+        <h1 className="lms-title">AI-Powered Learning Management System</h1>
         <div className="lms-controls">
           <input
             type="text"
@@ -69,12 +110,49 @@ const LMS = () => {
             <option value="Advanced">Advanced</option>
           </select>
         </div>
-        <div className="courses-grid">
-          {filteredCourses.map(course => (
-            <CourseCard key={course.id} {...course} />
-          ))}
+
+        <div className="generate-pathways">
+          <h2>Generate Career Pathway</h2>
+          <form onSubmit={handleGeneratePathway} className="pathway-form">
+            <input
+              type="text"
+              placeholder="Enter your desired career..."
+              value={careerChoice}
+              onChange={(e) => setCareerChoice(e.target.value)}
+              className="career-input"
+            />
+            <button type="submit" className="generate-button">Generate Pathway</button>
+          </form>
+          {generatedPathway && (
+            <div className="generated-pathway">
+              <h3>Recommended Pathway for {careerChoice}</h3>
+              <ul>
+                {generatedPathway.map(course => (
+                  <li key={course.id}>{course.title}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-        
+
+        <div className="ai-recommendations">
+          <h2>AI Recommended Courses</h2>
+          <div className="courses-grid">
+            {aiRecommendations.map(course => (
+              <CourseCard key={course.id} {...course} />
+            ))}
+          </div>
+        </div>
+
+        <div className="all-courses">
+          <h2>All Courses</h2>
+          <div className="courses-grid">
+            {filteredCourses.map(course => (
+              <CourseCard key={course.id} {...course} />
+            ))}
+          </div>
+        </div>
+
         {/* Add the chat button */}
         <button
           className="solid-chat-button glass-chat-button"

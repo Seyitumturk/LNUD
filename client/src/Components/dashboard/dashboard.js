@@ -202,12 +202,12 @@ const Dashboard = () => {
             <Sidebar /> {/* Use the new Sidebar component */}
 
             {/* Main Content */}
-            <div className="dashboard-content">
+            <div className="dashboard-content gradient-bg">
                 {/* Four Equal Blocks */}
                 <div className="grid-container">
                     {/* Block 1: Funding Streams with Scrollable Container */}
                     <div className="grid-block glass-card">
-                        <h3>Funding Streams</h3>
+                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Funding Streams</h3>
                         <div className="funding-streams-container">
                             {fundingData.map((funding, index) => (
                                 <div key={index} className="funding-stream-card" style={{ backgroundColor: funding.color }}>
@@ -236,7 +236,7 @@ const Dashboard = () => {
 
                     {/* Block 2: Line Graph (Total Hours Overview) */}
                     <div className="grid-block glass-card">
-                        <h3>Total Hours Overview</h3>
+                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Total Hours Overview</h3>
                         <div className="chart-container center-content">
                             <Line data={lineChartData} options={lineChartOptions} />
                         </div>
@@ -244,28 +244,41 @@ const Dashboard = () => {
 
                     {/* Block 3: Doughnut Chart (Funding Breakdown) */}
                     <div className="grid-block glass-card">
-                        <h3>Funding Breakdown</h3>
-                        <div className="doughnut-chart-wrapper">
-                            <div className="chart-container">
-                                <Doughnut data={doughnutChartData} options={doughnutChartOptions} />
-                            </div>
-                            <div className="doughnut-chart-legend">
+                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Funding Breakdown</h3>
+                        <div className="doughnut-chart-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
+                            <div className="doughnut-chart-legend" style={{ 
+                                flex: '0 0 30%',
+                                padding: '10px',
+                                textAlign: 'left'
+                            }}>
                                 {doughnutChartData.labels.map((label, index) => (
-                                    <div key={index} className="legend-item">
-                                        <span
-                                            className="legend-color"
-                                            style={{ backgroundColor: doughnutChartData.datasets[0].backgroundColor[index] }}
-                                        ></span>
-                                        <span className="legend-text">{label}</span>
+                                    <div key={index} className="legend-item" style={{ margin: '5px 0' }}>
+                                        <span className="legend-text" style={{ fontSize: '0.8em', display: 'flex', alignItems: 'center' }}>
+                                            <span
+                                                className="legend-color"
+                                                style={{ 
+                                                    backgroundColor: doughnutChartData.datasets[0].backgroundColor[index],
+                                                    display: 'inline-block',
+                                                    width: '8px',
+                                                    height: '8px',
+                                                    marginRight: '5px',
+                                                    borderRadius: '50%'
+                                                }}
+                                            ></span>
+                                            {label}
+                                        </span>
                                     </div>
                                 ))}
+                            </div>
+                            <div className="chart-container" style={{ flex: '1', position: 'relative' }}>
+                                <Doughnut data={doughnutChartData} options={doughnutChartOptions} />
                             </div>
                         </div>
                     </div>
 
                     {/* Block 4: News Section (Modern Data-Driven) */}
                     <div className="grid-block glass-card">
-                        <h3>News from Communities</h3>
+                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>News from Communities</h3>
                         <div className="news-section-scrollable">
                             <div className="news-section">
                                 {currentProjects.map((project, index) => (
