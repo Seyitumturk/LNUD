@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import './excelchatbot.css'; // Import the CSS file for chatbot styling
+import './excelchatbot.css';
 
 const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
     const [step, setStep] = useState(1);
     const [conversation, setConversation] = useState([]);
     const [submitted, setSubmitted] = useState(false);
-    const [currentForm, setCurrentForm] = useState(''); // State to track the current form (Purchase Order or Expense Report)
+    const [currentForm, setCurrentForm] = useState('');
     const [data, setData] = useState({
-        // Shared fields for both forms
         fundingStream: '',
         sourceGrant: '',
         account: '',
-        // Purchase Order-specific fields
         productDescription: '',
         purchasedWith: '',
         quantity: '',
@@ -21,7 +19,6 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
         email: '',
         dateSubmitted: '',
         adminNotes: '',
-        // Expense Report-specific fields
         description: '',
         dateOfExpense: '',
         travel: '',
@@ -32,10 +29,12 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
         province: '',
         monthOfExpenses: ''
     });
-    const [inputValue, setInputValue] = useState(''); // State to manage the text input value
-    const chatLogRef = useRef(null); // Reference to the chat log container
+    const [inputValue, setInputValue] = useState('');
+    const chatLogRef = useRef(null);
+    const [isTyping, setIsTyping] = useState(false);
+    const [typedText, setTypedText] = useState('');
+    const typingSpeed = 50; // milliseconds per character
 
-    // Dropdown options for Funding Stream
     const fundingStreamOptions = [
         'Whole Foods Foundation',
         'NSERC ',
@@ -44,7 +43,6 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
         'UEC'
     ];
 
-    // Dropdown options for Source / Grant based on Funding Stream selection
     const sourceGrantOptions = {
         'Whole Foods Foundation': ['Whole Kids Garden Grant'],
         'NSERC ': ['PromoScience 2023'],
@@ -66,10 +64,8 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
         ]
     };
 
-    // Dropdown options for Meals (using actual symbols)
-    const mealOptions = ['X', '✓']; // X or Checkmark symbol
+    const mealOptions = ['X', '✓'];
 
-    // Manually provided Account options
     const accountOptions = [
         'Accounting and Legal',
         'Admin Fee',
@@ -108,197 +104,224 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
         'Project Cost Equipment & Rental'
     ];
 
-    // Initial options for the chatbot
     const initialOptions = [
-        'Purchase Order',  // Option for editing Purchase Order
-        'Expense Report'   // Option for editing Expense Report
+        'Purchase Order',
+        'Expense Report'
     ];
 
-    // Effect to handle the first question when the chatbot opens
+    const initialMessage = "Hey, I'm Pipinami! I'm an AI assistant specialized in Ulnooweg's operations, Standard Operating Procedures (SOPs), and organizational knowledge. I'm here to help you with any questions about Ulnooweg's processes, policies, or projects. And exciting news - soon, I'll be able to communicate in Mi'kmaq as well! How can I assist you today?";
+
     useEffect(() => {
         if (isOpen && conversation.length === 0) {
-            setConversation([{ sender: 'bot', text: 'Welcome! How can I assist you today?', options: initialOptions }]);
+            typeText(initialMessage);
         }
     }, [isOpen, conversation]);
 
-    // Effect to auto-scroll to the bottom when the conversation updates
+    const typeText = (text) => {
+        setIsTyping(true);
+        setTypedText(''); // Reset typed text at the start
+        let i = 0;
+        const typing = setInterval(() => {
+            if (i < text.length) {
+                setTypedText(text.slice(0, i + 1)); // Use slice instead of concatenation
+                i++;
+            } else {
+                clearInterval(typing);
+                setIsTyping(false);
+                setConversation([
+                    {
+                        sender: 'assistant',
+                        text: text,
+                        options: initialOptions
+                    }
+                ]);
+            }
+        }, typingSpeed);
+    };
+
     useEffect(() => {
         if (chatLogRef.current) {
             chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight;
         }
     }, [conversation]);
 
+    const simulateTyping = (message, options) => {
+        setIsTyping(true);
+        setTimeout(() => {
+            setIsTyping(false);
+            setConversation(prev => [...prev, { sender: 'assistant', text: message, options }]);
+        }, 1500); // Adjust the delay as needed
+    };
+
     const handleUserInput = (input) => {
         let newConversation = [...conversation, { sender: 'user', text: input }];
         let newData = { ...data };
 
-        if (step === 1) {  // Initial step to choose between options
+        if (step === 1) {
             if (input === 'Purchase Order') {
                 setCurrentForm('PurchaseOrder');
-                newConversation.push({ sender: 'bot', text: 'What is the Product Description?' });
-                setStep(2);  // Proceed to the next step for Purchase Order
+                simulateTyping('What is the Product Description?', null);
+                setStep(2);
             } else if (input === 'Expense Report') {
                 setCurrentForm('ExpenseReport');
-                newConversation.push({ sender: 'bot', text: 'What is your Employee Name?' });
-                setStep(100);  // Proceed to the next step for Employee Info
+                simulateTyping('What is your Employee Name?', null);
+                setStep(100);
             }
         } else if (currentForm === 'PurchaseOrder') {
-            // Purchase Order Logic
             switch (step) {
                 case 2:
                     newData.productDescription = input;
-                    newConversation.push({ sender: 'bot', text: 'What is the Funding Stream?', options: fundingStreamOptions });
+                    simulateTyping('What is the Funding Stream?', fundingStreamOptions);
                     setStep(3);
                     break;
                 case 3:
                     newData.fundingStream = input;
                     const grants = sourceGrantOptions[input];
-                    newConversation.push({ sender: 'bot', text: 'What is the Source / Grant?', options: grants });
+                    simulateTyping('What is the Source / Grant?', grants);
                     setStep(4);
                     break;
                 case 4:
                     newData.sourceGrant = input;
-                    newConversation.push({ sender: 'bot', text: 'What is the Account?', options: accountOptions });
+                    simulateTyping('What is the Account?', accountOptions);
                     setStep(5);
                     break;
                 case 5:
                     newData.account = input;
-                    newConversation.push({ sender: 'bot', text: 'What was the item Purchased With?' });
+                    simulateTyping('What was the item Purchased With?', null);
                     setStep(6);
                     break;
                 case 6:
                     newData.purchasedWith = input;
-                    newConversation.push({ sender: 'bot', text: 'What is the Quantity (QTY)?' });
+                    simulateTyping('What is the Quantity (QTY)?', null);
                     setStep(7);
                     break;
                 case 7:
                     if (isNaN(input) || input.trim() === '') {
-                        newConversation.push({ sender: 'bot', text: 'Please enter a valid numeric value for Quantity.' });
+                        simulateTyping('Please enter a valid numeric value for Quantity.', null);
                     } else {
-                        newData.quantity = parseFloat(input); // Convert to numeric
-                        newConversation.push({ sender: 'bot', text: 'What is the Cost per Unit?' });
+                        newData.quantity = parseFloat(input);
+                        simulateTyping('What is the Cost per Unit?', null);
                         setStep(8);
                     }
                     break;
                 case 8:
                     if (isNaN(input) || input.trim() === '') {
-                        newConversation.push({ sender: 'bot', text: 'Please enter a valid numeric value for Cost per Unit.' });
+                        simulateTyping('Please enter a valid numeric value for Cost per Unit.', null);
                     } else {
-                        newData.costPerUnit = parseFloat(input); // Convert to numeric
-                        newConversation.push({ sender: 'bot', text: 'What is your Employee Name?' });
+                        newData.costPerUnit = parseFloat(input);
+                        simulateTyping('What is your Employee Name?', null);
                         setStep(9);
                     }
                     break;
                 case 9:
                     newData.employeeName = input;
-                    newConversation.push({ sender: 'bot', text: 'Please provide your Email Address.' });
+                    simulateTyping('Please provide your Email Address.', null);
                     setStep(10);
                     break;
                 case 10:
                     newData.email = input;
-                    newConversation.push({ sender: 'bot', text: 'Any notes to admin?' });
+                    simulateTyping('Any notes to admin?', null);
                     setStep(11);
                     break;
                 case 11:
-                    newData.adminNotes = input;  // Capture the new "admin notes" field
-                    newConversation.push({ sender: 'bot', text: 'Thank you! Processing your input... File will be downloaded shortly.' });
+                    newData.adminNotes = input;
+                    simulateTyping('Thank you! Processing your input... File will be downloaded shortly.', null);
                     setStep(12);
-                    handlePurchaseOrderSubmit(newData);  // Call handlePurchaseOrderSubmit with the complete data
+                    handlePurchaseOrderSubmit(newData);
                     break;
                 default:
                     break;
             }
         } else if (currentForm === 'ExpenseReport') {
-            // Expense Report Logic
             switch (step) {
                 case 100:
                     newData.employeeName = input;
-                    newConversation.push({ sender: 'bot', text: 'What is your Email Address?' });
+                    simulateTyping('What is your Email Address?', null);
                     setStep(101);
                     break;
                 case 101:
                     newData.email = input;
                     if (!input || input.trim() === '') {
-                        newConversation.push({ sender: 'bot', text: 'Please provide a valid Email Address.' });
+                        simulateTyping('Please provide a valid Email Address.', null);
                     } else {
-                        newConversation.push({ sender: 'bot', text: 'What is your Province/Territory of Residence?' });
+                        simulateTyping('What is your Province/Territory of Residence?', null);
                         setStep(102);
                     }
                     break;
 
                 case 102:
                     newData.province = input;
-                    const today = new Date().toISOString().split('T')[0]; // Auto-fill today's date
+                    const today = new Date().toISOString().split('T')[0];
                     newData.dateSubmitted = today;
-                    newConversation.push({ sender: 'bot', text: `Date Submitted is set to ${today}. What is the Month of Expenses (YYYY/MM)?` });
+                    simulateTyping(`Date Submitted is set to ${today}. What is the Month of Expenses (YYYY/MM)?`, null);
                     setStep(103);
                     break;
                 case 103:
                     newData.monthOfExpenses = input;
-                    newConversation.push({ sender: 'bot', text: 'What is the Description or Reason for Trip?' });
+                    simulateTyping('What is the Description or Reason for Trip?', null);
                     setStep(104);
                     break;
                 case 104:
                     newData.description = input;
-                    newConversation.push({ sender: 'bot', text: 'What is the Funding Stream?', options: fundingStreamOptions });
+                    simulateTyping('What is the Funding Stream?', fundingStreamOptions);
                     setStep(105);
                     break;
                 case 105:
                     newData.fundingStream = input;
                     const grants = sourceGrantOptions[input];
-                    newConversation.push({ sender: 'bot', text: 'What is the Source / Grant?', options: grants });
+                    simulateTyping('What is the Source / Grant?', grants);
                     setStep(106);
                     break;
                 case 106:
                     newData.sourceGrant = input;
-                    newConversation.push({ sender: 'bot', text: 'What is the Date of Expense (Y/M/D)?' });
+                    simulateTyping('What is the Date of Expense (Y/M/D)?', null);
                     setStep(107);
                     break;
                 case 107:
                     newData.dateOfExpense = input;
-                    newConversation.push({ sender: 'bot', text: 'Please select the Account:', options: accountOptions });
+                    simulateTyping('Please select the Account:', accountOptions);
                     setStep(108);
                     break;
                 case 108:
                     newData.account = input;
-                    newConversation.push({ sender: 'bot', text: 'Is this Travel Expense? (Yes/No)' });
+                    simulateTyping('Is this Travel Expense? (Yes/No)', null);
                     setStep(109);
                     break;
                 case 109:
                     newData.travel = input;
                     if (input.toLowerCase() === 'yes') {
-                        newConversation.push({ sender: 'bot', text: 'Enter Kms:' });
-                        setStep(110);  // Unlock next fields if Travel is "Yes"
+                        simulateTyping('Enter Kms:', null);
+                        setStep(110);
                     } else {
-                        newConversation.push({ sender: 'bot', text: 'Enter Breakfast (X or ✓):', options: mealOptions });
-                        setStep(111); // Proceed to meals section if Travel is "No"
+                        simulateTyping('Enter Breakfast (X or ✓):', mealOptions);
+                        setStep(111);
                     }
                     break;
                 case 110:
                     newData.kms = input;
-                    newConversation.push({ sender: 'bot', text: 'Enter Breakfast (X or ✓):', options: mealOptions });
+                    simulateTyping('Enter Breakfast (X or ✓):', mealOptions);
                     setStep(111);
                     break;
                 case 111:
                     newData.breakfast = input;
-                    newConversation.push({ sender: 'bot', text: 'Enter Lunch (X or ✓):', options: mealOptions });
+                    simulateTyping('Enter Lunch (X or ✓):', mealOptions);
                     setStep(112);
                     break;
                 case 112:
                     newData.lunch = input;
-                    newConversation.push({ sender: 'bot', text: 'Enter Dinner (X or ✓):', options: mealOptions });
+                    simulateTyping('Enter Dinner (X or ✓):', mealOptions);
                     setStep(113);
                     break;
                 case 113:
                     newData.dinner = input;
-                    newConversation.push({ sender: 'bot', text: 'Any notes to admin?' });
+                    simulateTyping('Any notes to admin?', null);
                     setStep(114);
                     break;
                 case 114:
                     newData.adminNotes = input;
-                    newConversation.push({ sender: 'bot', text: 'Thank you! Processing your input... File will be downloaded shortly.' });
+                    simulateTyping('Thank you! Processing your input... File will be downloaded shortly.', null);
                     setStep(115);
-                    handleExpenseReportSubmit(newData);  // Call handleExpenseReportSubmit with the complete data
+                    handleExpenseReportSubmit(newData);
                     break;
                 default:
                     break;
@@ -307,17 +330,16 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
 
         setData(newData);
         setConversation(newConversation);
-        setInputValue('');  // Clear input after sending
+        setInputValue('');
     };
 
     const handlePurchaseOrderSubmit = async (formData) => {
-        // Submit logic for Purchase Order
         try {
             const response = await axios.post(
                 'http://localhost:5000/api/edit-excel',
                 {
                     ...formData,
-                    totalCost: formData.quantity * formData.costPerUnit, // Calculate total cost
+                    totalCost: formData.quantity * formData.costPerUnit,
                 },
                 { responseType: 'blob' }
             );
@@ -336,7 +358,6 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
     };
 
     const handleExpenseReportSubmit = async (formData) => {
-        // Submit logic for Expense Report
         try {
             const response = await axios.post(
                 'http://localhost:5000/api/edit-expense-report',
@@ -357,47 +378,55 @@ const ExcelChatBot = ({ isOpen, toggleChatbot }) => {
         }
     };
 
-    const renderOptions = (options) => {
-        return (
-            <div className="options-container">
-                {options.map((option, index) => (
-                    <button key={index} className="option-button" onClick={() => handleUserInput(option)}>
-                        {option}
-                    </button>
-                ))}
-            </div>
-        );
-    };
-
-    if (!isOpen) return null; // Do not render if not open
+    if (!isOpen) return null;
 
     return (
         <div className="excel-chatbot">
-            <div className="excel-chatbot-header">
-                {currentForm === 'PurchaseOrder' ? 'Purchase Order ChatBot' : 'Expense Report ChatBot'}
-            </div>
-            <div className="excel-chatbot-body">
-                <div className="chat-log" ref={chatLogRef}>
-                    {conversation.map((msg, index) => (
-                        <div key={index} className={msg.sender === 'user' ? 'user' : 'assistant'}>
+            <h2 className="chatbot-header">Pipinami</h2>
+            <div className="chat-log" ref={chatLogRef}>
+                {conversation.length === 0 ? (
+                    <div className="message assistant">
+                        <p className="typed-text">{typedText}</p>
+                    </div>
+                ) : (
+                    conversation.map((msg, index) => (
+                        <div key={index} className={`message ${msg.sender}`}>
                             <p>{msg.text}</p>
-                            {msg.options && renderOptions(msg.options)}
+                            {msg.options && (
+                                <div className="options-container">
+                                    {msg.options.map((option, idx) => (
+                                        <button key={idx} onClick={() => handleUserInput(option)}>
+                                            {option}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    ))}
-                </div>
-                {!conversation[conversation.length - 1]?.options && (
-                    <form onSubmit={(e) => { e.preventDefault(); handleUserInput(inputValue); }} className="chat-input-container">
-                        <textarea
-                            rows="2"
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            placeholder="Type your answer here..."
-                        />
-                        <button type="submit" className="send-button">Send</button>
-                    </form>
+                    ))
                 )}
-                {submitted && <p>Thank you! Your {currentForm === 'PurchaseOrder' ? 'purchase order' : 'expense report'} is ready for download.</p>}
+                {isTyping && (
+                    <div className="message assistant">
+                        <p>
+                            <span className="typing-animation">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </span>
+                        </p>
+                    </div>
+                )}
             </div>
+            <form onSubmit={(e) => { e.preventDefault(); handleUserInput(inputValue); }} className="chat-input">
+                <div className="input-container">
+                    <textarea
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        placeholder="Type your question here..."
+                    />
+                    <button type="submit">Send</button>
+                </div>
+            </form>
+            {submitted && <p className="submission-message">Thank you! Your {currentForm === 'PurchaseOrder' ? 'purchase order' : 'expense report'} is ready for download.</p>}
         </div>
     );
 };

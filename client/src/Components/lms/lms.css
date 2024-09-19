@@ -3,7 +3,7 @@ html {
   height: 100%;
   margin: 0;
   overflow: hidden;
-
+  font-family: 'Poppins', sans-serif;
 }
 
 .lms-container {
@@ -17,25 +17,22 @@ html {
   flex-grow: 1;
   padding: 2rem 2rem 2rem 4rem;
   margin-left: 250px;
-  /* Adjust this value to match your sidebar width */
   overflow-y: auto;
-  /* Change back to auto */
   text-align: left !important;
   height: 100vh;
   box-sizing: border-box;
 }
 
 .lms-title {
-  font-size: 24px;
+  font-size: 28px;
   text-align: left !important;
   margin-bottom: 20px;
   color: #ffffff;
-  font-weight: 300;
-  letter-spacing: 2px;
+  font-weight: 600;
+  letter-spacing: 1px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   width: 100%;
   padding-left: 20px !important;
-  /* Added padding to move title right */
   margin-left: 0 !important;
   display: block !important;
   position: relative !important;
@@ -44,35 +41,64 @@ html {
 
 .lms-controls {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  border-radius: 15px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .search-input {
   flex-grow: 1;
+}
+
+.level-filter {
+  width: 150px;
+}
+
+.category-buttons {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px 0;
+  margin-bottom: 20px;
+}
+
+.category-button {
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.category-button:hover {
+  background-color: #e0e0e0;
+}
+
+.category-button.active {
+  background-color: #007bff;
+  color: white;
+  opacity: 0.8;
+}
+
+.search-input,
+.level-filter,
+.category-filter {
   padding: 10px 15px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 25px;
   font-size: 16px;
   color: white;
   background-color: rgba(255, 255, 255, 0.1);
-  margin-right: 15px;
 }
 
 .search-input::placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
 
-.level-filter {
-  padding: 10px 15px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 25px;
-  font-size: 16px;
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1);
+.level-filter,
+.category-filter {
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
@@ -83,106 +109,103 @@ html {
   padding-right: 30px;
 }
 
-.level-filter:focus {
+.level-filter:focus,
+.category-filter:focus {
   outline: none;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
-.level-filter option {
+.level-filter option,
+.category-filter option {
   background-color: #2a5298;
   color: white;
 }
 
-.courses-grid {
+.courses-grid, .ai-courses-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
   padding-bottom: 2rem;
-  /* Add some padding at the bottom for scrolling */
+}
+
+.ai-courses-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .course-card {
   position: relative;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 15px;
-  padding: 1.5rem;
-  backdrop-filter: blur(5px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 450px;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  /* Added border for glassmorphism effect */
+  height: 420px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.course-card-overlay {
+.course-card.ai-recommended {
+  height: 380px;
+}
+
+.course-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.course-card-image {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.course-card-image::after {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  /* Semi-transparent black overlay */
-  z-index: 1;
-}
-
-.course-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-}
-
-.course-card.featured {
-  border: 2px solid #f7b329;
-}
-
-.featured-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: #f7b329;
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: bold;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0));
 }
 
 .course-card-content {
-  position: relative;
-  z-index: 2;
-  color: white;
-  /* Set text color to white for better contrast */
-  flex-grow: 1;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
 }
 
 .course-title {
-  font-size: 1.6rem;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
   color: white;
-  margin-bottom: 1rem;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-  /* Add text shadow for better readability */
+  line-height: 1.3;
+}
+
+.course-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .course-instructor,
 .course-duration,
-.course-level,
-.course-description {
-  font-size: 1rem;
-  color: white;
-  margin-bottom: 0.5rem;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-  /* Add text shadow for better readability */
+.course-level {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+  white-space: nowrap;
 }
 
 .course-description {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1rem;
   flex-grow: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -192,185 +215,159 @@ html {
 }
 
 .course-progress {
-  margin-top: 1rem;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  height: 10px;
-  overflow: hidden;
+  margin-bottom: 0.5rem;
 }
 
 .progress-bar {
-  height: 100%;
-  background-color: #f7b329;
-  transition: width 0.3s ease;
+  height: 6px;
+  background-color: var(--dark-blue);
+  border-radius: 3px;
 }
 
 .progress-text {
   font-size: 0.8rem;
-  color: white;
-  margin-top: 0.25rem;
-  display: block;
-  text-align: right;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-  /* Add text shadow for better readability */
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .enroll-button {
-  position: relative;
-  z-index: 2;
-  background: linear-gradient(135deg, #049ebf 0%, #04b2d8 100%);
-  border: none;
+  align-self: flex-start;
+  background-color: var(--dark-orange);
   color: white;
-  padding: 10px 20px;
-  border-radius: 25px;
-  font-size: 1rem;
-  font-weight: bold;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 1rem;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+  margin-top: auto;
 }
 
 .enroll-button:hover {
-  background: linear-gradient(135deg, #04b2d8 0%, #049ebf 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(4, 158, 191, 0.3);
+  background-color: var(--orange);
 }
 
-.solid-chat-button.glass-chat-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #049ebf;
-  border: 5px solid #ff9800;
-  border-radius: 20px;
-  padding: 15px 30px;
-  color: #ffffff;
-  font-size: 1em;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-}
-
-.solid-chat-button.glass-chat-button:hover {
-  background-color: #e68a00;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-.chat-modal {
-  position: fixed;
-  bottom: 100px;
-  right: 20px;
-  width: 500px;
-  max-height: 400px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.chat-modal-content {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
+.featured-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--dark-yellow);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  z-index: 1;
 }
 
 .ai-recommendations {
   margin-bottom: 2rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  backdrop-filter: blur(5px);
 }
 
 .ai-recommendations h2 {
-  color: #ffffff;
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  color: white;
 }
 
-.all-courses h2 {
+.services-title {
   color: #ffffff;
-  font-size: 1.5rem;
+  font-size: 24px;
   margin-bottom: 1rem;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  font-weight: 500;
 }
 
-.generate-pathways {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  backdrop-filter: blur(5px);
-}
-
-.generate-pathways h2 {
-  color: #ffffff;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.pathway-form {
+.lms-actions {
   display: flex;
-  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.action-card {
+  width: 30%;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-card.highlight {
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.action-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.action-card p {
+  font-size: 1rem;
+  opacity: 0.9;
   margin-bottom: 1rem;
 }
 
-.career-input {
-  flex-grow: 1;
-  padding: 10px 15px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 25px;
-  font-size: 16px;
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.career-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.generate-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 25px;
-  background: linear-gradient(135deg, #049ebf 0%, #04b2d8 100%);
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.generate-button:hover {
-  background: linear-gradient(135deg, #04b2d8 0%, #049ebf 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(4, 158, 191, 0.3);
-}
-
-.generated-pathway {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 1rem;
+.action-icon {
+  font-size: 3rem;
   margin-top: 1rem;
 }
 
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  background-color: #1a3050;
+  border: 2px solid #049ebf;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.5);
+  padding: 32px;
+  border-radius: 15px;
+  color: white;
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+  color: #04b2d8;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content .MuiInputBase-root {
+  color: white;
+}
+
+.modal-content .MuiInputLabel-root {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.modal-content .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.modal-content .MuiSelect-icon {
+  color: white;
+}
+
+.modal-content .MuiMenuItem-root {
+  color: #1a3050;
+}
+
+.generated-pathway {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
 .generated-pathway h3 {
-  color: #ffffff;
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  color: #04b2d8;
+  margin-bottom: 10px;
 }
 
 .generated-pathway ul {
@@ -379,11 +376,16 @@ html {
 }
 
 .generated-pathway li {
-  color: #ffffff;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 5px 0;
+  color: white;
 }
 
-.generated-pathway li:last-child {
-  border-bottom: none;
+:root {
+    --dark-orange: #c45e1b;
+    --dark-yellow: #c48f21;
+    --dark-blue: #037a94;
+    --dark-red: #b11e24;
+    --dark-grey: #5a5a5a;
+    --text-color: #333;
+    --button-text-color: #fff;
 }

@@ -345,20 +345,26 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
+
 .chat-modal {
     position: fixed;
     bottom: 100px;
     right: 20px;
-    width: 500px;
-    max-height: 400px;
-    background: rgba(18, 18, 18, 0.8);
-    /* Darker translucent background */
+    width: 40%;
+    display: none;
+    max-width: 600px;
+    /* Reduced from 800px */
+    height: 80vh;
+    /* Increased from 70vh */
+    max-height: 800px;
+    /* Increased from 600px */
     backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     z-index: 1000;
     display: flex;
+
     flex-direction: column;
     overflow: hidden;
 }

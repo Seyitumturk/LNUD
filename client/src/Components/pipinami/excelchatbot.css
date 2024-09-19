@@ -1,10 +1,13 @@
 :root {
-    --primary-color: #444; /* Darker color for modern UI */
-    --secondary-color: #ff9800; /* Accent color */
-    --background-color: rgba(255, 255, 255, 0.9); /* Subtle white background */
-    --border-color: #e0e0e0; /* Light grey border color */
-    --text-color: #222; /* Dark text color */
-    --input-border-color: #ddd; /* Input underline color */
+    --orange: #ed7a2a;
+    --light-orange: #ffa866;
+    --yellow: #f7b329;
+    --blue: #049ebf;
+    --red: #e1262d;
+    --grey: #787878;
+    --text-color: #333;
+    --button-text-color: #fff;
+    --background-color: #f5f5f5;
 }
 
 .excel-chatbot-page {
@@ -26,144 +29,164 @@
 }
 
 .excel-chatbot {
-    background: var(--background-color);
-    border: 1px solid var(--border-color);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    height: 500px; /* Increased height */
+    font-family: 'Arial', sans-serif;
+    width: 100%;
+    max-width: 400px;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    height: 600px;
     display: flex;
     flex-direction: column;
-    animation: fadeIn 0.5s forwards;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
-    position: relative;
-    overflow: hidden;
 }
 
-.excel-chatbot-header {
+.chatbot-header {
+    color: #fff;
+    padding: 12px 15px;
+    font-size: 1.2em;
     font-weight: bold;
-    padding: 12px;
-    text-align: center;
-    color: var(--primary-color);
-    background-color: transparent; /* No background */
-    border-bottom: 1px solid var(--border-color);
-    position: relative;
-}
-
-.excel-chatbot-body {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    overflow: hidden;
-    padding: 15px;
-    backdrop-filter: blur(10px);
+    background-color: var(--orange);
+    text-align: left;
 }
 
 .chat-log {
     flex-grow: 1;
-    max-height: 350px; /* Increased height for chat area */
     overflow-y: auto;
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    background-color: var(--background-color);
-    transition: background-color 0.3s ease;
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Add gap for spacing between messages */
+    gap: 8px;
+    align-items: flex-start;
 }
 
-.chat-input-container {
-    display: flex;
-    align-items: center;
-    padding-top: 10px;
-    border-top: 1px solid var(--border-color); /* Add top border */
-}
-
-textarea {
-    flex: 1;
-    padding: 5px;
-    border: none;
-    border-bottom: 2px solid var(--input-border-color); /* Single bottom line */
-    border-radius: 0;
-    resize: none;
-    background-color: transparent; /* Transparent background */
+.message {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 18px;
     font-size: 14px;
-    color: var(--text-color);
-    margin-right: 5px; /* Space between input and button */
-}
-
-textarea:focus {
-    outline: none; /* Remove outline */
-    border-bottom-color: var(--secondary-color); /* Accent color on focus */
-}
-
-.send-button {
-    background-color: var(--secondary-color); /* Accent color */
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 0; /* No border radius */
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: none; /* Remove shadow */
-    align-self: flex-end; /* Align to the end */
-}
-
-.send-button:hover {
-    background-color: #e68a00; /* Slightly darker accent on hover */
-    transform: translateY(-2px);
-}
-
-.assistant,
-.user {
-    padding: 10px 14px;
-    border-radius: 12px;
-    margin-bottom: 8px;
-    max-width: 100%;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    word-break: break-word; /* Allow breaking long words */
-    animation: fadeIn 0.5s ease-in-out; /* Animation effect for messages */
-}
-
-.assistant {
-    color: var(--text-color);
-    background-color: rgba(240, 240, 240, 0.9);
+    line-height: 1.4;
     align-self: flex-start;
+    text-align: left;
 }
 
-.user {
-    color: white;
-    background-color: var(--primary-color);
-    align-self: flex-end;
+.message.user {
+    background-color: var(--orange);
+    color: var(--button-text-color);
+    align-self: flex-start;
 }
 
 .options-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
-    animation: slideIn 0.5s ease-in-out; /* Animation effect for options */
+    gap: 8px;
+    margin-top: 8px;
+    justify-content: flex-start;
 }
 
-.option-button {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 8px 12px;
+.options-container button {
+    background-color: var(--yellow);
+    color: var(--text-color);
     border: none;
-    border-radius: 5px;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 13px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    animation: fadeIn 0.7s ease-in-out; /* Animation effect for each option */
-    opacity: 0;
-    animation-fill-mode: forwards; /* To keep the final state */
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.option-button:hover {
-    background-color: #333; /* Darker hover effect */
+.options-container button:hover {
+    background-color: var(--orange);
+    color: var(--button-text-color);
     transform: translateY(-2px);
+}
+
+.chat-input {
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.input-container {
+    display: flex;
+    background: rgba(30, 30, 30, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.input-container textarea {
+    flex-grow: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 14px;
+    resize: none;
+}
+
+.input-container textarea::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.input-container button {
+    padding: 10px 20px;
+    background: rgba(60, 60, 60, 0.8);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.input-container button:hover {
+    background: rgba(80, 80, 80, 0.8);
+}
+
+.typing-animation {
+    display: inline-block;
+    width: 40px;
+    text-align: left;
+}
+
+.typing-animation span {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background-color: var(--grey);
+    border-radius: 50%;
+    margin-right: 3px;
+    animation: typing 1s infinite;
+}
+
+@keyframes typing {
+    0% {
+        transform: translateY(0);
+    }
+
+    25% {
+        transform: translateY(-4px);
+    }
+
+    50% {
+        transform: translateY(0);
+    }
+
+    75% {
+        transform: translateY(-4px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+.submission-message {
+    text-align: left;
+    color: var(--blue);
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 8px;
 }
 
 /* Animation keyframes */
@@ -172,6 +195,7 @@ textarea:focus {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -183,6 +207,7 @@ textarea:focus {
         opacity: 0;
         transform: translateX(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
