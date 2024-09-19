@@ -4,12 +4,12 @@ body {
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* Global scrollbar styles */
 ::-webkit-scrollbar {
-    width: 4px;
+    width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -27,13 +27,13 @@ body {
 
 /* Funding streams container scrollbar */
 .funding-streams-container {
-    max-height: 500px;
+    max-height: none;
     overflow-y: auto;
     padding-right: 10px;
 }
 
 .funding-streams-container::-webkit-scrollbar {
-    width: 4px;
+    width: 8px;
 }
 
 .funding-streams-container::-webkit-scrollbar-track {
@@ -92,16 +92,18 @@ body {
     margin: 0;
     padding: 0;
     width: 100%;
-    height: 100%;
+    height: auto;
+    min-height: 100vh;
     overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .dashboard {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
     width: 100%;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .news-item,
@@ -119,7 +121,7 @@ body {
 .sidebar {
     width: 220px;
     background-color: rgba(30, 30, 30, 0.95);
-    height: 100vh;
+    height: 100%;
     position: fixed;
     display: flex;
     flex-direction: column;
@@ -128,6 +130,7 @@ body {
     color: #fff;
     border-radius: 0 15px 15px 0;
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
 }
 
 .sidebar-brand {
@@ -194,15 +197,16 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
     box-sizing: border-box;
     background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%);
-
+    margin-left: 220px;
 }
 
 .news-section-scrollable {
-    height: 100%;
-    overflow-y: auto;
+    height: auto;
+    overflow-y: visible;
     padding-right: 10px;
 }
 
@@ -227,24 +231,6 @@ body {
 .news-item:hover {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     transform: translateY(-5px);
-}
-
-/* News section scrollbar */
-.news-section-scrollable::-webkit-scrollbar {
-    width: 4px;
-}
-
-.news-section-scrollable::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.news-section-scrollable::-webkit-scrollbar-thumb {
-    background-color: rgba(247, 179, 41, 0.5);
-    border-radius: 10px;
-}
-
-.news-section-scrollable::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(247, 179, 41, 0.7);
 }
 
 .news-header {
@@ -280,7 +266,6 @@ body {
     box-shadow: 0 4px 10px rgba(255, 152, 0, 0.5);
 }
 
-
 .chat-modal-content {
     display: flex;
     flex-direction: column;
@@ -315,13 +300,12 @@ body {
 
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
     gap: 20px;
-    height: calc(100vh - 40px);
-    margin-left: 260px;
-    padding: 20px;
+    width: 100%;
     box-sizing: border-box;
+    min-height: 100%;
 }
 
 .center-content {
@@ -336,11 +320,11 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
-    height: 100%;
     width: 100%;
     padding: 20px;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible;
+    height: auto;
 }
 
 .doughnut-chart-legend {
@@ -383,7 +367,7 @@ body {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     padding: 20px;
     color: #fff;
-    height: 100%;
+    height: auto;
     display: flex;
     flex-direction: column;
 }
@@ -393,29 +377,11 @@ body {
     margin-bottom: 10px;
 }
 
-/* Scrollable elements */
 .scrollable {
-    max-height: 100%;
-    overflow-y: auto;
+    max-height: none;
+    overflow-y: visible;
     padding-right: 10px;
     flex-grow: 1;
-}
-
-.scrollable::-webkit-scrollbar {
-    width: 4px;
-}
-
-.scrollable::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.scrollable::-webkit-scrollbar-thumb {
-    background-color: rgba(247, 179, 41, 0.5);
-    border-radius: 10px;
-}
-
-.scrollable::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(247, 179, 41, 0.7);
 }
 
 .funding-logo {
@@ -575,66 +541,46 @@ body {
 
 body::-webkit-scrollbar {
     width: 8px;
-    /* Width of the scrollbar */
 }
 
 body::-webkit-scrollbar-track {
     background: transparent;
-    /* Scrollbar track color */
     border-radius: 10px;
-    /* Rounded corners for the scrollbar track */
 }
 
 body::-webkit-scrollbar-thumb {
     background-color: #c1c1c1;
-    /* Scrollbar thumb color */
     border-radius: 10px;
-    /* Rounded corners for the scrollbar thumb */
     border: 2px solid transparent;
-    /* Padding around the thumb */
     background-clip: content-box;
-    /* Prevents border from overlapping */
 }
 
 body::-webkit-scrollbar-thumb:hover {
     background-color: #a1a1a1;
-    /* Scrollbar thumb color on hover */
 }
 
-/* Smooth scrolling for all other elements */
 .dashboard-content {
-    overflow-y: scroll;
-    /* Enable vertical scrolling */
+    overflow-y: auto;
     scrollbar-width: thin;
-    /* Firefox */
     scrollbar-color: #c1c1c1 transparent;
-    /* Firefox */
 }
 
 .dashboard-content::-webkit-scrollbar {
     width: 8px;
-    /* Width of the scrollbar */
 }
 
 .dashboard-content::-webkit-scrollbar-track {
     background: transparent;
-    /* Scrollbar track color */
     border-radius: 10px;
-    /* Rounded corners for the scrollbar track */
 }
 
 .dashboard-content::-webkit-scrollbar-thumb {
     background-color: #c1c1c1;
-    /* Scrollbar thumb color */
     border-radius: 10px;
-    /* Rounded corners for the scrollbar thumb */
     border: 2px solid transparent;
-    /* Padding around the thumb */
     background-clip: content-box;
-    /* Prevents border from overlapping */
 }
 
 .dashboard-content::-webkit-scrollbar-thumb:hover {
     background-color: #a1a1a1;
-    /* Scrollbar thumb color on hover */
 }

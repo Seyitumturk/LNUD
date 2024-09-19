@@ -198,17 +198,17 @@ const Dashboard = () => {
     ];
 
     return (
-        <div className="dashboard">
+        <div className="dashboard" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Sidebar /> {/* Use the new Sidebar component */}
 
             {/* Main Content */}
-            <div className="dashboard-content gradient-bg">
+            <div className="dashboard-content gradient-bg" style={{ flex: 1, overflowY: 'auto', padding: '20px 40px' }}> {/* Increased left padding */}
                 {/* Four Equal Blocks */}
-                <div className="grid-container">
+                <div className="grid-container" style={{ minHeight: 'fit-content', marginLeft: '20px' }}> {/* Added left margin */}
                     {/* Block 1: Funding Streams with Scrollable Container */}
-                    <div className="grid-block glass-card">
+                    <div className="grid-block glass-card" style={{ height: '700px' }}>
                         <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Funding Streams</h3>
-                        <div className="funding-streams-container">
+                        <div className="funding-streams-container" style={{ height: 'calc(100% - 50px)', overflowY: 'auto' }}>
                             {fundingData.map((funding, index) => (
                                 <div key={index} className="funding-stream-card" style={{ backgroundColor: funding.color }}>
                                     <div className="funding-header">
@@ -235,18 +235,18 @@ const Dashboard = () => {
                     </div>
 
                     {/* Block 2: Line Graph (Total Hours Overview) */}
-                    <div className="grid-block glass-card">
+                    <div className="grid-block glass-card" style={{ height: '700px' }}>
                         <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Total Hours Overview</h3>
-                        <div className="chart-container center-content">
+                        <div className="chart-container center-content" style={{ height: 'calc(100% - 50px)' }}>
                             <Line data={lineChartData} options={lineChartOptions} />
                         </div>
                     </div>
 
                     {/* Block 3: Doughnut Chart (Funding Breakdown) */}
-                    <div className="grid-block glass-card">
+                    <div className="grid-block glass-card" style={{ height: '700px' }}>
                         <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Funding Breakdown</h3>
-                        <div className="doughnut-chart-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
-                            <div className="doughnut-chart-legend" style={{ 
+                        <div className="doughnut-chart-wrapper" style={{ display: 'flex', alignItems: 'center', height: 'calc(100% - 50px)' }}>
+                            <div className="doughnut-chart-legend" style={{
                                 flex: '0 0 30%',
                                 padding: '10px',
                                 textAlign: 'left'
@@ -256,7 +256,7 @@ const Dashboard = () => {
                                         <span className="legend-text" style={{ fontSize: '0.8em', display: 'flex', alignItems: 'center' }}>
                                             <span
                                                 className="legend-color"
-                                                style={{ 
+                                                style={{
                                                     backgroundColor: doughnutChartData.datasets[0].backgroundColor[index],
                                                     display: 'inline-block',
                                                     width: '8px',
@@ -270,16 +270,16 @@ const Dashboard = () => {
                                     </div>
                                 ))}
                             </div>
-                            <div className="chart-container" style={{ flex: '1', position: 'relative' }}>
+                            <div className="chart-container" style={{ flex: '1', position: 'relative', height: '100%' }}>
                                 <Doughnut data={doughnutChartData} options={doughnutChartOptions} />
                             </div>
                         </div>
                     </div>
 
                     {/* Block 4: News Section (Modern Data-Driven) */}
-                    <div className="grid-block glass-card">
+                    <div className="grid-block glass-card" style={{ height: '700px' }}>
                         <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>News from Communities</h3>
-                        <div className="news-section-scrollable">
+                        <div className="news-section-scrollable" style={{ height: 'calc(100% - 50px)', overflowY: 'auto' }}>
                             <div className="news-section">
                                 {currentProjects.map((project, index) => (
                                     <div key={index} className="news-item">
