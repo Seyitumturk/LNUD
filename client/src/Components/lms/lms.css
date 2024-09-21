@@ -11,16 +11,26 @@ html {
   height: 100vh;
   overflow: hidden;
   background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%);
+  transition: margin-left 0.3s ease;
+}
+
+.lms-container.sidebar-collapsed {
+  margin-left: 60px; /* Width of the collapsed sidebar */
 }
 
 .lms-content {
   flex-grow: 1;
-  padding: 2rem 2rem 2rem 4rem;
-  margin-left: 250px;
+  padding: 2rem;
+  margin-left: 250px; /* Width of the expanded sidebar */
   overflow-y: auto;
   text-align: left !important;
   height: 100vh;
   box-sizing: border-box;
+  transition: margin-left 0.3s ease;
+}
+
+.lms-container.sidebar-collapsed .lms-content {
+  margin-left: 60px; /* Width of the collapsed sidebar */
 }
 
 .lms-title {
@@ -32,7 +42,7 @@ html {
   letter-spacing: 1px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   width: 100%;
-  padding-left: 20px !important;
+  padding-left: 0 !important;
   margin-left: 0 !important;
   display: block !important;
   position: relative !important;

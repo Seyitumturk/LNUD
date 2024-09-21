@@ -6,6 +6,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RouteIcon from '@mui/icons-material/Route';
 import SchoolIcon from '@mui/icons-material/School';
 import './lms.css';
+import { useSidebar } from '../../context/SidebarContext';
 
 const CourseCard = ({ title, instructor, duration, level, description, featured, progress, bgImage, isAIRecommended }) => (
   <div className={`course-card ${featured ? 'featured' : ''} ${isAIRecommended ? 'ai-recommended' : ''}`}>
@@ -31,6 +32,7 @@ const CourseCard = ({ title, instructor, duration, level, description, featured,
 );
 
 const LMS = () => {
+  const { isCollapsed } = useSidebar();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
@@ -144,7 +146,7 @@ const LMS = () => {
   ];
 
   return (
-    <div className="lms-container">
+    <div className={`lms-container ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
       <Sidebar />
       <div className="lms-content">
         <h1 className="lms-title">AI-Powered Learning Management System</h1>

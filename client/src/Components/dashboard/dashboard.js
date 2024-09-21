@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Chart as ChartJS, LineElement, BarElement, ArcElement, CategoryScale, LinearScale, Tooltip, Legend, PointElement } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
@@ -197,6 +197,18 @@ const Dashboard = () => {
         { title: 'Update D: New Partnership', description: 'Announcing a new partnership with local schools' }
     ];
 
+    // New data for UEC-specific metrics
+    const uecMetrics = {
+        youthServed: 1500,
+        communitiesReached: 25,
+        educationHours: 5000,
+        digitalSkillsParticipants: 800,
+        culturalWorkshops: 50,
+        educationalPartnerships: 15,
+        stemWorkshops: 30,
+        entrepreneursSupported: 100
+    };
+
     return (
         <div className="dashboard" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Sidebar /> {/* Use the new Sidebar component */}
@@ -205,7 +217,30 @@ const Dashboard = () => {
             <div className="dashboard-content gradient-bg" style={{ flex: 1, overflowY: 'auto', padding: '20px 40px' }}> {/* Increased left padding */}
                 {/* Four Equal Blocks */}
                 <div className="grid-container" style={{ minHeight: 'fit-content', marginLeft: '20px' }}> {/* Added left margin */}
-                    {/* Block 1: Funding Streams with Scrollable Container */}
+                    {/* New UEC Metrics Overview */}
+                    <div className="grid-block glass-card" style={{ gridColumn: '1 / -1', marginBottom: '20px' }}>
+                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>UEC Impact Overview</h3>
+                        <div className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
+                            <MetricCard title="Youth Served" value={uecMetrics.youthServed} />
+                            <MetricCard title="Communities Reached" value={uecMetrics.communitiesReached} />
+                            <MetricCard title="Education Hours" value={uecMetrics.educationHours} />
+                            <MetricCard title="Digital Skills Participants" value={uecMetrics.digitalSkillsParticipants} />
+                            <MetricCard title="Cultural Workshops" value={uecMetrics.culturalWorkshops} />
+                            <MetricCard title="Educational Partnerships" value={uecMetrics.educationalPartnerships} />
+                            <MetricCard title="STEM Workshops" value={uecMetrics.stemWorkshops} />
+                            <MetricCard title="Entrepreneurs Supported" value={uecMetrics.entrepreneursSupported} />
+                        </div>
+                    </div>
+
+                    {/* Block 1: Line Graph (Total Hours Overview) */}
+                    <div className="grid-block glass-card" style={{ height: '700px' }}>
+                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Total Hours Overview</h3>
+                        <div className="chart-container center-content" style={{ height: 'calc(100% - 50px)' }}>
+                            <Line data={lineChartData} options={lineChartOptions} />
+                        </div>
+                    </div>
+
+                    {/* Block 2: Funding Streams with Scrollable Container */}
                     <div className="grid-block glass-card" style={{ height: '700px' }}>
                         <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Funding Streams</h3>
                         <div className="funding-streams-container" style={{ height: 'calc(100% - 50px)', overflowY: 'auto' }}>
@@ -231,14 +266,6 @@ const Dashboard = () => {
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                    </div>
-
-                    {/* Block 2: Line Graph (Total Hours Overview) */}
-                    <div className="grid-block glass-card" style={{ height: '700px' }}>
-                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Total Hours Overview</h3>
-                        <div className="chart-container center-content" style={{ height: 'calc(100% - 50px)' }}>
-                            <Line data={lineChartData} options={lineChartOptions} />
                         </div>
                     </div>
 
@@ -317,6 +344,61 @@ const Dashboard = () => {
                     </div>
                 </div>
             )}
+        </div>
+    );
+};
+
+// New component for individual metric cards with even smoother counting animation
+const MetricCard = ({ title, value }) => {
+    const [count, setCount] = useState(0);
+    const duration = 2500; // Increased duration for a more pronounced effect
+    const steps = 200; // Further increased number of steps for smoother animation
+
+    useEffect(() => {
+        let start = 0;
+        const timer = setInterval(() => {
+            // Using a more pronounced easeInOutQuart easing function for an enhanced bell curve effect
+            const progress = start / steps;
+            const easeValue = progress < 0.5
+                ? 8 * progress * progress * progress * progress
+                : 1 - Math.pow(-2 * progress + 2, 4) / 2;
+            
+            const currentCount = Math.floor(easeValue * value);
+            setCount(currentCount);
+
+            if (start >= steps) {
+                clearInterval(timer);
+                setCount(value);
+            }
+            start++;
+        }, duration / steps);
+
+        return () => clearInterval(timer);
+    }, [value]);
+
+    return (
+        <div className="metric-card" style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            padding: '15px',
+            borderRadius: '8px',
+            textAlign: 'left',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 4px 6px rgba(237, 122, 42, 0.3), 0 1px 3px rgba(4, 158, 191, 0.2)',
+            transition: 'all 0.3s ease'
+        }}>
+            <h4 style={{ margin: '0 0 10px 0', fontSize: '1em', color: '#ffffff' }}>{title}</h4>
+            <p style={{ 
+                margin: 0, 
+                fontSize: '1.5em', 
+                fontWeight: 'bold', 
+                color: 'var(--orange)',
+                backgroundColor: 'rgba(247, 179, 41, 0.2)',
+                display: 'inline-block',
+                padding: '5px 10px',
+                borderRadius: '4px'
+            }}>
+                {count.toLocaleString()}
+            </p>
         </div>
     );
 };

@@ -11,10 +11,11 @@ import LMS from './Components/lms/LMS';
 import ExcelChatBot from './Components/pipinami/ExcelChatBot'; // Import the ExcelChatBot component
 import Sidebar from './Components/layout/Sidebar'; // Add this import
 import './Components/pipinami/chat.css'; // Import the new CSS file
+import { SidebarProvider } from './context/SidebarContext';
 
 function App() {
     return (
-        <div className="App">
+        <SidebarProvider>
             <Router>
                 <div className="app-container">
                     <Sidebar />
@@ -61,7 +62,7 @@ function App() {
                     </div>
                 </div>
             </Router>
-        </div>
+        </SidebarProvider>
     );
 }
 

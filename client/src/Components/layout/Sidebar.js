@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FaHome, FaBook, FaBoxes, FaComments, FaMapMarkedAlt, FaTools, FaLanguage, FaChevronLeft, FaChevronRight, FaTree } from 'react-icons/fa';
+import { useSidebar } from '../../context/SidebarContext';
 import './sidebar.css';
 
 const Sidebar = () => {
     const location = useLocation();
     const [activeItem, setActiveItem] = useState('');
-    const [fact, setFact] = useState('');
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [factIndex, setFactIndex] = useState(0);
+    const { isCollapsed, toggleSidebar } = useSidebar();
+    const [showFact, setShowFact] = useState(!isCollapsed);
+    const [factOpacity, setFactOpacity] = useState(0);
 
     const mikmaqFacts = [
         "The Mi'kmaq people have inhabited the areas of Canada's Atlantic Provinces for over 11,000 years.",
@@ -19,14 +22,45 @@ const Sidebar = () => {
 
     useEffect(() => {
         setActiveItem(location.pathname);
-        const randomFact = mikmaqFacts[Math.floor(Math.random() * mikmaqFacts.length)];
-        setFact(randomFact);
-        // Don't change the collapsed state when a link is clicked
     }, [location]);
 
-    const toggleSidebar = () => {
-        setIsCollapsed(!isCollapsed);
-    };
+    useEffect(() => {
+        let timer;
+        let fadeTimer;
+        let loopTimer;
+
+        if (!isCollapsed) {
+            timer = setTimeout(() => {
+                setShowFact(true);
+                fadeTimer = setInterval(() => {
+                    setFactOpacity(prevOpacity => {
+                        if (prevOpacity >= 1) {
+                            clearInterval(fadeTimer);
+                            return 1;
+                        }
+                        return prevOpacity + 0.1;
+                    });
+                }, 50);
+
+                loopTimer = setInterval(() => {
+                    setFactOpacity(0);
+                    setTimeout(() => {
+                        setFactIndex(prevIndex => (prevIndex + 1) % mikmaqFacts.length);
+                        setFactOpacity(1);
+                    }, 500);
+                }, 10000);
+            }, 500);
+        } else {
+            setShowFact(false);
+            setFactOpacity(0);
+        }
+
+        return () => {
+            clearTimeout(timer);
+            if (fadeTimer) clearInterval(fadeTimer);
+            if (loopTimer) clearInterval(loopTimer);
+        };
+    }, [isCollapsed]);
 
     const sidebarItems = [
         { path: '/', icon: FaHome, label: 'Dashboard' },
@@ -38,7 +72,7 @@ const Sidebar = () => {
         { path: '/asitulisk', icon: FaTree, label: 'Asitulisk' },
     ];
 
-    // Add this condition to hide sidebar on chat page
+    // If on chat page, return null to hide sidebar
     if (location.pathname === '/chat') {
         return null;
     }
@@ -65,11 +99,10 @@ const Sidebar = () => {
                 ))}
             </nav>
 
-
-            {!isCollapsed && (
-                <div className="sidebar-fact">
-                    <h3>Did you know?</h3>
-                    <p>{fact}</p>
+            {!isCollapsed && showFact && (
+                <div className="sidebar-fact" style={{ opacity: factOpacity, transition: 'opacity 0.5s ease-in-out' }}>
+                    <h3 style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.2)', paddingBottom: '10px', marginBottom: '10px' }}>Did you know?</h3>
+                    <p>{mikmaqFacts[factIndex]}</p>
                 </div>
             )}
             <button className="sidebar-toggle" onClick={toggleSidebar}>
