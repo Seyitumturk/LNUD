@@ -23,6 +23,7 @@ import { Link } from 'react-router-dom';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import Sidebar from '../layout/Sidebar'; // Import the Sidebar component
 import ExcelChatBot from '../pipinami/ExcelChatBot'; // Import the ChatBot component
+import { useSidebar } from '../../context/SidebarContext'; // Import the sidebar context
 
 // Categorize inventory items with color coding
 const categorizedItems = {
@@ -152,6 +153,7 @@ const InventoryCheck = () => {
   const [checkedOutItems, setCheckedOutItems] = useState([]);
   const [isChatOpen, setIsChatOpen] = useState(false); // State to manage the chatbot modal
   const toggleChatbot = () => setIsChatOpen(!isChatOpen); // Toggling function for the chatbot
+  const { isCollapsed } = useSidebar(); // Use the sidebar context
 
   useEffect(() => {
     // Initialize ECharts instances
@@ -197,11 +199,6 @@ const InventoryCheck = () => {
         opacity: 0.1,
       },
     }));
-
-
-
-
-
 
 
     // Configure and set options for the line chart
@@ -336,312 +333,319 @@ const InventoryCheck = () => {
     ),
   }));
   return (
-    <Box className="inventory-container" sx={{ width: '100%', backgroundColor: '#1e1e1e' }}>
+    <Box className="inventory-wrapper" sx={{ display: 'flex', width: '100%', backgroundColor: '#1e1e1e' }}>
       <Sidebar />
-      <Box className="inventory-content" sx={{ width: '100%', padding: '20px' }}>
-        {/* Data Visualization - Line Chart for Most Checked-Out Items */}
-        <Box className="chart-wrapper line-chart-wrapper" style={{ marginTop: '20px' }}>
-          {/* Background div for Line Chart */}
-          <Box className="glassmorphism-bg" style={{ padding: '20px', borderRadius: '12px', marginBottom: '20px' }}>
-            <Typography variant="h5" align="center" style={{ color: '#fff', marginBottom: '20px' }}>
-              Checked-Out Items Over Time
-            </Typography>
+      <Box className={`inventory-container ${isCollapsed ? 'sidebar-collapsed' : ''}`} sx={{ flexGrow: 1 }}>
+        <Box className="inventory-content" sx={{ 
+          width: '100%', 
+          padding: '20px',
+          marginLeft: isCollapsed ? '70px' : '270px', // Adjust these values based on your sidebar widths
+          transition: 'margin-left 0.3s ease-in-out'
+        }}>
+          {/* Data Visualization - Line Chart for Most Checked-Out Items */}
+          <Box className="chart-wrapper line-chart-wrapper" style={{ marginTop: '20px' }}>
+            {/* Background div for Line Chart */}
+            <Box className="glassmorphism-bg" style={{ padding: '20px', borderRadius: '12px', marginBottom: '20px' }}>
+              <Typography variant="h5" align="center" style={{ color: '#fff', marginBottom: '20px' }}>
+                Checked-Out Items Over Time
+              </Typography>
 
-            <div id="lineChart" style={{ width: '100%', height: '400px', borderRadius: '18px', overflow: 'hidden' }}></div>
+              <div id="lineChart" style={{ width: '100%', height: '400px', borderRadius: '18px', overflow: 'hidden' }}></div>
+            </Box>
           </Box>
-        </Box>
 
-        {/* Data Visualization - Pie Chart and Latest Checked-Out Items */}
-        <Box className="chart-wrapper" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-          {/* Pie Chart for Category Distribution */}
-          <Box className="glassmorphism-bg" style={{ width: '48%', height: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', borderRadius: '12px' }}>
-            {/* Title for Pie Chart with margin bottom, aligned above */}
-            <Typography variant="h5" align="center" style={{ color: '#fff', marginBottom: '20px' }}>
-              Inventory Distribution by Category
-            </Typography>
-            <div id="pieChart" style={{ width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#1e1e1e' }}></div>
-            {/* Total number of items */}
-            <Typography variant="body1" align="right" style={{ color: '#fff', marginTop: '10px', alignSelf: 'flex-end' }}>
-              Total Items: {Object.values(categorizedItems).reduce((sum, { items }) => sum + items.length, 0)}
-            </Typography>
-          </Box>
-          {/* Latest Checked-Out Items Section */}
-          <Box className="glassmorphism-bg" style={{ width: '48%', padding: '20px', borderRadius: '12px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', maxHeight: '600px', overflow: 'hidden' }}>
-            <Typography variant="h5" style={{ color: '#ccc', marginBottom: '20px', paddingLeft: '10px' }}>Latest Checked-Out Items</Typography>
-            <Box style={{ overflowY: 'scroll', height: '100%', paddingRight: '10px' }}>
-              {[...Array(20)].map((_, index) => (
-                <Box key={index} className="glassmorphism-bg" style={{
-                  padding: '20px',
-                  borderRadius: '10px',
-                  marginBottom: '15px',
-                  backgroundColor: 'rgba(30, 30, 30, 0.7)',
-                  backdropFilter: 'blur(10px)',
-                  animation: `fadeInOut ${5 + index % 5}s infinite`,
-                  transition: 'all 0.3s ease'
-                }}>
-                  <Box display="flex" alignItems="flex-start">
-                    <Avatar alt={`User ${index + 1}`} src={`https://i.pravatar.cc/150?img=${index + 10}`} style={{ width: '70px', height: '70px', marginRight: '25px' }} />
-                    <Box flexGrow={1} display="flex" justifyContent="space-between" alignItems="center">
-                      <Box>
-                        <Typography variant="body1" style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '5px' }}>
-                          {`${['Dash - Elsapet', 'Tablet - Jakej', 'VR Headset', 'Robotic Arm', 'Mbot', 'Osmo Genius Kit', 'Blue Bot', 'Micro:bit'][index % 8]} checked out`}
-                        </Typography>
-                        <Typography variant="body2" style={{ color: '#ccc', marginBottom: '3px' }}>
-                          {`by ${['Ada Lovelace', 'Alan Turing', 'Grace Hopper', 'Linus Torvalds', 'Tim Berners-Lee', 'Guido van Rossum', 'Margaret Hamilton', 'Vint Cerf'][index % 8]}`}
-                        </Typography>
-                        <Typography variant="body2" style={{ color: '#aaa' }}>
-                          {new Date(Date.now() - index * 900000).toLocaleString()}
-                        </Typography>
-                      </Box>
-                      <Box display="flex" flexDirection="column" alignItems="flex-end">
-                        <Box style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '8px 12px', borderRadius: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-                          <Typography variant="body2" style={{ color: '#4CAF50', marginBottom: '3px' }}>
-                            Est. return
+          {/* Data Visualization - Pie Chart and Latest Checked-Out Items */}
+          <Box className="chart-wrapper" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+            {/* Pie Chart for Category Distribution */}
+            <Box className="glassmorphism-bg" style={{ width: '48%', height: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', borderRadius: '12px' }}>
+              {/* Title for Pie Chart with margin bottom, aligned above */}
+              <Typography variant="h5" align="center" style={{ color: '#fff', marginBottom: '20px' }}>
+                Inventory Distribution by Category
+              </Typography>
+              <div id="pieChart" style={{ width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#1e1e1e' }}></div>
+              {/* Total number of items */}
+              <Typography variant="body1" align="right" style={{ color: '#fff', marginTop: '10px', alignSelf: 'flex-end' }}>
+                Total Items: {Object.values(categorizedItems).reduce((sum, { items }) => sum + items.length, 0)}
+              </Typography>
+            </Box>
+            {/* Latest Checked-Out Items Section */}
+            <Box className="glassmorphism-bg" style={{ width: '48%', padding: '20px', borderRadius: '12px', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', maxHeight: '600px', overflow: 'hidden' }}>
+              <Typography variant="h5" style={{ color: '#ccc', marginBottom: '20px', paddingLeft: '10px' }}>Latest Checked-Out Items</Typography>
+              <Box style={{ overflowY: 'scroll', height: '100%', paddingRight: '10px' }}>
+                {[...Array(20)].map((_, index) => (
+                  <Box key={index} className="glassmorphism-bg" style={{
+                    padding: '20px',
+                    borderRadius: '10px',
+                    marginBottom: '15px',
+                    backgroundColor: 'rgba(30, 30, 30, 0.7)',
+                    backdropFilter: 'blur(10px)',
+                    animation: `fadeInOut ${5 + index % 5}s infinite`,
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <Box display="flex" alignItems="flex-start">
+                      <Avatar alt={`User ${index + 1}`} src={`https://i.pravatar.cc/150?img=${index + 10}`} style={{ width: '70px', height: '70px', marginRight: '25px' }} />
+                      <Box flexGrow={1} display="flex" justifyContent="space-between" alignItems="center">
+                        <Box>
+                          <Typography variant="body1" style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '5px' }}>
+                            {`${['Dash - Elsapet', 'Tablet - Jakej', 'VR Headset', 'Robotic Arm', 'Mbot', 'Osmo Genius Kit', 'Blue Bot', 'Micro:bit'][index % 8]} checked out`}
                           </Typography>
-                          <Typography variant="body2" style={{ color: '#fff' }}>
-                            {new Date(Date.now() + (index + 1) * 3600000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          <Typography variant="body2" style={{ color: '#ccc', marginBottom: '3px' }}>
+                            {`by ${['Ada Lovelace', 'Alan Turing', 'Grace Hopper', 'Linus Torvalds', 'Tim Berners-Lee', 'Guido van Rossum', 'Margaret Hamilton', 'Vint Cerf'][index % 8]}`}
+                          </Typography>
+                          <Typography variant="body2" style={{ color: '#aaa' }}>
+                            {new Date(Date.now() - index * 900000).toLocaleString()}
                           </Typography>
                         </Box>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          style={{
-                            color: '#ed7a2a',
-                            borderColor: '#ed7a2a',
-                            borderRadius: '20px',
-                            padding: '5px 10px',
-                            fontSize: '0.7rem'
-                          }}
-                        >
-                          Request Early Return
-                        </Button>
+                        <Box display="flex" flexDirection="column" alignItems="flex-end">
+                          <Box style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '8px 12px', borderRadius: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
+                            <Typography variant="body2" style={{ color: '#4CAF50', marginBottom: '3px' }}>
+                              Est. return
+                            </Typography>
+                            <Typography variant="body2" style={{ color: '#fff' }}>
+                              {new Date(Date.now() + (index + 1) * 3600000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </Typography>
+                          </Box>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            style={{
+                              color: '#ed7a2a',
+                              borderColor: '#ed7a2a',
+                              borderRadius: '20px',
+                              padding: '5px 10px',
+                              fontSize: '0.7rem'
+                            }}
+                          >
+                            Request Early Return
+                          </Button>
+                        </Box>
                       </Box>
                     </Box>
                   </Box>
-                </Box>
-              ))}
+                ))}
+              </Box>
             </Box>
           </Box>
-        </Box>
 
-        {/* Search Bar and Filter Options */}
-        <Box className="search-filter-container" style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
-          <TextField
-            label="Search Items"
-            variant="standard"
-            fullWidth
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => setSearchExpanded(true)}
-            onBlur={() => setSearchExpanded(false)}
-            className={`search-input ${searchExpanded ? 'expanded' : ''}`}
-            sx={{
-              input: { color: '#fff', paddingLeft: '20px' },
-              '& .MuiInputLabel-root': { color: '#ccc', marginLeft: '10px' },
-              '& .MuiInputLabel-shrink': { transform: 'translate(0, -1.5px) scale(0.75)' }
-            }}
-          />
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="filter-dropdown"
-            style={{ color: '#fff', backgroundColor: '#333', borderColor: '#049ebf', marginLeft: '10px', padding: '10px' }}
-          >
-            <option value="">All Categories</option>
-            {Object.entries(categorizedItems).map(([category, { color }], idx) => (
-              <option value={category} key={idx}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </Box>
+          {/* Search Bar and Filter Options */}
+          <Box className="search-filter-container" style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
+            <TextField
+              label="Search Items"
+              variant="standard"
+              fullWidth
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => setSearchExpanded(true)}
+              onBlur={() => setSearchExpanded(false)}
+              className={`search-input ${searchExpanded ? 'expanded' : ''}`}
+              sx={{
+                input: { color: '#fff', paddingLeft: '20px' },
+                '& .MuiInputLabel-root': { color: '#ccc', marginLeft: '10px' },
+                '& .MuiInputLabel-shrink': { transform: 'translate(0, -1.5px) scale(0.75)' }
+              }}
+            />
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="filter-dropdown"
+              style={{ color: '#fff', backgroundColor: '#333', borderColor: '#049ebf', marginLeft: '10px', padding: '10px' }}
+            >
+              <option value="">All Categories</option>
+              {Object.entries(categorizedItems).map(([category, { color }], idx) => (
+                <option value={category} key={idx}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </Box>
 
-        {/* Buttons under the search bar */}
-        <Box display="flex" justifyContent="flex-start" alignItems="center" mb={3}>
-          <Button
-            variant="contained"
-            style={{
-              backgroundColor: '#ed7a2a',
-              color: '#fff',
-              marginRight: '20px',
-              padding: '12px 48px',
-              borderRadius: '20px',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              transition: 'all 0.3s ease',
-              whiteSpace: 'nowrap',
-            }}
-            onClick={handleCheckoutButtonClick}
-          >
-            Checkout Items
-          </Button>
-          <Button
-            component={Link}
-            to="/barcode"
-            variant="contained"
-            startIcon={<QrCodeScannerIcon />}
-            style={{
-              backgroundColor: '#049ebf',
-              color: '#fff',
-              padding: '10px 20px',
-              borderRadius: '20px',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              transition: 'all 0.3s ease',
-            }}
-          >
-            Generate Barcodes
-          </Button>
-        </Box>
+          {/* Buttons under the search bar */}
+          <Box display="flex" justifyContent="flex-start" alignItems="center" mb={3}>
+            <Button
+              variant="contained"
+              style={{
+                backgroundColor: '#ed7a2a',
+                color: '#fff',
+                marginRight: '20px',
+                padding: '12px 48px',
+                borderRadius: '20px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+                whiteSpace: 'nowrap',
+              }}
+              onClick={handleCheckoutButtonClick}
+            >
+              Checkout Items
+            </Button>
+            <Button
+              component={Link}
+              to="/barcode"
+              variant="contained"
+              startIcon={<QrCodeScannerIcon />}
+              style={{
+                backgroundColor: '#049ebf',
+                color: '#fff',
+                padding: '10px 20px',
+                borderRadius: '20px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              Generate Barcodes
+            </Button>
+          </Box>
 
-        {/* Title */}
-        <Typography variant="h4" gutterBottom align="left" style={{ color: '#f7b329', marginBottom: '20px' }}>
-          Inventory Management
-        </Typography>
+          {/* Title */}
+          <Typography variant="h4" gutterBottom align="left" style={{ color: '#f7b329', marginBottom: '20px' }}>
+            Inventory Management
+          </Typography>
 
-        {/* Inventory List */}
-        <Box>
-          {filteredItems.map(({ category, color, items }, idx) => (
-            <Box key={idx} className="inventory-category" style={{ marginBottom: '30px' }}>
-              <Typography variant="h5" gutterBottom style={{ color: '#f7b329', textAlign: 'left' }}>
-                {category}
-              </Typography>
-              <Divider sx={{ marginBottom: '20px', borderColor: '#444' }} />
-              <Grid container spacing={3} className="inventory-grid">
-                {items.map((item, index) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                    <Tooltip
-                      title={
-                        <>
-                          <Typography><strong>Item ID:</strong> {item.itemId}</Typography>
-                          <Typography><strong>Location:</strong> 4th floor storage room</Typography>
-                        </>
-                      }
-                      arrow
-                      placement="top"
-                    >
-                      <Card
-                        className="inventory-card"
-                        sx={{
-                          backgroundColor: color,
-                          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                          transition: 'transform 0.3s, box-shadow 0.3s',
-                          borderRadius: '8px',
-                        }}
-                        onClick={(event) => handleItemClick(item, event)}
+          {/* Inventory List */}
+          <Box>
+            {filteredItems.map(({ category, color, items }, idx) => (
+              <Box key={idx} className="inventory-category" style={{ marginBottom: '30px' }}>
+                <Typography variant="h5" gutterBottom style={{ color: '#f7b329', textAlign: 'left' }}>
+                  {category}
+                </Typography>
+                <Divider sx={{ marginBottom: '20px', borderColor: '#444' }} />
+                <Grid container spacing={3} className="inventory-grid">
+                  {items.map((item, index) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                      <Tooltip
+                        title={
+                          <>
+                            <Typography><strong>Item ID:</strong> {item.itemId}</Typography>
+                            <Typography><strong>Location:</strong> 4th floor storage room</Typography>
+                          </>
+                        }
+                        arrow
+                        placement="top"
                       >
-                        <CardContent>
-                          <Typography variant="h6" gutterBottom style={{ color: '#333' }}>
-                            {item.itemName}
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Tooltip>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          ))}
-        </Box>
+                        <Card
+                          className="inventory-card"
+                          sx={{
+                            backgroundColor: color,
+                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                            transition: 'transform 0.3s, box-shadow 0.3s',
+                            borderRadius: '8px',
+                          }}
+                          onClick={(event) => handleItemClick(item, event)}
+                        >
+                          <CardContent>
+                            <Typography variant="h6" gutterBottom style={{ color: '#333' }}>
+                              {item.itemName}
+                            </Typography>
+                          </CardContent>
+                        </Card>
+                      </Tooltip>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            ))}
+          </Box>
 
-        {/* Checkout Section */}
-        <Box className="checkout-section">
-          {checkoutItem ? (
-            <>
-              <Typography variant="h6" gutterBottom style={{ color: '#ed7a2a' }}>Checkout Item: {checkoutItem.itemName}</Typography>
-              <TextField
-                label="Reason for Use"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                InputProps={{
-                  style: {
-                    backgroundColor: '#333', // Dark background for input field
-                    color: '#fff', // White text
-                  },
-                }}
-                InputLabelProps={{
-                  style: { color: '#ccc' }, // Lighter color for label
-                }}
-              />
-              <TextField
-                label="Estimated Use Time"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                InputProps={{
-                  style: {
-                    backgroundColor: '#333', // Dark background for input field
-                    color: '#fff', // White text
-                  },
-                }}
-                InputLabelProps={{
-                  style: { color: '#ccc' }, // Lighter color for label
-                }}
-              />
-              <TextField
-                label="Your Name"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                InputProps={{
-                  style: {
-                    backgroundColor: '#333', // Dark background for input field
-                    color: '#fff', // White text
-                  },
-                }}
-                InputLabelProps={{
-                  style: { color: '#ccc' }, // Lighter color for label
-                }}
-              />
-              <Button variant="contained" color="primary" fullWidth style={{ marginTop: '20px', backgroundColor: '#ed7a2a' }}>
-                Submit
-              </Button>
-            </>
-          ) : (
-            <Typography variant="body1" style={{ color: '#fff' }}>Click an item to check out.</Typography>
+          {/* Checkout Section */}
+          <Box className="checkout-section">
+            {checkoutItem ? (
+              <>
+                <Typography variant="h6" gutterBottom style={{ color: '#ed7a2a' }}>Checkout Item: {checkoutItem.itemName}</Typography>
+                <TextField
+                  label="Reason for Use"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  InputProps={{
+                    style: {
+                      backgroundColor: '#333', // Dark background for input field
+                      color: '#fff', // White text
+                    },
+                  }}
+                  InputLabelProps={{
+                    style: { color: '#ccc' }, // Lighter color for label
+                  }}
+                />
+                <TextField
+                  label="Estimated Use Time"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  InputProps={{
+                    style: {
+                      backgroundColor: '#333', // Dark background for input field
+                      color: '#fff', // White text
+                    },
+                  }}
+                  InputLabelProps={{
+                    style: { color: '#ccc' }, // Lighter color for label
+                  }}
+                />
+                <TextField
+                  label="Your Name"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  InputProps={{
+                    style: {
+                      backgroundColor: '#333', // Dark background for input field
+                      color: '#fff', // White text
+                    },
+                  }}
+                  InputLabelProps={{
+                    style: { color: '#ccc' }, // Lighter color for label
+                  }}
+                />
+                <Button variant="contained" color="primary" fullWidth style={{ marginTop: '20px', backgroundColor: '#ed7a2a' }}>
+                  Submit
+                </Button>
+              </>
+            ) : (
+              <Typography variant="body1" style={{ color: '#fff' }}>Click an item to check out.</Typography>
+            )}
+          </Box>
+
+          {/* Checkout Modal */}
+          {isModalOpen && (
+            <Box className="modal">
+              <Box className="modal-header">
+                <Typography variant="h6">Checkout Items</Typography>
+                <IconButton className="icon-button" onClick={handleModalClose}>
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+              <Box className="modal-body">
+                <TextField
+                  label="Search Items to Checkout"
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  InputProps={{ style: { backgroundColor: '#333', color: '#fff' } }} // Ensure consistent styling
+                  InputLabelProps={{ style: { color: '#ccc' } }}
+                />
+                <Button variant="contained" color="primary" fullWidth onClick={handleModalClose}>
+                  Checkout Selected Items
+                </Button>
+              </Box>
+            </Box>
+          )}
+
+          {/* Solid Color Chat Button at the Bottom-Right Corner */}
+          <button
+            className="solid-chat-button glass-chat-button"
+            onClick={toggleChatbot}
+          >
+            Pipanimi – Ask me
+          </button>
+
+          {/* Modern Chat Modal */}
+          {isChatOpen && (
+            <div className="chat-modal">
+              <div className="chat-modal-content">
+                <ExcelChatBot isOpen={isChatOpen} toggleChatbot={toggleChatbot} />
+              </div>
+            </div>
           )}
         </Box>
-
-        {/* Checkout Modal */}
-        {isModalOpen && (
-          <Box className="modal">
-            <Box className="modal-header">
-              <Typography variant="h6">Checkout Items</Typography>
-              <IconButton className="icon-button" onClick={handleModalClose}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            <Box className="modal-body">
-              <TextField
-                label="Search Items to Checkout"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                InputProps={{ style: { backgroundColor: '#333', color: '#fff' } }} // Ensure consistent styling
-                InputLabelProps={{ style: { color: '#ccc' } }}
-              />
-              <Button variant="contained" color="primary" fullWidth onClick={handleModalClose}>
-                Checkout Selected Items
-              </Button>
-            </Box>
-          </Box>
-        )}
-
-        {/* Solid Color Chat Button at the Bottom-Right Corner */}
-        <button
-          className="solid-chat-button glass-chat-button"
-          onClick={toggleChatbot}
-        >
-          Pipanimi – Ask me
-        </button>
-
-        {/* Modern Chat Modal */}
-        {isChatOpen && (
-          <div className="chat-modal">
-            <div className="chat-modal-content">
-              <ExcelChatBot isOpen={isChatOpen} toggleChatbot={toggleChatbot} />
-            </div>
-          </div>
-        )}
       </Box>
     </Box>
   );

@@ -7,29 +7,37 @@ import RouteIcon from '@mui/icons-material/Route';
 import SchoolIcon from '@mui/icons-material/School';
 import './lms.css';
 import { useSidebar } from '../../context/SidebarContext';
+import { Link } from 'react-router-dom';
 
-const CourseCard = ({ title, instructor, duration, level, description, featured, progress, bgImage, isAIRecommended }) => (
-  <div className={`course-card ${featured ? 'featured' : ''} ${isAIRecommended ? 'ai-recommended' : ''}`}>
-    <div className="course-card-image" style={{ backgroundImage: `url(${bgImage})` }}></div>
-    <div className="course-card-content">
-      {featured && <div className="featured-badge">Featured</div>}
-      <h3 className="course-title">{title}</h3>
-      <div className="course-details">
-        <span className="course-instructor">{instructor}</span>
-        <span className="course-duration">{duration}</span>
-        <span className="course-level">{level}</span>
-      </div>
-      <p className="course-description">{description}</p>
-      {progress !== undefined && (
-        <div className="course-progress">
-          <div className="progress-bar" style={{ width: `${progress}%` }}></div>
-          <span className="progress-text">{progress}% Complete</span>
+function generateSlug(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+const CourseCard = ({ title, instructor, duration, level, description, featured, progress, bgImage, isAIRecommended }) => {
+  const slug = generateSlug(title);
+  return (
+    <Link to={`/course/${slug}`} className={`course-card ${featured ? 'featured' : ''} ${isAIRecommended ? 'ai-recommended' : ''}`}>
+      <div className="course-card-image" style={{ backgroundImage: `url(${bgImage})` }}></div>
+      <div className="course-card-content">
+        {featured && <div className="featured-badge">Featured</div>}
+        <h3 className="course-title">{title}</h3>
+        <div className="course-details">
+          <span className="course-instructor">{instructor}</span>
+          <span className="course-duration">{duration}</span>
+          <span className="course-level">{level}</span>
         </div>
-      )}
-      <button className="enroll-button">{progress !== undefined ? 'Continue' : 'Enroll Now'}</button>
-    </div>
-  </div>
-);
+        <p className="course-description">{description}</p>
+        {progress !== undefined && (
+          <div className="course-progress">
+            <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+            <span className="progress-text">{progress}% Complete</span>
+          </div>
+        )}
+        <button className="enroll-button">{progress !== undefined ? 'Continue' : 'Enroll Now'}</button>
+      </div>
+    </Link>
+  );
+};
 
 const LMS = () => {
   const { isCollapsed } = useSidebar();

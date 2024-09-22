@@ -1,63 +1,57 @@
 html,
 body {
     margin: 0;
-    /* Remove any default margin */
     padding: 0;
-    /* Remove any default padding */
     width: 100%;
-    /* Ensure full width */
     height: 100%;
-    /* Full height to prevent vertical scroll issues */
     overflow: hidden;
-    /* Change from overflow-x: hidden to overflow: hidden */
-    /* Prevent horizontal overflow */
     background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%) !important;
-    /* Darker background for a more modern look */
 }
 
 body {
     min-height: 100vh;
-    /* Ensure the body takes at least the full viewport height */
 }
 
 .inventory-container {
     display: flex;
-    flex-direction: row;
-    /* Change to row to place sidebar and content side by side */
-    padding: 0;
-    /* Remove padding */
-    max-width: 100%;
-    /* Changed from 95% to 100% */
-    margin: 0;
-    margin-top: 0;
-    /* Remove top margin */
+    width: 100%;
     height: 100vh;
-    /* Use full viewport height */
     overflow: hidden;
-    /* Prevent scrolling on the container */
-    box-sizing: border-box;
     background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%);
-    /* Slightly lighter dark shade */
-    border-radius: 0;
-    /* Remove border radius */
-    /* Optional: Rounded corners */
 }
 
 .inventory-content {
     flex-grow: 1;
     padding: 40px;
-    margin-left: 300px;
-    /* Match the sidebar width */
-    width: calc(100% - 270px);
-    /* Adjust width to account for sidebar */
     height: 100vh;
-    /* Use full viewport height */
-    /* Ensure full height */
     overflow-y: auto;
-    /* Allow scrolling within the content area */
     background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%);
-    /* Match the container background */
+    transition: all 0.3s ease-in-out;
 }
+
+.sidebar {
+    width: 270px;
+    height: 100vh;
+    background-color: #252525;
+    overflow-y: auto;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    transition: width 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+    width: 70px;
+    /* Adjust this value based on your collapsed sidebar width */
+}
+
+.inventory-content.sidebar-collapsed {
+    margin-left: 70px;
+    /* Adjust this value to match the collapsed sidebar width */
+}
+
+/* Rest of the CSS remains unchanged */
 
 .search-filter-container {
     display: flex;
@@ -72,13 +66,11 @@ body {
     color: #fff;
     background-color: transparent !important;
     border-bottom: 2px solid #14ffec;
-    /* Modern cyan border */
 }
 
 .search-input.expanded {
     border-color: var(--blue);
     border-color: #0d7377;
-    /* Teal color when expanded */
 }
 
 .filter-dropdown {
@@ -92,12 +84,10 @@ body {
     display: flex;
     align-items: center;
     background-color: #2a2a2a;
-    /* Darker dropdown background */
 }
 
 .filter-dropdown option {
     padding-left: 24px;
-    /* Ensure spacing for circles */
     position: relative;
 }
 
@@ -106,7 +96,6 @@ body {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    /* Perfect circle */
     margin-right: 10px;
     vertical-align: middle;
 }
@@ -115,44 +104,32 @@ body {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
-    /* Adjust to column layout for better stacking */
     gap: 20px;
-    /* Adds space between the charts */
     color: #14ffec;
-    /* Vibrant cyan for text */
 }
 
 .glassmorphism-bg {
     background-color: rgba(18, 18, 18, 0.8);
-    /* Darker semi-transparent background */
     backdrop-filter: blur(10px);
-    /* Glassmorphism effect */
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    /* More pronounced shadow */
-    /* Subtle shadow for depth */
 }
 
 @media (min-width: 768px) {
     .data-visualization {
         flex-direction: row;
-        /* Switch to row layout for larger screens */
         justify-content: space-between;
     }
 
     .checked-out-section {
         width: 45%;
-        /* Set width when side by side with pie chart */
     }
 
     #pieChart {
         width: 45%;
-        /* Adjust width of the pie chart to match checked-out section */
         background-color: #1a1a1a;
-        /* Dark background for the chart */
         color: #14ffec;
-        /* Modern color for chart elements */
     }
 }
 
@@ -163,7 +140,6 @@ body {
 
 .checked-out-section {
     background-color: #2a2a2a;
-    /* Darker background for sections */
     padding: 20px;
     border-radius: 8px;
     margin-top: 20px;
@@ -183,37 +159,27 @@ body {
     transition: transform 0.3s, box-shadow 0.3s;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
-    /* Rounded corners for a modern look */
     background-color: #2a2a2a;
-    /* Darker card background */
 }
 
 .inventory-card:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    /* Enhanced shadow on hover */
     z-index: 1;
 }
 
 .checkout-section {
     position: absolute;
-    /* Changed from fixed to absolute */
     width: 350px;
     background-color: rgba(30, 30, 30, 0.9);
-    /* Dark translucent background */
     padding: 25px;
     border-radius: 12px;
-    /* Rounded corners for a modern look */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    /* Larger shadow for more depth */
     display: none;
     z-index: 1000;
     color: #fff;
-    /* Set text color to white for better readability */
     backdrop-filter: blur(10px);
-    /* Add a glassmorphism effect */
     transition: top 0.3s ease, left 0.3s ease;
-    /* Smooth animation for repositioning */
 }
 
 .modal {
@@ -223,20 +189,13 @@ body {
     transform: translate(-50%, -50%);
     width: 400px;
     background-color: rgba(18, 18, 18, 0.9);
-    /* Darker translucent background */
-    /* Dark translucent background */
     padding: 30px;
     border-radius: 12px;
-    /* Rounded corners */
     border: none;
-    /* Remove border */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    /* Larger shadow */
     z-index: 2000;
     color: #fff;
-    /* Set text color to white */
     backdrop-filter: blur(15px);
-    /* Glassmorphism effect */
 }
 
 .modal-header {
@@ -245,8 +204,6 @@ body {
     align-items: center;
     margin-bottom: 20px;
     color: #14ffec;
-    /* Modern cyan for headers */
-    /* Your brand accent color for headers */
 }
 
 .modal-body {
@@ -266,23 +223,17 @@ body {
     margin-top: 10px;
     padding: 12px;
     border-radius: 8px;
-    /* Rounded input fields */
     border: none;
     background-color: #333;
-    /* Dark background for input fields */
     color: #fff;
-    /* White text for inputs */
 }
 
 .modal-body input::placeholder {
     color: #ccc;
-    /* Lighter color for placeholders */
 }
 
 .modal-body button {
     background-color: #0d7377;
-    /* Modern teal for buttons */
-    /* Brand color for buttons */
     color: #fff;
     font-weight: bold;
     cursor: pointer;
@@ -291,35 +242,16 @@ body {
 
 .modal-body button:hover {
     background-color: #14ffec;
-    /* Lighter shade on hover */
-    /* Lighter shade for hover effect */
 }
 
 .icon-button {
     color: #14ffec;
-    /* Modern cyan for icons */
-    /* Brand color for close icon */
     cursor: pointer;
     transition: transform 0.3s ease;
 }
 
 .icon-button:hover {
     transform: rotate(90deg);
-    /* Rotate animation on hover */
-}
-
-.sidebar {
-    width: 270px;
-    height: 100vh;
-    /* Full viewport height */
-    background-color: #252525;
-    /* Adjust color as needed */
-    overflow-y: auto;
-    position: fixed;
-    /* Fix the sidebar position */
-    left: 0;
-    top: 0;
-    z-index: 1000;
 }
 
 .solid-chat-button.glass-chat-button {
@@ -327,9 +259,7 @@ body {
     bottom: 20px;
     right: 20px;
     background-color: #0d7377;
-    /* Modern teal color */
     border: 5px solid #14ffec;
-    /* Vibrant cyan border */
     border-radius: 20px;
     padding: 15px 30px;
     color: #ffffff;
@@ -341,10 +271,8 @@ body {
 
 .solid-chat-button.glass-chat-button:hover {
     background-color: #14ffec;
-    /* Lighter shade on hover */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
-
 
 .chat-modal {
     position: fixed;
@@ -353,18 +281,14 @@ body {
     width: 40%;
     display: none;
     max-width: 600px;
-    /* Reduced from 800px */
     height: 80vh;
-    /* Increased from 70vh */
     max-height: 800px;
-    /* Increased from 600px */
     backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
     z-index: 1000;
     display: flex;
-
     flex-direction: column;
     overflow: hidden;
 }
@@ -381,22 +305,16 @@ body {
     color: white !important;
 }
 
-/* Change Checkout Times title color to white */
 .checked-out-section h2 {
     color: #fff;
-    /* Set title color to white */
 }
 
-/* Align all graph titles to the left */
 .data-visualization h2,
 #pieChart h2 {
     text-align: left;
-    /* Align titles to the left */
 }
 
-/* Align all graph titles to the left */
 .chart-wrapper h5,
 .donut-chart h5 {
     text-align: left;
-    /* Align titles to the left */
 }

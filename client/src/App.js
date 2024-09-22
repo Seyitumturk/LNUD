@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Switch } from 'react-router-dom';
 import Login from './Components/auth/Login';
 import Register from './Components/auth/Register';
 import Dashboard from './Components/dashboard/dashboard'; // Updated casing
@@ -12,6 +12,8 @@ import ExcelChatBot from './Components/pipinami/ExcelChatBot'; // Import the Exc
 import Sidebar from './Components/layout/Sidebar'; // Add this import
 import './Components/pipinami/chat.css'; // Import the new CSS file
 import { SidebarProvider } from './context/SidebarContext';
+import Courses from './Components/lms/Courses'; // Added import for Courses
+import Course from './Components/lms/Course'; // Added import for Course
 
 function App() {
     return (
@@ -57,7 +59,7 @@ function App() {
                                     </ProtectedRoute>
                                 }
                             />
-
+                            <Route path="/course/:slug" element={<Course />} />
                         </Routes>
                     </div>
                 </div>

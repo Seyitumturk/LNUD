@@ -7,6 +7,7 @@ import 'react-circular-progressbar/dist/styles.css';
 import './dashboard.css'; // Import the CSS file for dashboard styling
 import ExcelChatBot from '../pipinami/ExcelChatBot'; // Import the ChatBot component
 import Sidebar from '../layout/Sidebar'; // Import the new Sidebar component
+import { useSidebar } from '../../context/SidebarContext'; // Make sure to import useSidebar
 
 // Register the required components for Chart.js
 ChartJS.register(
@@ -21,6 +22,7 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+    const { isCollapsed } = useSidebar(); // Use the sidebar context
     const [isChatOpen, setIsChatOpen] = useState(false); // State to manage the chatbot modal
     const toggleChatbot = () => setIsChatOpen(!isChatOpen); // Toggling function for the chatbot
 
@@ -210,17 +212,32 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="dashboard" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <Sidebar /> {/* Use the new Sidebar component */}
-
-            {/* Main Content */}
-            <div className="dashboard-content gradient-bg" style={{ flex: 1, overflowY: 'auto', padding: '20px 40px' }}> {/* Increased left padding */}
-                {/* Four Equal Blocks */}
-                <div className="grid-container" style={{ minHeight: 'fit-content', marginLeft: '20px' }}> {/* Added left margin */}
-                    {/* New UEC Metrics Overview */}
-                    <div className="grid-block glass-card" style={{ gridColumn: '1 / -1', marginBottom: '20px' }}>
-                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>UEC Impact Overview</h3>
-                        <div className="metrics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
+        <div className="dashboard-wrapper" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+            <Sidebar />
+            <div className={`dashboard-content ${isCollapsed ? 'sidebar-collapsed' : ''}`} style={{
+                flex: 1,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '20px',
+                transition: 'margin-left 0.3s ease, width 0.3s ease',
+                marginLeft: isCollapsed ? '64px' : '220px',
+                width: `calc(100% - ${isCollapsed ? '64px' : '220px'})`,
+            }}>
+                <div className="grid-container" style={{ 
+                    minHeight: 'fit-content',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr',
+                    gap: '20px',
+                    width: '100%',
+                }}>
+                    {/* UEC Metrics Overview */}
+                    <div className="grid-block glass-card" style={{ gridColumn: '1 / -1' }}>
+                        <h3 className="block-title">UEC Impact Overview</h3>
+                        <div className="metrics-grid" style={{ 
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: '15px'
+                        }}>
                             <MetricCard title="Youth Served" value={uecMetrics.youthServed} />
                             <MetricCard title="Communities Reached" value={uecMetrics.communitiesReached} />
                             <MetricCard title="Education Hours" value={uecMetrics.educationHours} />
@@ -232,18 +249,22 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* Block 1: Line Graph (Total Hours Overview) */}
-                    <div className="grid-block glass-card" style={{ height: '700px' }}>
-                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Total Hours Overview</h3>
-                        <div className="chart-container center-content" style={{ height: 'calc(100% - 50px)' }}>
-                            <Line data={lineChartData} options={lineChartOptions} />
+                    {/* Line Graph */}
+                    <div className="grid-block glass-card">
+                        <h3 className="block-title">Total Hours Overview</h3>
+                        <div className="chart-container" style={{ height: '600px', width: '100%' }}>
+                            <Line data={lineChartData} options={{
+                                ...lineChartOptions,
+                                responsive: true,
+                                maintainAspectRatio: false,
+                            }} />
                         </div>
                     </div>
 
-                    {/* Block 2: Funding Streams with Scrollable Container */}
-                    <div className="grid-block glass-card" style={{ height: '700px' }}>
-                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Funding Streams</h3>
-                        <div className="funding-streams-container" style={{ height: 'calc(100% - 50px)', overflowY: 'auto' }}>
+                    {/* Funding Streams */}
+                    <div className="grid-block glass-card">
+                        <h3 className="block-title">Funding Streams</h3>
+                        <div className="funding-streams-container" style={{ height: '600px', overflowY: 'auto' }}>
                             {fundingData.map((funding, index) => (
                                 <div key={index} className="funding-stream-card" style={{ backgroundColor: funding.color }}>
                                     <div className="funding-header">
@@ -269,10 +290,10 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* Block 3: Doughnut Chart (Funding Breakdown) */}
-                    <div className="grid-block glass-card" style={{ height: '700px' }}>
-                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>Funding Breakdown</h3>
-                        <div className="doughnut-chart-wrapper" style={{ display: 'flex', alignItems: 'center', height: 'calc(100% - 50px)' }}>
+                    {/* Doughnut Chart */}
+                    <div className="grid-block glass-card">
+                        <h3 className="block-title">Funding Breakdown</h3>
+                        <div className="doughnut-chart-wrapper" style={{ height: '600px' }}>
                             <div className="doughnut-chart-legend" style={{
                                 flex: '0 0 30%',
                                 padding: '10px',
@@ -303,10 +324,10 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    {/* Block 4: News Section (Modern Data-Driven) */}
-                    <div className="grid-block glass-card" style={{ height: '700px' }}>
-                        <h3 className="block-title" style={{ textAlign: 'left', backgroundColor: 'rgba(255, 255, 255, 0.1)', padding: '10px', borderRadius: '8px' }}>News from Communities</h3>
-                        <div className="news-section-scrollable" style={{ height: 'calc(100% - 50px)', overflowY: 'auto' }}>
+                    {/* News Section */}
+                    <div className="grid-block glass-card">
+                        <h3 className="block-title">News from Communities</h3>
+                        <div className="news-section-scrollable" style={{ height: '600px', overflowY: 'auto' }}>
                             <div className="news-section">
                                 {currentProjects.map((project, index) => (
                                     <div key={index} className="news-item">
@@ -323,24 +344,47 @@ const Dashboard = () => {
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
             {/* Solid Color Chat Button at the Bottom-Right Corner */}
             <button
                 className="solid-chat-button glass-chat-button"
-                onClick={toggleChatbot} // Opens the chat modal directly
+                onClick={toggleChatbot}
+                style={{
+                    position: 'fixed',
+                    bottom: '20px',
+                    right: '20px',
+                    zIndex: 1000
+                }}
             >
                 Pipanimi – Ask me
             </button>
 
             {/* Modern Chat Modal */}
             {isChatOpen && (
-                <div className="chat-modal">
-                    <div className="chat-modal-content">
-                        {/* Close button functionality is retained but styled for modern UI */}
-                        <ExcelChatBot isOpen={isChatOpen} toggleChatbot={toggleChatbot} /> {/* Modern chat UI component */}
+                <div className="chat-modal" style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1001
+                }}>
+                    <div className="chat-modal-content" style={{
+                        backgroundColor: '#1e1e1e',
+                        borderRadius: '10px',
+                        padding: '20px',
+                        width: '80%',
+                        maxWidth: '600px',
+                        maxHeight: '80vh',
+                        overflowY: 'auto'
+                    }}>
+                        <ExcelChatBot isOpen={isChatOpen} toggleChatbot={toggleChatbot} />
                     </div>
                 </div>
             )}
@@ -362,7 +406,7 @@ const MetricCard = ({ title, value }) => {
             const easeValue = progress < 0.5
                 ? 8 * progress * progress * progress * progress
                 : 1 - Math.pow(-2 * progress + 2, 4) / 2;
-            
+
             const currentCount = Math.floor(easeValue * value);
             setCount(currentCount);
 
@@ -387,10 +431,10 @@ const MetricCard = ({ title, value }) => {
             transition: 'all 0.3s ease'
         }}>
             <h4 style={{ margin: '0 0 10px 0', fontSize: '1em', color: '#ffffff' }}>{title}</h4>
-            <p style={{ 
-                margin: 0, 
-                fontSize: '1.5em', 
-                fontWeight: 'bold', 
+            <p style={{
+                margin: 0,
+                fontSize: '1.5em',
+                fontWeight: 'bold',
                 color: 'var(--orange)',
                 backgroundColor: 'rgba(247, 179, 41, 0.2)',
                 display: 'inline-block',

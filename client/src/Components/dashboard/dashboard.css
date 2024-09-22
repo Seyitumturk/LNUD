@@ -131,6 +131,7 @@ body {
     border-radius: 0 15px 15px 0;
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
     overflow-y: auto;
+    transition: width 0.3s ease;
 }
 
 .sidebar-brand {
@@ -202,6 +203,11 @@ body {
     box-sizing: border-box;
     background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%);
     margin-left: 220px;
+    transition: margin-left 0.3s ease;
+}
+
+.dashboard-content.sidebar-collapsed {
+    margin-left: 64px;
 }
 
 .news-section-scrollable {
@@ -500,9 +506,7 @@ body {
     border-radius: 8px;
     width: 45%;
     color: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-
 .project-list ul {
     list-style: none;
     padding: 0;

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaBook, FaBoxes, FaComments, FaMapMarkedAlt, FaTools, FaLanguage, FaChevronLeft, FaChevronRight, FaTree } from 'react-icons/fa';
+import { FaHome, FaBoxes, FaMapMarkedAlt, FaTools, FaLanguage, FaChevronLeft, FaChevronRight, FaTree } from 'react-icons/fa';
+import { MdOutlineSchool } from 'react-icons/md';
 import { useSidebar } from '../../context/SidebarContext';
 import './sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ onWidthChange }) => {
     const location = useLocation();
     const [activeItem, setActiveItem] = useState('');
     const [factIndex, setFactIndex] = useState(0);
@@ -62,9 +63,15 @@ const Sidebar = () => {
         };
     }, [isCollapsed]);
 
+    useEffect(() => {
+        if (onWidthChange && typeof onWidthChange === 'function') {
+            onWidthChange(isCollapsed ? 60 : 220);
+        }
+    }, [isCollapsed, onWidthChange]);
+
     const sidebarItems = [
         { path: '/', icon: FaHome, label: 'Dashboard' },
-        { path: '/lms', icon: FaBook, label: 'ALP' },
+        { path: '/lms', icon: MdOutlineSchool, label: 'ALP' },
         { path: '/inventory', icon: FaBoxes, label: 'Inventory' },
         { path: '/community-map', icon: FaMapMarkedAlt, label: 'Community Map' },
         { path: '/makerspaces', icon: FaTools, label: 'Makerspaces' },
@@ -78,7 +85,7 @@ const Sidebar = () => {
     }
 
     return (
-        <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+        <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`} style={{ width: isCollapsed ? '60px' : '220px' }}>
             <div className="sidebar-logo">
                 <div className="sidebar-logo-container">
                     <img src="/logo.png" alt="Logo" />
