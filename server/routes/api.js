@@ -1,15 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const OpenAI = require("openai");
 const multer = require('multer');
 const pdf = require('pdf-parse');
 const fs = require('fs').promises;
+const path = require('path');
+const OpenAI = require("openai");
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-const upload = multer({ dest: 'uploads/' });
+// Configure multer to preserve file extensions
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // Mock function to get presentation content (keep this for non-PDF content)
 async function getPresentationContent(id) {
@@ -32,18 +43,45 @@ router.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
         return res.status(400).json({ error: 'No file uploaded' });
     }
 
+    if (path.extname(req.file.originalname).toLowerCase() !== '.pdf') {
+        await fs.unlink(req.file.path);
+        return res.status(400).json({ error: 'Uploaded file is not a PDF' });
+    }
+
     try {
         console.log('File uploaded:', req.file.path);
         const dataBuffer = await fs.readFile(req.file.path);
-        console.log('File read successfully');
+        console.log('File read successfully, buffer length:', dataBuffer.length);
+        
         const data = await pdf(dataBuffer);
-        console.log('PDF parsed successfully');
+        console.log('PDF parsed successfully, text length:', data.text.length);
+        console.log('PDF info:', JSON.stringify(data.info));
+        console.log('PDF metadata:', JSON.stringify(data.metadata));
+
+        // Remove any non-printable characters and excessive whitespace
+        const cleanedText = data.text.replace(/[^\x20-\x7E]/g, '').replace(/\s+/g, ' ').trim();
+        
+        if (!cleanedText) {
+            console.log('Full PDF text is empty or contains only non-printable characters');
+            return res.status(400).json({ 
+                error: 'Extracted PDF content is empty or contains only non-printable characters',
+                info: data.info
+            });
+        }
+
+        // Limit the cleaned text to 500 words
+        const limitedText = cleanedText.split(/\s+/).slice(0, 500).join(' ');
+        console.log('Extracted text (limited to 500 words):', limitedText);
+
         await fs.unlink(req.file.path);
         console.log('Temporary file deleted');
 
-        res.json({ content: data.text });
+        res.json({ content: limitedText, info: data.info });
     } catch (error) {
         console.error('Error processing PDF:', error);
+        if (req.file && req.file.path) {
+            await fs.unlink(req.file.path).catch(console.error);
+        }
         res.status(500).json({ error: 'Error processing PDF: ' + error.message });
     }
 });
