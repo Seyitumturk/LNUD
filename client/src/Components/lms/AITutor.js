@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AITutor.css';
+import { AiOutlineSend, AiOutlineFilePdf } from 'react-icons/ai';
+import { BsThreeDots } from 'react-icons/bs';
 
 const AITutor = ({ onClose }) => {
     const [userQuestion, setUserQuestion] = useState('');
     const [conversation, setConversation] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -32,7 +35,6 @@ const AITutor = ({ onClose }) => {
 
             setConversation(prev => [...prev, { role: 'ai', content: data.response }]);
         } catch (error) {
-            console.error('Error getting AI response:', error);
             setConversation(prev => [...prev, { role: 'ai', content: `Error: ${error.message}. Please try again.` }]);
         } finally {
             setIsLoading(false);
@@ -59,7 +61,6 @@ const AITutor = ({ onClose }) => {
                 const data = await response.json();
                 setConversation(prev => [...prev, { role: 'ai', content: 'PDF uploaded and processed successfully. You can now ask questions about its content.' }]);
             } catch (error) {
-                console.error('Error uploading PDF:', error);
                 setConversation(prev => [...prev, { role: 'ai', content: `Error uploading PDF: ${error.message}. Please try again.` }]);
             }
         } else {
@@ -68,10 +69,15 @@ const AITutor = ({ onClose }) => {
     };
 
     return (
-        <div className="ai-tutor-container">
+        <div className={`ai-tutor-container ${isExpanded ? 'expanded' : ''}`}>
             <div className="ai-tutor-header">
                 <h3>AI Tutor</h3>
-                <button onClick={onClose}>Close</button>
+                <div className="header-actions">
+                    <button onClick={() => setIsExpanded(!isExpanded)}>
+                        {isExpanded ? 'Minimize' : 'Expand'}
+                    </button>
+                    <button onClick={onClose}>Close</button>
+                </div>
             </div>
             <div className="ai-tutor-conversation">
                 {conversation.map((message, index) => (
@@ -79,19 +85,22 @@ const AITutor = ({ onClose }) => {
                         {message.content}
                     </div>
                 ))}
-                {isLoading && <div className="message ai">Thinking...</div>}
+                {isLoading && <div className="message ai typing"><BsThreeDots /></div>}
             </div>
             <div className="ai-tutor-upload">
-                <input type="file" accept=".pdf" onChange={handleFileUpload} />
+                <label htmlFor="file-upload" className="custom-file-upload">
+                    <AiOutlineFilePdf /> Upload PDF
+                </label>
+                <input id="file-upload" type="file" accept=".pdf" onChange={handleFileUpload} />
             </div>
             <form onSubmit={handleSubmit} className="ai-tutor-input">
                 <input
                     type="text"
                     value={userQuestion}
                     onChange={(e) => setUserQuestion(e.target.value)}
-                    placeholder="Ask a question about the PDF..."
+                    placeholder="Ask a question..."
                 />
-                <button type="submit">Send</button>
+                <button type="submit"><AiOutlineSend /></button>
             </form>
         </div>
     );

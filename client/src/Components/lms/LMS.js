@@ -42,6 +42,7 @@ const CourseCard = ({ title, instructor, duration, level, description, featured,
 
 const LMS = () => {
   const { isCollapsed } = useSidebar();
+  const [courses, setCourses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterLevel, setFilterLevel] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
@@ -49,8 +50,6 @@ const LMS = () => {
   const [aiRecommendations, setAiRecommendations] = useState([]);
   const [isPathwayModalOpen, setIsPathwayModalOpen] = useState(false);
   const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
-  const [careerChoice, setCareerChoice] = useState('');
-  const [generatedPathway, setGeneratedPathway] = useState(null);
   const [newCourse, setNewCourse] = useState({
     title: '',
     instructor: '',
@@ -58,31 +57,30 @@ const LMS = () => {
     level: '',
     category: '',
     description: '',
+    pdf: null, // Store PDF file
   });
+  const [careerChoice, setCareerChoice] = useState(''); // New state for career choice input
+  const [generatedPathway, setGeneratedPathway] = useState(null); // New state for the generated pathway
 
   useEffect(() => {
-    // Fetch AI recommendations when the component mounts
-    fetchAiRecommendations();
+    fetchCourses();  // Fetch courses when component mounts
   }, []);
 
-  const toggleChatbot = () => setIsChatOpen(!isChatOpen);
-
-  const fetchAiRecommendations = async () => {
-    // This is a placeholder function. In a real implementation,
-    // you would call your backend API that interfaces with GPT-4.
+  const fetchCourses = async () => {
     try {
-      const response = await fetch('/api/ai-recommendations');
+      const response = await fetch('http://localhost:5000/api/courses'); // Use full URL with port 5000
       const data = await response.json();
-      setAiRecommendations(data.recommendations);
+      setCourses(data);
     } catch (error) {
-      console.error('Error fetching AI recommendations:', error);
+      console.error('Error fetching courses:', error);
     }
   };
 
+  const toggleChatbot = () => setIsChatOpen(!isChatOpen);
+
+
   const handleGeneratePathway = async (e) => {
     e.preventDefault();
-    // This is a placeholder function. In a real implementation,
-    // you would call your AI backend to generate the pathway.
     try {
       // Simulating an API call
       const response = await new Promise(resolve => setTimeout(() => resolve({
@@ -100,44 +98,41 @@ const LMS = () => {
     setIsPathwayModalOpen(false);
   };
 
-  const handleAddCourse = (e) => {
+  const handleAddCourse = async (e) => {
     e.preventDefault();
-    // Here you would typically send the new course data to your backend
-    console.log('New course:', newCourse);
-    setIsAddCourseModalOpen(false);
-    // Reset the form
-    setNewCourse({
-      title: '',
-      instructor: '',
-      duration: '',
-      level: '',
-      category: '',
-      description: '',
-    });
-  };
 
-  const courses = [
-    { id: 1, title: "Introduction to Mi'kmaq Language", instructor: "Dr. Emily Johnson", duration: "8 weeks", level: "Beginner", description: "Learn the basics of Mi'kmaq language and culture.", featured: true, bgImage: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-    { id: 2, title: "Advanced Sustainable Fishing Practices", instructor: "Prof. Michael Smith", duration: "12 weeks", level: "Advanced", description: "Explore cutting-edge sustainable fishing techniques.", progress: 75, bgImage: "https://images.unsplash.com/photo-1545816250-e12bedba42ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-    { id: 3, title: "Traditional Medicinal Plants", instructor: "Elder Sarah Denny", duration: "6 weeks", level: "Intermediate", description: "Discover the healing properties of indigenous plants.", bgImage: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-    { id: 4, title: "Cultural Preservation Techniques", instructor: "Dr. Robert White", duration: "10 weeks", level: "All Levels", description: "Learn methods to preserve and promote indigenous culture.", bgImage: "https://images.unsplash.com/photo-1461009683693-342af2f2d6ce?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-    { id: 5, title: "Indigenous Art and Storytelling", instructor: "Maria Running Wolf", duration: "8 weeks", level: "Beginner", description: "Explore traditional art forms and storytelling techniques.", bgImage: "https://images.unsplash.com/photo-1460518451285-97b6aa326961?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-    { id: 6, title: "Environmental Stewardship", instructor: "Dr. John River", duration: "10 weeks", level: "Intermediate", description: "Learn about environmental conservation from an indigenous perspective.", progress: 30, bgImage: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-    { id: 7, title: "Introduction to Indigenous Astronomy", instructor: "Dr. Stargazer", duration: "8 weeks", level: "Beginner", category: "Science", description: "Explore the night sky through indigenous perspectives.", featured: true, bgImage: "https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-    { id: 8, title: "Traditional Mathematics in Nature", instructor: "Prof. Fibonacci", duration: "10 weeks", level: "Intermediate", category: "Mathematics", description: "Discover mathematical patterns in natural indigenous designs.", bgImage: "https://images.unsplash.com/photo-1509228468518-180dd4864904?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-  ];
+    const formData = new FormData();
+    formData.append('title', newCourse.title);
+    formData.append('instructor', newCourse.instructor);
+    formData.append('duration', newCourse.duration);
+    formData.append('level', newCourse.level);
+    formData.append('category', newCourse.category);
+    formData.append('description', newCourse.description);
+    if (newCourse.pdf) formData.append('pdf', newCourse.pdf);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/courses', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        setIsAddCourseModalOpen(false);
+        setNewCourse({ title: '', instructor: '', duration: '', level: '', category: '', description: '', pdf: null });
+        fetchCourses();  // Refresh course list
+      } else {
+        console.error('Error adding course:', await response.json());
+      }
+    } catch (error) {
+      console.error('Error adding course:', error);
+    }
+  };
 
   const filteredCourses = courses.filter(course =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (filterLevel === 'All' || course.level === filterLevel) &&
     (filterCategory === 'All' || course.category === filterCategory)
   );
-
-  const aiRecommendedCourses = [
-    { id: 'ai1', title: "AI Ethics and Governance", instructor: "Dr. Emma Watson", duration: "6 weeks", level: "Intermediate", description: "Explore the ethical implications of AI and develop governance frameworks.", bgImage: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-    { id: 'ai2', title: "Machine Learning for Climate Change", instructor: "Prof. Alan Turing", duration: "8 weeks", level: "Advanced", description: "Apply machine learning techniques to address climate change challenges.", bgImage: "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-    { id: 'ai3', title: "Quantum Computing Fundamentals", instructor: "Dr. Quantum Leap", duration: "10 weeks", level: "Beginner", description: "Dive into the world of quantum computing and its potential applications.", bgImage: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" },
-  ];
 
   const categories = [
     { name: 'All', color: 'var(--blue)' },
@@ -152,7 +147,7 @@ const LMS = () => {
     { title: "Pipanimi - My Tutor", description: "Get personalized assistance", color: "var(--dark-blue)", icon: <SchoolIcon fontSize="large" />, onClick: toggleChatbot },
     { title: "Generate Career Pathway", description: "Create a personalized learning path", color: "var(--dark-orange)", icon: <RouteIcon fontSize="large" />, onClick: () => setIsPathwayModalOpen(true) },
     { title: "Add Course", description: "Contribute to our course catalog", color: "var(--dark-yellow)", icon: <AddIcon fontSize="large" />, onClick: () => setIsAddCourseModalOpen(true) },
-    { title: "Find Bursary", description: "Discover financial aid opportunities", color: "var(--purple)", icon: <SearchIcon fontSize="large" />, onClick: () => {/* Add bursary search functionality */}, subtitle: "by Elev" },
+    { title: "Find Bursary", description: "Discover financial aid opportunities", color: "var(--purple)", icon: <SearchIcon fontSize="large" />, onClick: () => {/* Add bursary search functionality */ }, subtitle: "by Elev" },
   ];
 
   return (
@@ -236,7 +231,7 @@ const LMS = () => {
         <div className="ai-recommendations">
           <h2>AI Recommended Courses</h2>
           <div className="ai-courses-grid">
-            {aiRecommendedCourses.map(course => (
+            {aiRecommendations.map(course => (
               <CourseCard key={course.id} {...course} isAIRecommended={true} />
             ))}
           </div>
@@ -246,16 +241,13 @@ const LMS = () => {
           <h2>All Courses</h2>
           <div className="courses-grid">
             {filteredCourses.map(course => (
-              <CourseCard key={course.id} {...course} />
+              <CourseCard key={course._id} {...course} />
             ))}
           </div>
         </div>
 
         {/* Chat button */}
-        <button
-          className="solid-chat-button glass-chat-button"
-          onClick={toggleChatbot}
-        >
+        <button className="solid-chat-button glass-chat-button" onClick={toggleChatbot}>
           Pipanimi – Ask me
         </button>
 
@@ -315,6 +307,13 @@ const LMS = () => {
                 value={newCourse.instructor}
                 onChange={(e) => setNewCourse({ ...newCourse, instructor: e.target.value })}
                 margin="normal"
+              />
+              <TextField
+                fullWidth
+                type="file"
+                label="Upload Course PDF"
+                inputProps={{ accept: '.pdf' }}
+                onChange={(e) => setNewCourse({ ...newCourse, pdf: e.target.files[0] })}
               />
               <TextField
                 fullWidth
