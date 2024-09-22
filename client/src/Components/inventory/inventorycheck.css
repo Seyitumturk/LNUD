@@ -27,6 +27,7 @@ body {
     overflow-y: auto;
     background: linear-gradient(135deg, #0f1e39 0%, #1a3050 100%);
     transition: all 0.3s ease-in-out;
+    margin-left: 270px; /* Initial margin to accommodate expanded sidebar */
 }
 
 .sidebar {
@@ -42,13 +43,11 @@ body {
 }
 
 .sidebar.collapsed {
-    width: 70px;
-    /* Adjust this value based on your collapsed sidebar width */
+    width: 70px; /* Adjust this value based on your collapsed sidebar width */
 }
 
 .inventory-content.sidebar-collapsed {
-    margin-left: 70px;
-    /* Adjust this value to match the collapsed sidebar width */
+    margin-left: 70px; /* Adjust this value to match the collapsed sidebar width */
 }
 
 /* Rest of the CSS remains unchanged */

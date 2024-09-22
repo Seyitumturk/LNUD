@@ -12,8 +12,13 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY, // Your OpenAI API key from .env
 });
 
+// Update this line to correctly import the api routes
+const apiRoutes = require('./server/routes/api');
+
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000' // Replace with your React app's URL
+}));
 app.use(express.json());
 
 // Connect to MongoDB
@@ -25,6 +30,9 @@ mongoose.connect('mongodb://localhost:27017/lnud-db', { useNewUrlParser: true, u
 app.get('/api', (req, res) => {
     res.send('Hello World!');
 });
+
+// Use the API routes
+app.use('/api', apiRoutes);
 
 // ENDPOINTS 
 
@@ -39,9 +47,9 @@ app.post('/api/edit-excel', async (req, res) => {
         purchasedWith,
         quantity,
         costPerUnit,
-        employeeName, 
+        employeeName,
         email,
-        adminNotes  
+        adminNotes
     } = req.body;
 
     console.log('Received Data:', {
@@ -75,7 +83,7 @@ app.post('/api/edit-excel', async (req, res) => {
         worksheet.getCell('G12').value = purchasedWith;          // Purchased With
         worksheet.getCell('H12').value = quantity;               // QTY
         worksheet.getCell('I12').value = costPerUnit;            // Cost per Unit
-        
+
         // Set values directly for already merged cells
         worksheet.getCell('C4').value = employeeName;            // Entity Name in merged cells C4:D4
         worksheet.getCell('C5').value = email;                   // Email in merged cells C5:D5
@@ -158,14 +166,14 @@ app.post('/api/edit-expense-report', async (req, res) => {
         worksheet.getCell('B13').value = description;          // Description or Reason for Trip
         worksheet.getCell('C13').value = fundingStream;        // Funding Stream
         worksheet.getCell('D13').value = sourceGrant;          // Source / Grant
-        
+
         // Ensure Date of Expense follows strict format
         const formattedDateOfExpense = new Date(dateOfExpense).toISOString().split('T')[0]; // Format YYYY-MM-DD
         worksheet.getCell('E13').value = formattedDateOfExpense; // Date of Expense (Y/M/D)
-        
+
         // Correctly set the Account value from dropdown
         worksheet.getCell('F13').value = account;               // Account (dropdown value)
-        
+
         // Set Travel and Kms only if travel is "Yes"
         worksheet.getCell('G13').value = travel;               // Travel (Yes/No)
         if (travel.toLowerCase() === 'yes') {
@@ -210,7 +218,6 @@ app.post('/api/edit-expense-report', async (req, res) => {
         res.status(500).send('Error writing to Excel file.');
     }
 });
-
 
 const jsonSchema = {
     type: 'object',

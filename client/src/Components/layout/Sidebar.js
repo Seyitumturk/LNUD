@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaBoxes, FaMapMarkedAlt, FaTools, FaLanguage, FaChevronLeft, FaChevronRight, FaTree } from 'react-icons/fa';
+import { FaHome, FaBoxes, FaMapMarkedAlt, FaTools, FaLanguage, FaChevronLeft, FaChevronRight, FaTree, FaVideo } from 'react-icons/fa';
 import { MdOutlineSchool } from 'react-icons/md';
 import { useSidebar } from '../../context/SidebarContext';
 import './sidebar.css';
@@ -65,7 +65,7 @@ const Sidebar = ({ onWidthChange }) => {
 
     useEffect(() => {
         if (onWidthChange && typeof onWidthChange === 'function') {
-            onWidthChange(isCollapsed ? 60 : 220);
+            onWidthChange(isCollapsed ? 70 : 250);
         }
     }, [isCollapsed, onWidthChange]);
 
@@ -73,10 +73,11 @@ const Sidebar = ({ onWidthChange }) => {
         { path: '/', icon: FaHome, label: 'Dashboard' },
         { path: '/lms', icon: MdOutlineSchool, label: 'ALP' },
         { path: '/inventory', icon: FaBoxes, label: 'Inventory' },
-        { path: '/community-map', icon: FaMapMarkedAlt, label: 'Community Map' },
+        { path: '/community-map', icon: FaMapMarkedAlt, label: 'Maps' },
         { path: '/makerspaces', icon: FaTools, label: 'Makerspaces' },
         { path: '/language', icon: FaLanguage, label: 'Language' },
         { path: '/asitulisk', icon: FaTree, label: 'Asitulisk' },
+        { path: '/community-zoom', icon: FaVideo, label: 'Zoom Line' },
     ];
 
     // If on chat page, return null to hide sidebar
@@ -85,7 +86,7 @@ const Sidebar = ({ onWidthChange }) => {
     }
 
     return (
-        <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`} style={{ width: isCollapsed ? '60px' : '220px' }}>
+        <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`} style={{ width: isCollapsed ? '70px' : '250px', borderBottomRightRadius: '0' }}>
             <div className="sidebar-logo">
                 <div className="sidebar-logo-container">
                     <img src="/logo.png" alt="Logo" />
