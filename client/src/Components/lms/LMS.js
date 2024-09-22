@@ -5,6 +5,7 @@ import ExcelChatBot from '../pipinami/ExcelChatBot';
 import AddIcon from '@mui/icons-material/Add';
 import RouteIcon from '@mui/icons-material/Route';
 import SchoolIcon from '@mui/icons-material/School';
+import SearchIcon from '@mui/icons-material/Search';
 import './lms.css';
 import { useSidebar } from '../../context/SidebarContext';
 import { Link } from 'react-router-dom';
@@ -151,6 +152,7 @@ const LMS = () => {
     { title: "Pipanimi - My Tutor", description: "Get personalized assistance", color: "var(--dark-blue)", icon: <SchoolIcon fontSize="large" />, onClick: toggleChatbot },
     { title: "Generate Career Pathway", description: "Create a personalized learning path", color: "var(--dark-orange)", icon: <RouteIcon fontSize="large" />, onClick: () => setIsPathwayModalOpen(true) },
     { title: "Add Course", description: "Contribute to our course catalog", color: "var(--dark-yellow)", icon: <AddIcon fontSize="large" />, onClick: () => setIsAddCourseModalOpen(true) },
+    { title: "Find Bursary", description: "Discover financial aid opportunities", color: "var(--purple)", icon: <SearchIcon fontSize="large" />, onClick: () => {/* Add bursary search functionality */}, subtitle: "by Elev" },
   ];
 
   return (
@@ -200,7 +202,7 @@ const LMS = () => {
         </div>
 
         <h2 className="services-title">Services</h2>
-        <div className="lms-actions">
+        <div className="lms-actions" style={{ display: 'flex', gap: '20px' }}>
           {services.map((service, index) => (
             <div
               key={index}
@@ -219,11 +221,14 @@ const LMS = () => {
                 color: 'white',
                 textAlign: 'center',
                 transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                flex: '1',
+                minWidth: '200px',
               }}
             >
               <h3>{service.title}</h3>
               <p>{service.description}</p>
               <div className="action-icon">{service.icon}</div>
+              {service.subtitle && <small style={{ marginTop: '10px' }}>{service.subtitle}</small>}
             </div>
           ))}
         </div>

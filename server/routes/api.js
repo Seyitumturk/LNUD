@@ -1,115 +1,74 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const pdf = require('pdf-parse');
 const fs = require('fs').promises;
-const path = require('path');
-const OpenAI = require("openai");
+const { PDFLoader } = require('@langchain/community/document_loaders/fs/pdf');  // Correct path
+const { OpenAIEmbeddings } = require('@langchain/openai');
+const { RetrievalQAChain } = require('langchain/chains');
+const { OpenAI } = require('@langchain/openai');
+const { RecursiveCharacterTextSplitter } = require('@langchain/textsplitters');
+const { MemoryVectorStore } = require('langchain/vectorstores/memory');
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+// Multer setup to handle file uploads
+const upload = multer({ dest: 'uploads/' });
 
-// Configure multer to preserve file extensions
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/')
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
-    }
-});
+// Define a global variable for vectorStore
+let vectorStore = null;
 
-const upload = multer({ storage: storage });
-
-// Mock function to get presentation content (keep this for non-PDF content)
-async function getPresentationContent(id) {
-    return `This is the content of presentation ${id}. It includes key points about the topic.`;
-}
-
-router.get('/presentation-content/:id', async (req, res) => {
-    try {
-        const content = await getPresentationContent(req.params.id);
-        res.json({ content });
-    } catch (error) {
-        res.status(500).json({ error: 'Error fetching presentation content' });
-    }
-});
-
+// Handle PDF upload and processing
 router.post('/upload-pdf', upload.single('pdf'), async (req, res) => {
-    console.log('Received file upload request');
-    if (!req.file) {
-        console.error('No file uploaded');
-        return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    if (path.extname(req.file.originalname).toLowerCase() !== '.pdf') {
-        await fs.unlink(req.file.path);
-        return res.status(400).json({ error: 'Uploaded file is not a PDF' });
-    }
-
     try {
-        console.log('File uploaded:', req.file.path);
-        const dataBuffer = await fs.readFile(req.file.path);
-        console.log('File read successfully, buffer length:', dataBuffer.length);
-        
-        const data = await pdf(dataBuffer);
-        console.log('PDF parsed successfully, text length:', data.text.length);
-        console.log('PDF info:', JSON.stringify(data.info));
-        console.log('PDF metadata:', JSON.stringify(data.metadata));
+        const filePath = req.file.path;
+        const loader = new PDFLoader(filePath);
+        const docs = await loader.load();
 
-        // Remove any non-printable characters and excessive whitespace
-        const cleanedText = data.text.replace(/[^\x20-\x7E]/g, '').replace(/\s+/g, ' ').trim();
-        
-        if (!cleanedText) {
-            console.log('Full PDF text is empty or contains only non-printable characters');
-            return res.status(400).json({ 
-                error: 'Extracted PDF content is empty or contains only non-printable characters',
-                info: data.info
-            });
-        }
+        // Split the PDF into smaller chunks
+        const textSplitter = new RecursiveCharacterTextSplitter({
+            chunkSize: 1000,
+            chunkOverlap: 200,
+        });
+        const splits = await textSplitter.splitDocuments(docs);
 
-        // Limit the cleaned text to 500 words
-        const limitedText = cleanedText.split(/\s+/).slice(0, 500).join(' ');
-        console.log('Extracted text (limited to 500 words):', limitedText);
+        // Create embeddings and store documents in an in-memory vector store
+        const embeddings = new OpenAIEmbeddings({
+            model: "text-embedding-ada-002",
+            apiKey: process.env.OPENAI_API_KEY
+        });
+        vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings);
 
-        await fs.unlink(req.file.path);
-        console.log('Temporary file deleted');
+        // Cleanup uploaded PDF file
+        await fs.unlink(filePath);
 
-        res.json({ content: limitedText, info: data.info });
+        res.json({ message: 'PDF processed and documents added to the in-memory vector store successfully.' });
     } catch (error) {
         console.error('Error processing PDF:', error);
-        if (req.file && req.file.path) {
-            await fs.unlink(req.file.path).catch(console.error);
-        }
-        res.status(500).json({ error: 'Error processing PDF: ' + error.message });
+        res.status(500).json({ error: error.message });
     }
 });
 
+// Handle AI tutor questions
 router.post('/ai-tutor', async (req, res) => {
     try {
-        const { question, presentationContent } = req.body;
+        const { question } = req.body;
 
-        if (!question || !presentationContent) {
-            return res.status(400).json({ error: 'Missing question or presentation content' });
+        if (!vectorStore) {
+            return res.status(400).json({ error: 'Vector store is not initialized. Please upload a PDF first.' });
         }
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-                { role: "system", content: "You are a helpful AI tutor. Use the following presentation content to answer the user's question." },
-                { role: "user", content: `Presentation content: ${presentationContent}\n\nQuestion: ${question}` }
-            ],
-        });
+        // Use the in-memory vector store for retrieval-based QA
+        const retriever = vectorStore.asRetriever();
 
-        if (!completion.choices || completion.choices.length === 0) {
-            return res.status(500).json({ error: 'Invalid response from OpenAI' });
-        }
+        // Create a RetrievalQA chain
+        const chain = RetrievalQAChain.fromLLM(
+            new OpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+            retriever
+        );
+        const response = await chain.call({ query: question });
 
-        res.json({ response: completion.choices[0].message.content });
+        res.json({ response: response.text });
     } catch (error) {
-        console.error('Error in AI tutor:', error.response ? error.response.data : error.message);
-        res.status(500).json({ error: 'Error getting AI response', details: error.message });
+        console.error('Error with AI Tutor:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 

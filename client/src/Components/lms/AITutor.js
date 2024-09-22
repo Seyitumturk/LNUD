@@ -2,61 +2,16 @@ import React, { useState } from 'react';
 import './AITutor.css';
 
 const AITutor = ({ onClose }) => {
+    const [userQuestion, setUserQuestion] = useState('');
     const [conversation, setConversation] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [userQuestion, setUserQuestion] = useState('');
-    const [pdfContent, setPdfContent] = useState('');
-
-    const handleFileUpload = async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setIsLoading(true);
-            const formData = new FormData();
-            formData.append('pdf', file);
-
-            try {
-                const response = await fetch('http://localhost:5000/api/upload-pdf', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    if (data.info) {
-                        const infoString = Object.entries(data.info)
-                            .map(([key, value]) => `${key}: ${value}`)
-                            .join(', ');
-                        throw new Error(`${data.error}\nPDF Info: ${infoString}`);
-                    } else {
-                        throw new Error(data.error || `HTTP error! status: ${response.status}`);
-                    }
-                }
-
-                if (data.content && data.content.trim()) {
-                    console.log('Extracted PDF content:', data.content);
-                    setPdfContent(data.content);
-                    setConversation([{ role: 'ai', content: `PDF uploaded successfully. Content length: ${data.content.length} characters` }]);
-                } else {
-                    throw new Error('No content extracted from the PDF. The file might contain only images or non-extractable content.');
-                }
-            } catch (error) {
-                console.error('Error uploading PDF:', error);
-                setConversation([{ role: 'ai', content: `Error uploading PDF: ${error.message}. Please try again with a different PDF.` }]);
-            } finally {
-                setIsLoading(false);
-            }
-        } else {
-            setConversation([{ role: 'ai', content: 'Please select a valid PDF file.' }]);
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!userQuestion.trim() || !pdfContent) return;
+        if (!userQuestion.trim()) return;
 
         setIsLoading(true);
-        setConversation(prev => [...prev, { role: 'user', content: userQuestion }]);
+        setConversation([...conversation, { role: 'user', content: userQuestion }]);
 
         try {
             const response = await fetch('http://localhost:5000/api/ai-tutor', {
@@ -66,7 +21,6 @@ const AITutor = ({ onClose }) => {
                 },
                 body: JSON.stringify({
                     question: userQuestion,
-                    presentationContent: pdfContent,
                 }),
             });
 
@@ -86,6 +40,33 @@ const AITutor = ({ onClose }) => {
         }
     };
 
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (file && file.type === 'application/pdf') {
+            const formData = new FormData();
+            formData.append('pdf', file);
+
+            try {
+                const response = await fetch('http://localhost:5000/api/upload-pdf', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                setConversation(prev => [...prev, { role: 'ai', content: 'PDF uploaded and processed successfully. You can now ask questions about its content.' }]);
+            } catch (error) {
+                console.error('Error uploading PDF:', error);
+                setConversation(prev => [...prev, { role: 'ai', content: `Error uploading PDF: ${error.message}. Please try again.` }]);
+            }
+        } else {
+            setConversation(prev => [...prev, { role: 'ai', content: 'Please upload a valid PDF file.' }]);
+        }
+    };
+
     return (
         <div className="ai-tutor-container">
             <div className="ai-tutor-header">
@@ -98,7 +79,7 @@ const AITutor = ({ onClose }) => {
                         {message.content}
                     </div>
                 ))}
-                {isLoading && <div className="message ai">Processing...</div>}
+                {isLoading && <div className="message ai">Thinking...</div>}
             </div>
             <div className="ai-tutor-upload">
                 <input type="file" accept=".pdf" onChange={handleFileUpload} />
@@ -108,7 +89,7 @@ const AITutor = ({ onClose }) => {
                     type="text"
                     value={userQuestion}
                     onChange={(e) => setUserQuestion(e.target.value)}
-                    placeholder="Ask a question about the PDF content..."
+                    placeholder="Ask a question about the PDF..."
                 />
                 <button type="submit">Send</button>
             </form>

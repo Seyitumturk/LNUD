@@ -26,24 +26,6 @@ const Course = () => {
     }
   ];
 
-  useEffect(() => {
-    const fetchPresentationContent = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/api/presentation-content/${presentations[currentPresentationIndex].id}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setPresentationContent(data.content);
-        setAiTutorContent(data.content);
-      } catch (error) {
-        console.error('Error fetching presentation content:', error);
-      }
-    };
-
-    fetchPresentationContent();
-  }, [currentPresentationIndex]);
-
   const handleNextPresentation = () => {
     setCurrentPresentationIndex((prevIndex) =>
       Math.min(prevIndex + 1, presentations.length - 1)
