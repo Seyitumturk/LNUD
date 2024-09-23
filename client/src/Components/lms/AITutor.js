@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 import './AITutor.css';
-import { AiOutlineSend } from 'react-icons/ai';
+import { AiOutlineSend, AiOutlineClose, AiOutlineExpandAlt } from 'react-icons/ai';
 import { BsThreeDots } from 'react-icons/bs';
 
 const AITutor = ({ onClose, selectedCourseId }) => {
     const [userQuestion, setUserQuestion] = useState('');
     const [conversation, setConversation] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const toggleExpand = () => setIsExpanded(!isExpanded);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!userQuestion.trim()) return;
 
         if (!selectedCourseId) {
-            setConversation(prev => [...prev, { role: 'ai', content: 'No course selected. Please select a course.' }]);
+            setConversation((prev) => [
+                ...prev,
+                { role: 'ai', content: 'No course selected. Please select a course to get started 😊.' },
+            ]);
             return;
         }
 
@@ -21,14 +27,11 @@ const AITutor = ({ onClose, selectedCourseId }) => {
         setConversation([...conversation, { role: 'user', content: userQuestion }]);
 
         try {
-            // Fetch the PDF content for the selected course
             const pdfResponse = await fetch(`http://localhost:5000/api/courses-pdf/${selectedCourseId}`);
-            if (!pdfResponse.ok) {
-                throw new Error('Failed to load PDF content');
-            }
+            if (!pdfResponse.ok) throw new Error('Failed to load PDF content');
+
             const coursePdf = await pdfResponse.json();
 
-            // Send the question and the PDF content to the AI Tutor
             const response = await fetch('http://localhost:5000/api/ai-tutor', {
                 method: 'POST',
                 headers: {
@@ -36,7 +39,7 @@ const AITutor = ({ onClose, selectedCourseId }) => {
                 },
                 body: JSON.stringify({
                     question: userQuestion,
-                    pdfContent: coursePdf,  // Send the PDF content here
+                    pdfContent: coursePdf,
                 }),
             });
 
@@ -46,9 +49,12 @@ const AITutor = ({ onClose, selectedCourseId }) => {
             }
 
             const data = await response.json();
-            setConversation(prev => [...prev, { role: 'ai', content: data.response }]);
+            setConversation((prev) => [...prev, { role: 'ai', content: data.response }]);
         } catch (error) {
-            setConversation(prev => [...prev, { role: 'ai', content: `Error: ${error.message}. Please try again later.` }]);
+            setConversation((prev) => [
+                ...prev,
+                { role: 'ai', content: `Oops! Something went wrong: ${error.message}. Please try again later!` },
+            ]);
         } finally {
             setIsLoading(false);
             setUserQuestion('');
@@ -56,10 +62,17 @@ const AITutor = ({ onClose, selectedCourseId }) => {
     };
 
     return (
-        <div className="ai-tutor-container">
+        <div className={`ai-tutor-container ${isExpanded ? 'expanded' : ''}`}>
             <div className="ai-tutor-header">
                 <h3>AI Tutor</h3>
-                <button onClick={onClose}>Close</button>
+                <div className="header-actions">
+                    <button onClick={toggleExpand}>
+                        {isExpanded ? <AiOutlineExpandAlt /> : <AiOutlineExpandAlt />}
+                    </button>
+                    <button onClick={onClose}>
+                        <AiOutlineClose />
+                    </button>
+                </div>
             </div>
             <div className="ai-tutor-conversation">
                 {conversation.map((message, index) => (
@@ -67,16 +80,22 @@ const AITutor = ({ onClose, selectedCourseId }) => {
                         {message.content}
                     </div>
                 ))}
-                {isLoading && <div className="message ai typing"><BsThreeDots /></div>}
+                {isLoading && (
+                    <div className="message ai typing">
+                        <BsThreeDots />
+                    </div>
+                )}
             </div>
             <form onSubmit={handleSubmit} className="ai-tutor-input">
                 <input
                     type="text"
                     value={userQuestion}
                     onChange={(e) => setUserQuestion(e.target.value)}
-                    placeholder="Ask a question..."
+                    placeholder="How can I help today? 😊"
                 />
-                <button type="submit"><AiOutlineSend /></button>
+                <button type="submit">
+                    <AiOutlineSend />
+                </button>
             </form>
         </div>
     );

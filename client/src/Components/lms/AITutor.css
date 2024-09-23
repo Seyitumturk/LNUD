@@ -1,3 +1,4 @@
+/* AITutor.css */
 .ai-tutor-container {
   position: fixed;
   bottom: 20px;
@@ -11,6 +12,7 @@
   flex-direction: column;
   overflow: hidden;
   transition: all 0.3s ease-in-out;
+  z-index: 1000;
 }
 
 .ai-tutor-container.expanded {
@@ -30,12 +32,22 @@
   border-bottom: 1px solid #444;
 }
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .header-actions button {
   background: none;
   border: none;
   color: #fff;
   cursor: pointer;
   font-size: 1rem;
+  transition: color 0.2s;
+}
+
+.header-actions button:hover {
+  color: #2ecc71;
 }
 
 .ai-tutor-conversation {
@@ -111,14 +123,6 @@
   background-color: #34495e;
   color: white;
   font-size: 1rem;
-}
-
-.custom-file-upload svg {
-  margin-right: 5px;
-}
-
-.ai-tutor-upload input[type="file"] {
-  display: none;
 }
 
 .ai-tutor-input {

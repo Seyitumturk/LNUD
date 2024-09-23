@@ -30,6 +30,8 @@ mongoose.connect('mongodb://localhost:27017/lnud-db', { useNewUrlParser: true, u
 app.get('/api', (req, res) => {
     res.send('Hello World!');
 });
+app.use(express.json({ limit: '5000mb' }));  // Set to 50MB or any limit that works for you
+app.use(express.urlencoded({ limit: '5000mb', extended: true }));
 
 // Use the API routes
 app.use('/api', apiRoutes);

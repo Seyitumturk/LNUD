@@ -130,7 +130,7 @@ router.post('/courses', upload.single('pdf'), async (req, res) => {
 
         // Create embeddings and store documents in the in-memory vector store
         const embeddings = new OpenAIEmbeddings({
-            model: "text-embedding-ada-002",
+            model: "text-embedding-3-large",
             apiKey: process.env.OPENAI_API_KEY,
             batchSize: 512,
         });
