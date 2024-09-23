@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import './Course.css';
 import { useSidebar } from '../../context/SidebarContext';
 import Sidebar from '../layout/Sidebar';
@@ -12,6 +12,8 @@ const Course = () => {
   const [showAITutor, setShowAITutor] = useState(false);
   const [aiTutorContent, setAiTutorContent] = useState('');
   const [presentationContent, setPresentationContent] = useState('');
+  const location = useLocation();
+  const selectedCourseId = location.state?.courseId;  // Retrieve the passed course ID
 
   const presentations = [
     {
@@ -82,8 +84,13 @@ const Course = () => {
       </div>
 
       {showAITutor && (
-        <AITutor content={aiTutorContent} onClose={toggleAITutor} />
+        <AITutor
+          selectedCourseId={selectedCourseId}  // Pass the course ID here
+          content={aiTutorContent}
+          onClose={toggleAITutor}
+        />
       )}
+
     </div>
   );
 };

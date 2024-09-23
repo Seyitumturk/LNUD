@@ -12,11 +12,18 @@ const OpenAI = require('openai'); // Import OpenAI directly
 
 // Multer setup to handle file uploads
 const storage = multer.diskStorage({
-    destination: '../uploads/',  // Directory to store uploaded PDF files
+    destination: (req, file, cb) => {
+        const uploadPath = path.join(__dirname, '../uploads');
+        console.log('Saving file to:', uploadPath);  // Debug log to confirm the path
+        cb(null, uploadPath);
+    },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));  // Ensure unique filenames
+        const uniqueName = Date.now() + path.extname(file.originalname);
+        console.log('Generated filename:', uniqueName);  // Debug log to confirm the filename
+        cb(null, uniqueName);
     }
 });
+
 const upload = multer({ storage });
 
 // Global vectorStore variable
@@ -30,7 +37,7 @@ const openai = new OpenAI({
 // Handle AI tutor queries
 router.post('/ai-tutor', async (req, res) => {
     try {
-        const { question, pdfContent } = req.body;
+        const { question } = req.body;
 
         if (!vectorStore) {
             return res.status(400).json({ error: 'No PDF content processed yet. Please upload a PDF first.' });
@@ -40,36 +47,36 @@ router.post('/ai-tutor', async (req, res) => {
         const retriever = vectorStore.asRetriever();
         const retrievedDocs = await retriever.getRelevantDocuments(question);
 
-        console.log("Retrieved documents:", retrievedDocs);
+        console.log('Retrieved documents:', retrievedDocs);
 
         // Generate context summary from the retrieved documents
         const contextSummary = `
-        The PDF content covers the following topics:
-        ${pdfContent}
+        The retrieved content is as follows:
+        ${retrievedDocs.map(doc => doc.pageContent).join('\n\n')}
 
         The user asked: "${question}". Please provide a detailed response.
         `;
 
-        console.log("GPT-4 Prompt with context:", contextSummary);
+        console.log('GPT-4 Prompt with context:', contextSummary);
 
         // Make a request to OpenAI API
         const completion = await openai.chat.completions.create({
-            model: "gpt-4",  // You can replace with other models like "gpt-4-turbo" if available
+            model: 'gpt-4',
             messages: [
                 { role: 'system', content: 'You are a helpful assistant.' },
-                { role: 'user', content: contextSummary }
+                { role: 'user', content: contextSummary },
             ],
         });
 
         // Log and send the GPT-4 response
-        console.log("GPT-4 Response:", completion.choices[0].message.content);
-        res.json({ response: completion.choices[0].message.content });
-
+        console.log('GPT-4 Response:', completion.choices[0]?.message?.content);  // Use optional chaining
+        res.json({ response: completion.choices[0]?.message?.content || 'No response available from GPT-4' });
     } catch (error) {
         console.error('Error with AI Tutor:', error);
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // Add this route to handle fetching all courses
 router.get('/courses', async (req, res) => {
@@ -82,11 +89,18 @@ router.get('/courses', async (req, res) => {
     }
 });
 
-// Handle course creation with PDF upload
+// Handle course creation with PDF upload and process the PDF content
 router.post('/courses', upload.single('pdf'), async (req, res) => {
     try {
         const { title, instructor, duration, level, category, description } = req.body;
-        const pdfPath = req.file ? req.file.path : null;
+
+        // Check if a file was uploaded and retrieve the path
+        if (!req.file) {
+            return res.status(400).json({ error: 'PDF file is required' });
+        }
+        const pdfPath = req.file.path;
+
+        console.log('Uploaded file path:', pdfPath);  // Debug log for the file path
 
         // Create and save the course
         const course = new Course({
@@ -96,62 +110,73 @@ router.post('/courses', upload.single('pdf'), async (req, res) => {
             level,
             category,
             description,
-            pdfPath  // Store the path to the uploaded PDF
+            pdfPath
         });
 
         await course.save();
 
-        // If a PDF was uploaded, process it using the existing PDF logic
-        if (pdfPath) {
-            const loader = new PDFLoader(pdfPath);
-            const docs = await loader.load();
+        // After saving the course, process the PDF into chunks and create the vectorStore
+        const loader = new PDFLoader(pdfPath);
+        const docs = await loader.load();
 
-            // Split the PDF content into smaller chunks
-            const textSplitter = new RecursiveCharacterTextSplitter({
-                chunkSize: 1000,
-                chunkOverlap: 200,
-            });
-            const splits = await textSplitter.splitDocuments(docs);
+        // Split the PDF content into smaller chunks
+        const textSplitter = new RecursiveCharacterTextSplitter({
+            chunkSize: 1000,  // Size of each chunk
+            chunkOverlap: 200,  // Overlap between chunks
+        });
+        const splits = await textSplitter.splitDocuments(docs);
 
-            console.log("Extracted PDF chunks:", splits.map(chunk => chunk.pageContent));
+        console.log('Extracted PDF chunks:', splits.map(chunk => chunk.pageContent));
 
-            // Create embeddings and store documents in an in-memory vector store
-            const embeddings = new OpenAIEmbeddings({
-                model: "text-embedding-ada-002",
-                apiKey: process.env.OPENAI_API_KEY,
-                batchSize: 512,
-            });
+        // Create embeddings and store documents in the in-memory vector store
+        const embeddings = new OpenAIEmbeddings({
+            model: "text-embedding-ada-002",
+            apiKey: process.env.OPENAI_API_KEY,
+            batchSize: 512,
+        });
 
-            // Create a MemoryVectorStore from documents using embeddings
-            vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings);
+        // Create a MemoryVectorStore from documents using embeddings
+        vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings);
 
-            // Cleanup uploaded PDF file after processing
-            await fs.unlink(pdfPath);
-        }
+        console.log('VectorStore initialized and ready for queries');
 
-        res.status(201).json({ message: 'Course created and PDF processed successfully', course });
+        res.status(201).json({ message: 'Course created and PDF uploaded successfully, and vector store initialized', course });
     } catch (err) {
-        console.error('Error creating course:', err);
-        res.status(500).json({ error: err.message });
+        console.error('Error uploading PDF and creating course:', err);
+        res.status(500).json({ error: 'Error uploading PDF and creating course' });
     }
 });
 
+
+// Retrieve PDF content for a specific course
 // Retrieve PDF content for a specific course
 router.get('/courses-pdf/:courseId', async (req, res) => {
     try {
-        const course = await Course.findById(req.params.courseId);
-        if (!course || !course.pdfPath) {
-            return res.status(404).json({ error: 'Course or PDF not found' });
+        const courseId = req.params.courseId;
+        console.log(`Fetching PDF for courseId: ${courseId}`);
+
+        const course = await Course.findById(courseId);
+        if (!course) {
+            console.error('Course not found');
+            return res.status(404).json({ error: 'Course not found' });
         }
 
-        // Read the PDF content
+        if (!course.pdfPath) {
+            console.error('No PDF path found for this course');
+            return res.status(404).json({ error: 'PDF not found for this course' });
+        }
+
         const pdfPath = course.pdfPath;
+        console.log(`Loading PDF from path: ${pdfPath}`);
+
         const loader = new PDFLoader(pdfPath);
         const pdfDocs = await loader.load();
+        const pdfContent = pdfDocs.map(doc => doc.pageContent).join(' ');
 
-        // Return the raw text content of the PDF to be used by the AI Tutor
-        res.json(pdfDocs.map(doc => doc.pageContent).join(' '));
+        console.log('Successfully loaded PDF content');
+        res.json(pdfContent);  // Send the raw text content of the PDF
     } catch (error) {
+        console.error('Error fetching course PDF:', error);
         res.status(500).json({ error: 'Error fetching course PDF' });
     }
 });

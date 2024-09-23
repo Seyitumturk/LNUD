@@ -14,31 +14,35 @@ function generateSlug(title) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-const CourseCard = ({ title, instructor, duration, level, description, featured, progress, bgImage, isAIRecommended }) => {
+const CourseCard = ({ title, instructor, duration, level, description, featured, progress, bgImage, courseId, onCourseClick, isAIRecommended }) => {
   const slug = generateSlug(title);
   return (
-    <Link to={`/course/${slug}`} className={`course-card ${featured ? 'featured' : ''} ${isAIRecommended ? 'ai-recommended' : ''}`}>
-      <div className="course-card-image" style={{ backgroundImage: `url(${bgImage})` }}></div>
-      <div className="course-card-content">
-        {featured && <div className="featured-badge">Featured</div>}
-        <h3 className="course-title">{title}</h3>
-        <div className="course-details">
-          <span className="course-instructor">{instructor}</span>
-          <span className="course-duration">{duration}</span>
-          <span className="course-level">{level}</span>
-        </div>
-        <p className="course-description">{description}</p>
-        {progress !== undefined && (
-          <div className="course-progress">
-            <div className="progress-bar" style={{ width: `${progress}%` }}></div>
-            <span className="progress-text">{progress}% Complete</span>
+    <Link to={`/course/${slug}`} state={{ courseId: courseId }} className={`course-card ${featured ? 'featured' : ''} ${isAIRecommended ? 'ai-recommended' : ''}`}>
+      <div onClick={onCourseClick} className={`course-card`}>
+        <div className="course-card-image" style={{ backgroundImage: `url(${bgImage})` }}></div>
+        <div className="course-card-content">
+          {featured && <div className="featured-badge">Featured</div>}
+          <h3 className="course-title">{title}</h3>
+          <div className="course-details">
+            <span className="course-instructor">{instructor}</span>
+            <span className="course-duration">{duration}</span>
+            <span className="course-level">{level}</span>
           </div>
-        )}
-        <button className="enroll-button">{progress !== undefined ? 'Continue' : 'Enroll Now'}</button>
+          <p className="course-description">{description}</p>
+          {progress !== undefined && (
+            <div className="course-progress">
+              <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+              <span className="progress-text">{progress}% Complete</span>
+            </div>
+          )}
+          <button className="enroll-button">{progress !== undefined ? 'Continue' : 'Enroll Now'}</button>
+        </div>
       </div>
     </Link>
   );
 };
+
+
 
 const LMS = () => {
   const { isCollapsed } = useSidebar();
@@ -50,6 +54,8 @@ const LMS = () => {
   const [aiRecommendations, setAiRecommendations] = useState([]);
   const [isPathwayModalOpen, setIsPathwayModalOpen] = useState(false);
   const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState(null); // Store the selected course ID
+  const [isAITutorOpen, setIsAITutorOpen] = useState(false);
   const [newCourse, setNewCourse] = useState({
     title: '',
     instructor: '',
@@ -74,6 +80,10 @@ const LMS = () => {
     } catch (error) {
       console.error('Error fetching courses:', error);
     }
+  };
+  const handleCourseClick = (courseId) => {
+    setSelectedCourseId(courseId); // Set the selected course ID
+    setIsAITutorOpen(true); // Open the AI Tutor
   };
 
   const toggleChatbot = () => setIsChatOpen(!isChatOpen);
@@ -100,7 +110,7 @@ const LMS = () => {
 
   const handleAddCourse = async (e) => {
     e.preventDefault();
-  
+
     const formData = new FormData();
     formData.append('title', newCourse.title);
     formData.append('instructor', newCourse.instructor);
@@ -109,13 +119,13 @@ const LMS = () => {
     formData.append('category', newCourse.category);
     formData.append('description', newCourse.description);
     if (newCourse.pdf) formData.append('pdf', newCourse.pdf);
-  
+
     try {
       const response = await fetch('http://localhost:5000/api/courses', {
         method: 'POST',
         body: formData,
       });
-  
+
       if (response.ok) {
         setIsAddCourseModalOpen(false);
         setNewCourse({ title: '', instructor: '', duration: '', level: '', category: '', description: '', pdf: null });
@@ -127,7 +137,7 @@ const LMS = () => {
       console.error('Error adding course:', error);
     }
   };
-  
+
   const filteredCourses = courses.filter(course =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (filterLevel === 'All' || course.level === filterLevel) &&
@@ -240,8 +250,13 @@ const LMS = () => {
         <div className="all-courses">
           <h2>All Courses</h2>
           <div className="courses-grid">
-            {filteredCourses.map(course => (
-              <CourseCard key={course._id} {...course} />
+            {courses.map(course => (
+              <CourseCard
+                key={course._id}
+                {...course}
+                courseId={course._id}  // Ensure courseId is passed here
+                onCourseClick={() => handleCourseClick(course._id)} // Pass the course ID for AI Tutor
+              />
             ))}
           </div>
         </div>
