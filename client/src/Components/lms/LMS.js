@@ -100,7 +100,7 @@ const LMS = () => {
 
   const handleAddCourse = async (e) => {
     e.preventDefault();
-
+  
     const formData = new FormData();
     formData.append('title', newCourse.title);
     formData.append('instructor', newCourse.instructor);
@@ -109,13 +109,13 @@ const LMS = () => {
     formData.append('category', newCourse.category);
     formData.append('description', newCourse.description);
     if (newCourse.pdf) formData.append('pdf', newCourse.pdf);
-
+  
     try {
       const response = await fetch('http://localhost:5000/api/courses', {
         method: 'POST',
         body: formData,
       });
-
+  
       if (response.ok) {
         setIsAddCourseModalOpen(false);
         setNewCourse({ title: '', instructor: '', duration: '', level: '', category: '', description: '', pdf: null });
@@ -127,7 +127,7 @@ const LMS = () => {
       console.error('Error adding course:', error);
     }
   };
-
+  
   const filteredCourses = courses.filter(course =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (filterLevel === 'All' || course.level === filterLevel) &&

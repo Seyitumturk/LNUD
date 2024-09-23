@@ -3,7 +3,7 @@ import './AITutor.css';
 import { AiOutlineSend, AiOutlineFilePdf } from 'react-icons/ai';
 import { BsThreeDots } from 'react-icons/bs';
 
-const AITutor = ({ onClose }) => {
+const AITutor = ({ onClose, selectedCourseId }) => {
     const [userQuestion, setUserQuestion] = useState('');
     const [conversation, setConversation] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -17,6 +17,11 @@ const AITutor = ({ onClose }) => {
         setConversation([...conversation, { role: 'user', content: userQuestion }]);
 
         try {
+            // Fetch the PDF content of the selected course
+            const pdfResponse = await fetch(`http://localhost:5000/api/courses-pdf/${selectedCourseId}`);
+            const coursePdf = await pdfResponse.json();
+
+            // Send the question and PDF content to the AI tutor
             const response = await fetch('http://localhost:5000/api/ai-tutor', {
                 method: 'POST',
                 headers: {
@@ -24,6 +29,7 @@ const AITutor = ({ onClose }) => {
                 },
                 body: JSON.stringify({
                     question: userQuestion,
+                    pdfContent: coursePdf,  // Attach the PDF content to the question
                 }),
             });
 
@@ -39,32 +45,6 @@ const AITutor = ({ onClose }) => {
         } finally {
             setIsLoading(false);
             setUserQuestion('');
-        }
-    };
-
-    const handleFileUpload = async (e) => {
-        const file = e.target.files[0];
-        if (file && file.type === 'application/pdf') {
-            const formData = new FormData();
-            formData.append('pdf', file);
-
-            try {
-                const response = await fetch('http://localhost:5000/api/upload-pdf', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                setConversation(prev => [...prev, { role: 'ai', content: 'PDF uploaded and processed successfully. You can now ask questions about its content.' }]);
-            } catch (error) {
-                setConversation(prev => [...prev, { role: 'ai', content: `Error uploading PDF: ${error.message}. Please try again.` }]);
-            }
-        } else {
-            setConversation(prev => [...prev, { role: 'ai', content: 'Please upload a valid PDF file.' }]);
         }
     };
 
@@ -86,12 +66,6 @@ const AITutor = ({ onClose }) => {
                     </div>
                 ))}
                 {isLoading && <div className="message ai typing"><BsThreeDots /></div>}
-            </div>
-            <div className="ai-tutor-upload">
-                <label htmlFor="file-upload" className="custom-file-upload">
-                    <AiOutlineFilePdf /> Upload PDF
-                </label>
-                <input id="file-upload" type="file" accept=".pdf" onChange={handleFileUpload} />
             </div>
             <form onSubmit={handleSubmit} className="ai-tutor-input">
                 <input
