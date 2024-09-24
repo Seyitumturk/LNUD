@@ -12,7 +12,6 @@ import ExcelChatBot from './Components/pipinami/ExcelChatBot'; // Import the Exc
 import Sidebar from './Components/layout/Sidebar'; // Add this import
 import './Components/pipinami/chat.css'; // Import the new CSS file
 import { SidebarProvider } from './context/SidebarContext';
-import Courses from './Components/lms/Courses'; // Added import for Courses
 import Course from './Components/lms/Course'; // Added import for Course
 
 function App() {

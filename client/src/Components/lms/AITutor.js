@@ -1,31 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AITutor.css';
 import { AiOutlineSend, AiOutlineClose, AiOutlineExpandAlt } from 'react-icons/ai';
 import { BsThreeDots } from 'react-icons/bs';
 
-const AITutor = ({ onClose, selectedCourseId }) => {
+const AITutor = ({ onClose, selectedCourseId, content }) => {
     const [userQuestion, setUserQuestion] = useState('');
-    const [conversation, setConversation] = useState([]);
+    const [conversation, setConversation] = useState([{ role: 'ai', content: content }]); // Automatically start the conversation
     const [isLoading, setIsLoading] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [typingMessage, setTypingMessage] = useState(''); // For streaming response letter by letter
 
     const toggleExpand = () => setIsExpanded(!isExpanded);
+
+    // Function to handle GPT's response streaming letter by letter
+    const streamGPTResponse = (text) => {
+        let index = 0;
+        setTypingMessage('');
+        setIsLoading(true);
+
+        const intervalId = setInterval(() => {
+            if (index < text.length) {
+                setTypingMessage((prev) => prev + text[index]);
+                index++;
+            } else {
+                clearInterval(intervalId);
+                setIsLoading(false);
+            }
+        }, 50); // 50ms delay between each letter for smooth typing effect
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!userQuestion.trim()) return;
 
-        if (!selectedCourseId) {
-            setConversation((prev) => [
-                ...prev,
-                { role: 'ai', content: 'No course selected. Please select a course to get started 😊.' },
-            ]);
-            return;
-        }
-
-        setIsLoading(true);
         setConversation([...conversation, { role: 'user', content: userQuestion }]);
 
+        setIsLoading(true);
         try {
             const pdfResponse = await fetch(`http://localhost:5000/api/courses-pdf/${selectedCourseId}`);
             if (!pdfResponse.ok) throw new Error('Failed to load PDF content');
@@ -49,14 +59,14 @@ const AITutor = ({ onClose, selectedCourseId }) => {
             }
 
             const data = await response.json();
-            setConversation((prev) => [...prev, { role: 'ai', content: data.response }]);
+            streamGPTResponse(data.response); // Call streaming function here
         } catch (error) {
             setConversation((prev) => [
                 ...prev,
                 { role: 'ai', content: `Oops! Something went wrong: ${error.message}. Please try again later!` },
             ]);
-        } finally {
             setIsLoading(false);
+        } finally {
             setUserQuestion('');
         }
     };
@@ -80,6 +90,14 @@ const AITutor = ({ onClose, selectedCourseId }) => {
                         {message.content}
                     </div>
                 ))}
+
+                {/* Typing effect for GPT response */}
+                {typingMessage && (
+                    <div className="message ai">
+                        {typingMessage}
+                    </div>
+                )}
+
                 {isLoading && (
                     <div className="message ai typing">
                         <BsThreeDots />

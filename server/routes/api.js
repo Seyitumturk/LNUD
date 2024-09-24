@@ -77,7 +77,6 @@ router.post('/ai-tutor', async (req, res) => {
     }
 });
 
-
 // Add this route to handle fetching all courses
 router.get('/courses', async (req, res) => {
     try {
@@ -92,17 +91,13 @@ router.get('/courses', async (req, res) => {
 // Handle course creation with PDF upload and process the PDF content
 router.post('/courses', upload.single('pdf'), async (req, res) => {
     try {
-        const { title, instructor, duration, level, category, description } = req.body;
+        const { title, instructor, duration, level, category, description, canvaLink } = req.body;
 
-        // Check if a file was uploaded and retrieve the path
-        if (!req.file) {
-            return res.status(400).json({ error: 'PDF file is required' });
-        }
-        const pdfPath = req.file.path;
+        const pdfPath = req.file ? req.file.path : null;
 
         console.log('Uploaded file path:', pdfPath);  // Debug log for the file path
 
-        // Create and save the course
+        // Create and save the course, including the Canva link
         const course = new Course({
             title,
             instructor,
@@ -110,45 +105,46 @@ router.post('/courses', upload.single('pdf'), async (req, res) => {
             level,
             category,
             description,
-            pdfPath
+            pdfPath,  // Save the PDF path if uploaded
+            canvaLink  // Save the Canva link
         });
 
         await course.save();
 
-        // After saving the course, process the PDF into chunks and create the vectorStore
-        const loader = new PDFLoader(pdfPath);
-        const docs = await loader.load();
+        // Process the PDF after saving the course
+        if (pdfPath) {
+            const loader = new PDFLoader(pdfPath);
+            const docs = await loader.load();
 
-        // Split the PDF content into smaller chunks
-        const textSplitter = new RecursiveCharacterTextSplitter({
-            chunkSize: 1000,  // Size of each chunk
-            chunkOverlap: 200,  // Overlap between chunks
-        });
-        const splits = await textSplitter.splitDocuments(docs);
+            // Split the PDF content into smaller chunks
+            const textSplitter = new RecursiveCharacterTextSplitter({
+                chunkSize: 1000,  // Size of each chunk
+                chunkOverlap: 200,  // Overlap between chunks
+            });
+            const splits = await textSplitter.splitDocuments(docs);
 
-        console.log('Extracted PDF chunks:', splits.map(chunk => chunk.pageContent));
+            console.log('Extracted PDF chunks:', splits.map(chunk => chunk.pageContent));
 
-        // Create embeddings and store documents in the in-memory vector store
-        const embeddings = new OpenAIEmbeddings({
-            model: "text-embedding-3-large",
-            apiKey: process.env.OPENAI_API_KEY,
-            batchSize: 512,
-        });
+            // Create embeddings and store documents in the in-memory vector store
+            const embeddings = new OpenAIEmbeddings({
+                model: "text-embedding-3-large",
+                apiKey: process.env.OPENAI_API_KEY,
+                batchSize: 512,
+            });
 
-        // Create a MemoryVectorStore from documents using embeddings
-        vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings);
+            // Create a MemoryVectorStore from documents using embeddings
+            vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings);
 
-        console.log('VectorStore initialized and ready for queries');
+            console.log('VectorStore initialized and ready for queries');
+        }
 
-        res.status(201).json({ message: 'Course created and PDF uploaded successfully, and vector store initialized', course });
+        res.status(201).json({ message: 'Course created and PDF processed successfully', course });
     } catch (err) {
         console.error('Error uploading PDF and creating course:', err);
         res.status(500).json({ error: 'Error uploading PDF and creating course' });
     }
 });
 
-
-// Retrieve PDF content for a specific course
 // Retrieve PDF content for a specific course
 router.get('/courses-pdf/:courseId', async (req, res) => {
     try {
@@ -181,5 +177,18 @@ router.get('/courses-pdf/:courseId', async (req, res) => {
     }
 });
 
+// Add a route to fetch a specific course by ID
+router.get('/courses/:courseId', async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.courseId);
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+        res.json(course);
+    } catch (error) {
+        console.error('Error fetching course:', error);
+        res.status(500).json({ error: 'Error fetching course' });
+    }
+});
 
 module.exports = router;

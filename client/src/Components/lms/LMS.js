@@ -64,6 +64,8 @@ const LMS = () => {
     category: '',
     description: '',
     pdf: null, // Store PDF file
+    canvaLink: '', // Add Canva link state
+
   });
   const [careerChoice, setCareerChoice] = useState(''); // New state for career choice input
   const [generatedPathway, setGeneratedPathway] = useState(null); // New state for the generated pathway
@@ -119,6 +121,7 @@ const LMS = () => {
     formData.append('category', newCourse.category);
     formData.append('description', newCourse.description);
     if (newCourse.pdf) formData.append('pdf', newCourse.pdf);
+    if (newCourse.canvaLink) formData.append('canvaLink', newCourse.canvaLink); // Append Canva link
 
     try {
       const response = await fetch('http://localhost:5000/api/courses', {
@@ -128,7 +131,7 @@ const LMS = () => {
 
       if (response.ok) {
         setIsAddCourseModalOpen(false);
-        setNewCourse({ title: '', instructor: '', duration: '', level: '', category: '', description: '', pdf: null });
+        setNewCourse({ title: '', instructor: '', duration: '', level: '', category: '', description: '', pdf: null, canvaLink: '' });
         fetchCourses();  // Refresh course list
       } else {
         console.error('Error adding course:', await response.json());
@@ -335,6 +338,13 @@ const LMS = () => {
                 label="Duration"
                 value={newCourse.duration}
                 onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })}
+                margin="normal"
+              />
+              <TextField
+                fullWidth
+                label="Canva Presentation Link"  // New field for Canva link
+                value={newCourse.canvaLink}
+                onChange={(e) => setNewCourse({ ...newCourse, canvaLink: e.target.value })}
                 margin="normal"
               />
               <FormControl fullWidth margin="normal">
