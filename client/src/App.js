@@ -1,18 +1,20 @@
 import React from 'react';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './Components/auth/Login';
 import Register from './Components/auth/Register';
-import Dashboard from './Components/dashboard/dashboard'; // Updated casing
+import Dashboard from './Components/dashboard/dashboard';
 import ProtectedRoute from './Components/auth/ProtectedRoute';
-import InventoryCheck from './Components/inventory/InventoryCheck'; // Updated path
+import InventoryCheck from './Components/inventory/InventoryCheck';
 import BarcodeSheet from './Components/inventory/Barcode';
 import LMS from './Components/lms/LMS';
-import ExcelChatBot from './Components/pipinami/ExcelChatBot'; // Import the ExcelChatBot component
-import Sidebar from './Components/layout/Sidebar'; // Add this import
-import './Components/pipinami/chat.css'; // Import the new CSS file
+import ExcelChatBot from './Components/pipinami/ExcelChatBot';
+import Sidebar from './Components/layout/Sidebar';
+import './Components/pipinami/chat.css';
 import { SidebarProvider } from './context/SidebarContext';
-import Course from './Components/lms/Course'; // Added import for Course
+import Course from './Components/lms/Course';
+import FundingList from './Components/funder/Funder';
+import Asitulisk from './Components/asitulisk/Asitulisk'; // Import the new Asitulisk component
 
 function App() {
     return (
@@ -32,7 +34,6 @@ function App() {
                                     </ProtectedRoute>
                                 }
                             />
-                            {/* Route for the Inventory Check Page */}
                             <Route
                                 path="/inventory"
                                 element={
@@ -49,7 +50,6 @@ function App() {
                                     </ProtectedRoute>
                                 }
                             />
-                            {/* Route for the Barcode Page */}
                             <Route
                                 path="/barcode"
                                 element={
@@ -59,6 +59,24 @@ function App() {
                                 }
                             />
                             <Route path="/course/:slug" element={<Course />} />
+                            {/* Add a new route for the Funding page */}
+                            <Route
+                                path="/funding"
+                                element={
+                                    <ProtectedRoute>
+                                        <FundingList />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            {/* New Route for Asitulisk */}
+                            <Route
+                                path="/asitulisk"
+                                element={
+                                    <ProtectedRoute>
+                                        <Asitulisk />
+                                    </ProtectedRoute>
+                                }
+                            />
                         </Routes>
                     </div>
                 </div>

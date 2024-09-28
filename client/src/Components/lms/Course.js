@@ -1,17 +1,21 @@
+// Course.js (Updated to Display Screenshot for Debugging)
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import './Course.css';
 import { useSidebar } from '../../context/SidebarContext';
 import Sidebar from '../layout/Sidebar';
 import AITutor from './AITutor';
+import html2canvas from 'html2canvas';
 
 const Course = () => {
   const { slug } = useParams();
   const { isCollapsed } = useSidebar();
   const [currentPresentationIndex, setCurrentPresentationIndex] = useState(0);
-  const [showAITutor, setShowAITutor] = useState(true); // Automatically show AI Tutor on load
+  const [showAITutor, setShowAITutor] = useState(true);
   const [aiTutorContent, setAiTutorContent] = useState('');
   const [courseData, setCourseData] = useState(null);
+  const [screenshot, setScreenshot] = useState(null); // Define screenshot state
+  const [preview, setPreview] = useState(null); // Preview state for debugging
   const location = useLocation();
   const selectedCourseId = location.state?.courseId;
 
@@ -22,7 +26,6 @@ const Course = () => {
         const data = await response.json();
         setCourseData(data);
 
-        // Trigger AI Tutor when course is fetched
         handleAiTutorIntroduction(data.title);
       } catch (error) {
         console.error('Error fetching course:', error);
@@ -56,12 +59,33 @@ const Course = () => {
       Feel free to ask me anything about the course or if you're curious about something else, I'm here to help!
       Let's start this learning adventure together!
     `;
-    setAiTutorContent(prompt);  // Set the AI tutor's initial conversation content
-    setShowAITutor(true);  // Make sure the tutor pops up
+    setAiTutorContent(prompt);
+    setShowAITutor(true);
   };
-  const renderPdf = () => (
-    <iframe src={`/path/to/pdf/${courseData.pdfPath}`} width="100%" height="600px" frameBorder="0" title="Course PDF"></iframe>
-  );
+
+  const captureScreenshot = async () => {
+    try {
+      const presentationContainer = document.querySelector('.presentation-container');
+
+      if (presentationContainer) {
+        const canvas = await html2canvas(presentationContainer, { useCORS: true });
+        const imageData = canvas.toDataURL('image/png');
+        setScreenshot(imageData);
+        setPreview(imageData); // Set preview state for debugging
+        console.log("Screenshot captured:", imageData.substring(0, 100));
+      } else {
+        console.log("Unable to capture screenshot: Presentation container not found.");
+      }
+    } catch (error) {
+      console.error('Error capturing screenshot:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (courseData) {
+      captureScreenshot();
+    }
+  }, [currentPresentationIndex, courseData]);
 
   if (!courseData) {
     return <div>Loading...</div>;
@@ -101,6 +125,7 @@ const Course = () => {
                       frameBorder="0"
                       allowFullScreen
                       title={courseData.title}
+                      className="presentation-iframe"
                     ></iframe>
                   </div>
                 </>
@@ -123,10 +148,7 @@ const Course = () => {
               </button>
               <button
                 onClick={handleNextPresentation}
-                disabled={
-                  currentPresentationIndex ===
-                  (courseData.pdfPath ? 1 : 0)
-                }
+                disabled={currentPresentationIndex === (courseData.pdfPath ? 1 : 0)}
               >
                 Next
               </button>
@@ -142,8 +164,17 @@ const Course = () => {
         <AITutor
           selectedCourseId={selectedCourseId}
           content={aiTutorContent}
+          screenshot={screenshot}  // Pass the screenshot as a prop to AITutor
           onClose={toggleAITutor}
         />
+      )}
+
+      {/* Display the captured screenshot for debugging purposes */}
+      {preview && (
+        <div style={{ marginTop: '20px' }}>
+          <h3>Captured Screenshot Preview</h3>
+          <img src={preview} alt="Captured Screenshot Preview" style={{ width: '300px', border: '2px solid black' }} />
+        </div>
       )}
     </div>
   );

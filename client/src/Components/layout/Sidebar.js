@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaBoxes, FaMapMarkedAlt, FaTools, FaLanguage, FaChevronLeft, FaChevronRight, FaTree, FaVideo } from 'react-icons/fa';
+import { FaHome, FaBoxes, FaMapMarkedAlt, FaTools, FaLanguage, FaChevronLeft, FaChevronRight, FaTree, FaVideo, FaDollarSign } from 'react-icons/fa';
 import { MdOutlineSchool } from 'react-icons/md';
 import { useSidebar } from '../../context/SidebarContext';
 import './sidebar.css';
@@ -76,14 +76,10 @@ const Sidebar = ({ onWidthChange }) => {
         { path: '/community-map', icon: FaMapMarkedAlt, label: 'Maps' },
         { path: '/makerspaces', icon: FaTools, label: 'Makerspaces' },
         { path: '/language', icon: FaLanguage, label: 'Language' },
-        { path: '/asitulisk', icon: FaTree, label: 'Asitulisk' },
+        { path: '/asitulisk', icon: FaTree, label: 'Asitulisk' }, // New Sidebar Item for Asitulisk
         { path: '/community-zoom', icon: FaVideo, label: 'Zoom Line' },
+        { path: '/funding', icon: FaDollarSign, label: 'Funding' },
     ];
-
-    // If on chat page, return null to hide sidebar
-    if (location.pathname === '/chat') {
-        return null;
-    }
 
     return (
         <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`} style={{ width: isCollapsed ? '70px' : '250px', borderBottomRightRadius: '0' }}>

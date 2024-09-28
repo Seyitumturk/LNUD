@@ -1,25 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const fs = require('fs').promises;
+const path = require('path');
+const OpenAI = require('openai'); // Import OpenAI directly
+const axios = require('axios');
 const { PDFLoader } = require('@langchain/community/document_loaders/fs/pdf');
 const { OpenAIEmbeddings } = require('@langchain/openai');
 const { RecursiveCharacterTextSplitter } = require('@langchain/textsplitters');
 const { MemoryVectorStore } = require('langchain/vectorstores/memory');
-const Course = require('../models/Course');  // Assuming the course model is in a models directory
-const path = require('path');
-const OpenAI = require('openai'); // Import OpenAI directly
+const Course = require('../models/Course'); // Assuming the course model is in a models directory
+const qs = require('qs');
 
 // Multer setup to handle file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadPath = path.join(__dirname, '../uploads');
-        console.log('Saving file to:', uploadPath);  // Debug log to confirm the path
         cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
         const uniqueName = Date.now() + path.extname(file.originalname);
-        console.log('Generated filename:', uniqueName);  // Debug log to confirm the filename
         cb(null, uniqueName);
     }
 });
@@ -31,48 +30,181 @@ let vectorStore = null;
 
 // OpenAI configuration (ensure you have your OpenAI API key in the environment variables)
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,  // Replace with your API key
+    apiKey: process.env.OPENAI_API_KEY, // Replace with your API key
+});
+
+const datasetListApiUrl = 'https://open.canada.ca/data/en/api/3/action/group_list'; // URL to fetch the list of datasets
+
+// Replace these with your Client ID and Secret
+const CLIENT_ID = 'd6a13406-b3c8-4cb5-8d25-191bbe9191a1';
+const CLIENT_SECRET = 'm2RwOgBHTCgqiaDzutuiksAf8EpySx2H';
+const TOKEN_URL = 'https://services.sentinel-hub.com/auth/realms/main/protocol/openid-connect/token';
+const PROCESS_URL = 'https://services.sentinel-hub.com/api/v1/process';
+
+// Endpoint to fetch the Sentinel Hub map image
+router.post('/sentinel-image', async (req, res) => {
+    console.log("Sentinel Image Request Initiated");
+    try {
+        // Step 1: Obtain access token using client credentials
+        const tokenResponse = await axios.post(
+            TOKEN_URL,
+            qs.stringify({
+                client_id: CLIENT_ID,
+                client_secret: CLIENT_SECRET,
+                grant_type: 'client_credentials',
+            }),
+            {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            }
+        );
+
+        const accessToken = tokenResponse.data.access_token;
+
+        // Step 2: Define request payload
+        const requestBody = {
+            input: {
+                bounds: {
+                    properties: {
+                        crs: 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'  // CRS specification is crucial
+                    },
+                    bbox: [13.822174072265625, 45.85080395917834, 14.55963134765625, 46.29191774991382]  // Example bbox coordinates
+                },
+                data: [{
+                    type: 'sentinel-2-l2a',  // Dataset type for Sentinel-2 L2A
+                    dataFilter: {
+                        timeRange: {
+                            from: '2020-06-01T00:00:00Z',
+                            to: '2020-06-30T23:59:59Z'  // Specific time range
+                        },
+                        maxCloudCoverage: 20  // Set maximum cloud coverage to filter images
+                    },
+                }],
+            },
+            output: {
+                width: 512,
+                height: 512,
+                responses: [
+                    {
+                        identifier: 'default',
+                        format: {
+                            type: 'image/jpeg'  // JPEG format for the output image
+                        }
+                    }
+                ]
+            },
+            evalscript: `
+                //VERSION=3
+                function setup() {
+                    return {
+                        input: ["B02", "B03", "B04"],
+                        output: { bands: 3, sampleType: "AUTO" }  // Setting bands and sampleType for output
+                    };
+                }
+
+                function evaluatePixel(sample) {
+                    return [2.5 * sample.B04, 2.5 * sample.B03, 2.5 * sample.B02];  // Define RGB values
+                }
+            `,
+        };
+
+        // Step 3: Make API request to the Sentinel Hub Process API
+        const imageResponse = await axios.post(PROCESS_URL, requestBody, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,  // Bearer token for authorization
+                'Content-Type': 'application/json',
+                Accept: 'image/jpeg'  // Set response type to JPEG
+            },
+            responseType: 'arraybuffer',  // Handle binary data
+        });
+
+        // Step 4: Encode image to base64 and send response
+        const imageBase64 = Buffer.from(imageResponse.data, 'binary').toString('base64');
+        res.send({ image: `data:image/jpeg;base64,${imageBase64}` });
+    } catch (error) {
+        // Capture and log errors during request
+        console.error('Error fetching image:', error.message, error.response ? error.response.data : '');
+        res.status(500).send({ error: 'Failed to fetch image' });
+    }
+});
+
+
+// Function to fetch the list of all datasets from the CKAN API
+const fetchAllDatasets = async () => {
+    try {
+        // Make a GET request to the group_list endpoint to retrieve all datasets
+        const response = await axios.post(datasetListApiUrl, {});
+
+        // Return the list of dataset names if the response is successful
+        if (response.data && response.data.result) {
+            return response.data.result;
+        } else {
+            throw new Error('Failed to fetch dataset list');
+        }
+    } catch (error) {
+        console.error('Error fetching dataset list:', error.response ? error.response.data : error.message);
+        throw new Error('Unable to fetch dataset list');
+    }
+};
+
+// Define a new API endpoint to get the list of all available datasets
+router.get('/datasets', async (req, res) => {
+    try {
+        // Fetch all datasets
+        const datasets = await fetchAllDatasets();
+
+        // Respond with the dataset list
+        res.json(datasets);
+    } catch (error) {
+        console.error('Error in /datasets route:', error.message);
+        res.status(500).json({ error: 'Unable to fetch dataset list' });
+    }
 });
 
 // Handle AI tutor queries
 router.post('/ai-tutor', async (req, res) => {
     try {
-        const { question } = req.body;
+        const { question, screenshot } = req.body;
+
+        console.log(`Received question: ${question}`);
+
+        // Log the received screenshot data to ensure it's passed correctly
+        if (screenshot) {
+            console.log(`Received screenshot data (length): ${screenshot.length}`);
+        } else {
+            console.log('No screenshot data received.');
+        }
 
         if (!vectorStore) {
             return res.status(400).json({ error: 'No PDF content processed yet. Please upload a PDF first.' });
         }
 
-        // Use the in-memory vector store for document retrieval
-        const retriever = vectorStore.asRetriever();
-        const retrievedDocs = await retriever.getRelevantDocuments(question);
+        let visionAnalysis = '';
+        if (screenshot) {
+            try {
+                console.log('Sending screenshot to GPT-4 Vision API...');
 
-        console.log('Retrieved documents:', retrievedDocs);
+                const visionResponse = await openai.chat.completions.create({
+                    model: 'gpt-4o',  // Use the vision-capable model
+                    messages: [
+                        { role: 'system', content: 'You are a helpful assistant that can analyze both text and images.' },
+                        { role: 'user', content: question, image: screenshot }  // Include the screenshot in the request
+                    ]
+                });
 
-        // Generate context summary from the retrieved documents
-        const contextSummary = `
-        The retrieved content is as follows:
-        ${retrievedDocs.map(doc => doc.pageContent).join('\n\n')}
+                console.log('Vision API Response:', visionResponse);
 
-        The user asked: "${question}". Please provide a detailed response.
-        `;
+                // Extract the text or analysis from the vision API response
+                visionAnalysis = visionResponse.choices[0]?.message?.content || 'No analysis available for the screenshot';
+                console.log(`Extracted vision analysis: ${visionAnalysis}`);
+            } catch (visionError) {
+                console.error('Error analyzing screenshot with GPT-4 Vision API:', visionError.message);
+                return res.status(500).json({ error: 'Error processing the screenshot with GPT-4 Vision API.' });
+            }
+        }
 
-        console.log('GPT-4 Prompt with context:', contextSummary);
-
-        // Make a request to OpenAI API
-        const completion = await openai.chat.completions.create({
-            model: 'gpt-4',
-            messages: [
-                { role: 'system', content: 'You are a helpful assistant.' },
-                { role: 'user', content: contextSummary },
-            ],
-        });
-
-        // Log and send the GPT-4 response
-        console.log('GPT-4 Response:', completion.choices[0]?.message?.content);  // Use optional chaining
-        res.json({ response: completion.choices[0]?.message?.content || 'No response available from GPT-4' });
+        res.json({ response: visionAnalysis });
     } catch (error) {
-        console.error('Error with AI Tutor:', error);
+        console.error('Error with AI Tutor:', error.message);
         res.status(500).json({ error: error.message });
     }
 });

@@ -1,0 +1,122 @@
+/* FundingList.css */
+
+/* Universal Styles */
+/* Universal Styles */
+body,
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1e1e2f, #2c2c3a);
+    /* overflow: hidden;  Remove this line */
+}
+
+
+.funding-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 100vh;
+    /* Use min-height instead of height */
+}
+
+
+.funding-main-title {
+    font-size: 48px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    /* Glassmorphism effect */
+}
+
+.funding-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 0;
+    width: 100%;
+    overflow-y: scroll;
+    /* Enable scroll */
+    height: calc(100% - 150px);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+}
+
+
+.funding-card {
+    background: rgba(255, 255, 255, 0.2);
+    /* Light transparent background */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 20px;
+    color: #ffffff;
+    text-align: left;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(10px);
+    /* Glassmorphism effect */
+    cursor: pointer;
+}
+
+.funding-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+.funding-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #ffffff;
+}
+
+.funding-description {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #c9c9c9;
+    margin-bottom: 20px;
+}
+
+.funding-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    padding-top: 10px;
+    margin-top: 10px;
+    color: #bfbfbf;
+}
+
+.funding-organization {
+    font-weight: 500;
+    color: #66c1ff;
+}
+
+.funding-date {
+    color: #bfbfbf;
+}
+
+/* Custom Scrollbar Styles */
+.funding-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.funding-grid::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+}
+
+.funding-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
