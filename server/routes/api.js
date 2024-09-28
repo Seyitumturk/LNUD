@@ -95,9 +95,7 @@ router.post('/courses', upload.single('pdf'), async (req, res) => {
 
         const pdfPath = req.file ? req.file.path : null;
 
-        console.log('Uploaded file path:', pdfPath);  // Debug log for the file path
-
-        // Create and save the course, including the Canva link
+        // Create and save the course, including the Canva link and PDF path
         const course = new Course({
             title,
             instructor,
@@ -123,13 +121,10 @@ router.post('/courses', upload.single('pdf'), async (req, res) => {
             });
             const splits = await textSplitter.splitDocuments(docs);
 
-            console.log('Extracted PDF chunks:', splits.map(chunk => chunk.pageContent));
-
             // Create embeddings and store documents in the in-memory vector store
             const embeddings = new OpenAIEmbeddings({
-                model: "text-embedding-3-large",
+                model: "text-embedding-ada-002",  // Choose a suitable model
                 apiKey: process.env.OPENAI_API_KEY,
-                batchSize: 512,
             });
 
             // Create a MemoryVectorStore from documents using embeddings
@@ -144,39 +139,25 @@ router.post('/courses', upload.single('pdf'), async (req, res) => {
         res.status(500).json({ error: 'Error uploading PDF and creating course' });
     }
 });
-
 // Retrieve PDF content for a specific course
 router.get('/courses-pdf/:courseId', async (req, res) => {
     try {
         const courseId = req.params.courseId;
-        console.log(`Fetching PDF for courseId: ${courseId}`);
-
         const course = await Course.findById(courseId);
-        if (!course) {
-            console.error('Course not found');
-            return res.status(404).json({ error: 'Course not found' });
-        }
+        if (!course) return res.status(404).json({ error: 'Course not found' });
 
-        if (!course.pdfPath) {
-            console.error('No PDF path found for this course');
-            return res.status(404).json({ error: 'PDF not found for this course' });
-        }
+        if (!course.pdfPath) return res.status(404).json({ error: 'PDF not found for this course' });
 
         const pdfPath = course.pdfPath;
-        console.log(`Loading PDF from path: ${pdfPath}`);
-
         const loader = new PDFLoader(pdfPath);
         const pdfDocs = await loader.load();
         const pdfContent = pdfDocs.map(doc => doc.pageContent).join(' ');
 
-        console.log('Successfully loaded PDF content');
-        res.json(pdfContent);  // Send the raw text content of the PDF
+        res.json({ pdfContent });  // Send the raw text content of the PDF
     } catch (error) {
-        console.error('Error fetching course PDF:', error);
         res.status(500).json({ error: 'Error fetching course PDF' });
     }
 });
-
 // Add a route to fetch a specific course by ID
 router.get('/courses/:courseId', async (req, res) => {
     try {

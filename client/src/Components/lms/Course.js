@@ -59,7 +59,9 @@ const Course = () => {
     setAiTutorContent(prompt);  // Set the AI tutor's initial conversation content
     setShowAITutor(true);  // Make sure the tutor pops up
   };
-
+  const renderPdf = () => (
+    <iframe src={`/path/to/pdf/${courseData.pdfPath}`} width="100%" height="600px" frameBorder="0" title="Course PDF"></iframe>
+  );
 
   if (!courseData) {
     return <div>Loading...</div>;

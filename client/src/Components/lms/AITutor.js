@@ -32,34 +32,34 @@ const AITutor = ({ onClose, selectedCourseId, content }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!userQuestion.trim()) return;
-
+    
         setConversation([...conversation, { role: 'user', content: userQuestion }]);
-
         setIsLoading(true);
+    
         try {
+            // Fetch the PDF content associated with the course
             const pdfResponse = await fetch(`http://localhost:5000/api/courses-pdf/${selectedCourseId}`);
             if (!pdfResponse.ok) throw new Error('Failed to load PDF content');
-
-            const coursePdf = await pdfResponse.json();
-
+    
+            const { pdfContent } = await pdfResponse.json();
+    
+            // Send the question and PDF content to the AI API
             const response = await fetch('http://localhost:5000/api/ai-tutor', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     question: userQuestion,
-                    pdfContent: coursePdf,
+                    pdfContent,  // Send the extracted PDF content
                 }),
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'AI tutor request failed');
             }
-
+    
             const data = await response.json();
-            streamGPTResponse(data.response); // Call streaming function here
+            streamGPTResponse(data.response);
         } catch (error) {
             setConversation((prev) => [
                 ...prev,
@@ -70,6 +70,7 @@ const AITutor = ({ onClose, selectedCourseId, content }) => {
             setUserQuestion('');
         }
     };
+    
 
     return (
         <div className={`ai-tutor-container ${isExpanded ? 'expanded' : ''}`}>

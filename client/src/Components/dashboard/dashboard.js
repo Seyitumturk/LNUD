@@ -223,7 +223,7 @@ const Dashboard = () => {
                 marginLeft: isCollapsed ? '64px' : '220px',
                 width: `calc(100% - ${isCollapsed ? '64px' : '220px'})`,
             }}>
-                <div className="grid-container" style={{ 
+                <div className="grid-container" style={{
                     minHeight: 'fit-content',
                     display: 'grid',
                     gridTemplateColumns: '1fr',
@@ -233,7 +233,7 @@ const Dashboard = () => {
                     {/* UEC Metrics Overview */}
                     <div className="grid-block glass-card" style={{ gridColumn: '1 / -1' }}>
                         <h3 className="block-title">UEC Impact Overview</h3>
-                        <div className="metrics-grid" style={{ 
+                        <div className="metrics-grid" style={{
                             display: 'grid',
                             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                             gap: '15px'
@@ -365,15 +365,17 @@ const Dashboard = () => {
             {isChatOpen && (
                 <div className="chat-modal" style={{
                     position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    bottom: '20px', // Align to the bottom
+                    right: '20px', // Align to the right
+                    width: 'auto',
+                    height: 'auto',
                     display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    zIndex: 1001
+                    justifyContent: 'flex-end',
+                    alignItems: 'flex-end',
+                    zIndex: 1001, // Keep above other elements
+                    backgroundColor: 'transparent', // Set background to transparent
+                    border: 'none',
+                    boxShadow: 'none',
                 }}>
                     <div className="chat-modal-content" style={{
                         backgroundColor: '#1e1e1e',

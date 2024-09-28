@@ -323,6 +323,44 @@ html {
   margin-bottom: 1rem;
 }
 
+.chat-modal {
+  position: fixed;
+  bottom: 20px;
+  /* Adjust position as needed */
+  right: 20px;
+  /* Adjust position as needed */
+  width: auto;
+  height: auto;
+  background: none;
+  /* Remove background */
+  box-shadow: none;
+  /* Remove shadow */
+  border: none;
+  /* Remove border */
+  padding: 0;
+  /* Remove padding */
+  margin: 0;
+  /* Remove margin */
+  z-index: 9999;
+}
+
+.chat-modal-content {
+  width: auto;
+  /* Adjust width as needed */
+  height: auto;
+  /* Adjust height as needed */
+  background: none;
+  /* Remove background */
+  border: none;
+  /* Remove border */
+  box-shadow: none;
+  /* Remove shadow */
+  padding: 0;
+  /* Remove padding */
+  margin: 0;
+  /* Remove margin */
+}
+
 .action-icon {
   font-size: 3rem;
   margin-top: 1rem;
@@ -340,6 +378,29 @@ html {
   padding: 32px;
   border-radius: 15px;
   color: white;
+}
+
+/* Optional: Adjust the appearance of the chat button */
+.solid-chat-button.glass-chat-button {
+  background: #049ebf;
+  /* Update button background if needed */
+  border: none;
+  /* Remove border */
+  box-shadow: none;
+  /* Remove shadow */
+  color: white;
+  /* Update text color */
+  padding: 10px 20px;
+  border-radius: 20px;
+  /* Adjust radius if needed */
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Optional: Update hover effect for the button */
+.solid-chat-button.glass-chat-button:hover {
+  background: #037a94;
+  /* Change hover background color */
 }
 
 .modal-content h2 {

@@ -120,8 +120,8 @@ const LMS = () => {
     formData.append('level', newCourse.level);
     formData.append('category', newCourse.category);
     formData.append('description', newCourse.description);
-    if (newCourse.pdf) formData.append('pdf', newCourse.pdf);
-    if (newCourse.canvaLink) formData.append('canvaLink', newCourse.canvaLink); // Append Canva link
+    if (newCourse.pdf) formData.append('pdf', newCourse.pdf);  // Upload the PDF file
+    if (newCourse.canvaLink) formData.append('canvaLink', newCourse.canvaLink);
 
     try {
       const response = await fetch('http://localhost:5000/api/courses', {
