@@ -1,124 +1,87 @@
 // AITutor.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './AITutor.css';
-import { AiOutlineSend, AiOutlineClose, AiOutlineExpandAlt } from 'react-icons/ai';
-import { BsThreeDots } from 'react-icons/bs';
 
-const AITutor = ({ onClose, selectedCourseId, content, screenshot }) => {  // Accept screenshot prop
-    const [userQuestion, setUserQuestion] = useState('');
-    const [conversation, setConversation] = useState([{ role: 'ai', content: content }]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [typingMessage, setTypingMessage] = useState('');
+const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) => {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
 
-    const toggleExpand = () => setIsExpanded(!isExpanded);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
 
-    const streamGPTResponse = (text) => {
-        let index = 0;
-        setTypingMessage('');
-        setIsLoading(true);
+    // Add user message
+    const userMessage = { type: 'user', content: input };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsTyping(true);
 
-        const intervalId = setInterval(() => {
-            if (index < text.length) {
-                setTypingMessage((prev) => prev + text[index]);
-                index++;
-            } else {
-                clearInterval(intervalId);
-                setIsLoading(false);
-            }
-        }, 50);
-    };
+    try {
+      const response = await fetch('/api/ai-tutor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: input,
+          courseId: selectedCourseId
+        })
+      });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!userQuestion.trim()) return;
+      const data = await response.json();
+      
+      // Simulate typing delay for more natural interaction
+      setTimeout(() => {
+        setMessages(prev => [...prev, { type: 'bot', content: data.response }]);
+        setIsTyping(false);
+        
+        // Award experience points for good questions
+        onProgress(10);
+      }, 1000);
 
-        setConversation([...conversation, { role: 'user', content: userQuestion }]);
-        setIsLoading(true);
+    } catch (error) {
+      console.error('Error:', error);
+      setIsTyping(false);
+    }
+  };
 
-        try {
-            console.log("Screenshot being sent to server (length):", screenshot ? screenshot.length : 'No screenshot available');
-
-            // Fetch the PDF content associated with the course
-            const pdfResponse = await fetch(`http://localhost:5000/api/courses-pdf/${selectedCourseId}`);
-            if (!pdfResponse.ok) throw new Error('Failed to load PDF content');
-
-            const { pdfContent } = await pdfResponse.json();
-
-            // Send the question and PDF content to the AI API
-            const response = await fetch('http://localhost:5000/api/ai-tutor', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    question: userQuestion,
-                    pdfContent,
-                    screenshot,  // Send the screenshot data
-                }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'AI tutor request failed');
-            }
-
-            const data = await response.json();
-            streamGPTResponse(data.response);
-        } catch (error) {
-            setConversation((prev) => [
-                ...prev,
-                { role: 'ai', content: `Oops! Something went wrong: ${error.message}. Please try again later!` },
-            ]);
-            setIsLoading(false);
-        } finally {
-            setUserQuestion('');
-        }
-    };
-
-    return (
-        <div className={`ai-tutor-container ${isExpanded ? 'expanded' : ''}`}>
-            <div className="ai-tutor-header">
-                <h3>AI Tutor</h3>
-                <div className="header-actions">
-                    <button onClick={toggleExpand}>
-                        {isExpanded ? <AiOutlineExpandAlt /> : <AiOutlineExpandAlt />}
-                    </button>
-                    <button onClick={onClose}>
-                        <AiOutlineClose />
-                    </button>
-                </div>
+  return (
+    <div className="ai-tutor-container">
+      <div className="messages-container">
+        {messages.map((message, index) => (
+          <div key={index} className={`message ${message.type}`}>
+            {message.type === 'bot' && (
+              <div className="bot-avatar">
+                {/* Add your bot avatar image here */}
+              </div>
+            )}
+            <div className="message-content">
+              {message.content}
             </div>
-            <div className="ai-tutor-conversation">
-                {conversation.map((message, index) => (
-                    <div key={index} className={`message ${message.role}`}>
-                        {message.content}
-                    </div>
-                ))}
+          </div>
+        ))}
+        {isTyping && (
+          <div className="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        )}
+      </div>
 
-                {typingMessage && (
-                    <div className="message ai">
-                        {typingMessage}
-                    </div>
-                )}
-
-                {isLoading && (
-                    <div className="message ai typing">
-                        <BsThreeDots />
-                    </div>
-                )}
-            </div>
-            <form onSubmit={handleSubmit} className="ai-tutor-input">
-                <input
-                    type="text"
-                    value={userQuestion}
-                    onChange={(e) => setUserQuestion(e.target.value)}
-                    placeholder="How can I help today? 😊"
-                />
-                <button type="submit">
-                    <AiOutlineSend />
-                </button>
-            </form>
-        </div>
-    );
+      <form onSubmit={handleSubmit} className="input-form">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask me anything about the course..."
+          className="chat-input"
+        />
+        <button type="submit" className="send-button">
+          Send
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default AITutor;

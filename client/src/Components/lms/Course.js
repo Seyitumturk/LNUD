@@ -5,7 +5,6 @@ import './Course.css';
 import { useSidebar } from '../../context/SidebarContext';
 import Sidebar from '../layout/Sidebar';
 import AITutor from './AITutor';
-import html2canvas from 'html2canvas';
 
 const Course = () => {
   const { slug } = useParams();
@@ -14,10 +13,28 @@ const Course = () => {
   const [showAITutor, setShowAITutor] = useState(true);
   const [aiTutorContent, setAiTutorContent] = useState('');
   const [courseData, setCourseData] = useState(null);
-  const [screenshot, setScreenshot] = useState(null); // Define screenshot state
-  const [preview, setPreview] = useState(null); // Preview state for debugging
   const location = useLocation();
   const selectedCourseId = location.state?.courseId;
+
+  const [tutorCharacter, setTutorCharacter] = useState({
+    name: 'Pipi',
+    mood: 'happy',
+    experience: 0,
+    level: 1
+  });
+
+  const updateTutorProgress = (points) => {
+    setTutorCharacter(prev => {
+      const newExperience = prev.experience + points;
+      const newLevel = Math.floor(newExperience / 100) + 1;
+      return {
+        ...prev,
+        experience: newExperience % 100,
+        level: newLevel,
+        mood: points > 0 ? 'excited' : 'thinking'
+      };
+    });
+  };
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -25,7 +42,6 @@ const Course = () => {
         const response = await fetch(`http://localhost:5000/api/courses/${selectedCourseId}`);
         const data = await response.json();
         setCourseData(data);
-
         handleAiTutorIntroduction(data.title);
       } catch (error) {
         console.error('Error fetching course:', error);
@@ -63,119 +79,86 @@ const Course = () => {
     setShowAITutor(true);
   };
 
-  const captureScreenshot = async () => {
-    try {
-      const presentationContainer = document.querySelector('.presentation-container');
-
-      if (presentationContainer) {
-        const canvas = await html2canvas(presentationContainer, { useCORS: true });
-        const imageData = canvas.toDataURL('image/png');
-        setScreenshot(imageData);
-        setPreview(imageData); // Set preview state for debugging
-        console.log("Screenshot captured:", imageData.substring(0, 100));
-      } else {
-        console.log("Unable to capture screenshot: Presentation container not found.");
-      }
-    } catch (error) {
-      console.error('Error capturing screenshot:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (courseData) {
-      captureScreenshot();
-    }
-  }, [currentPresentationIndex, courseData]);
-
   if (!courseData) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className={`lms-container ${isCollapsed ? '' : 'sidebar-expanded'}`}>
-      <div className="course-wrapper">
-        <nav className="course-navigation">
-          <h2>Presentations</h2>
-          <ul>
-            <li
-              className={currentPresentationIndex === 0 ? 'active' : ''}
-              onClick={() => setCurrentPresentationIndex(0)}
-            >
-              {courseData.title} (Canva Presentation)
-            </li>
-            {courseData.pdfPath && (
-              <li
+    <div className="course-page">
+      <Sidebar />
+      
+      <div className="course-main-content">
+        <div className="course-header">
+          <h1>{courseData?.title}</h1>
+          <div className="course-meta">
+            <span className="instructor">👨‍🏫 {courseData?.instructor}</span>
+            <span className="duration">⏱️ {courseData?.duration}</span>
+            <span className="level">📚 {courseData?.level}</span>
+          </div>
+        </div>
+
+        <div className="course-content-wrapper">
+          <div className="presentation-section">
+            <div className="presentation-tabs">
+              <button 
+                className={currentPresentationIndex === 0 ? 'active' : ''}
+                onClick={() => setCurrentPresentationIndex(0)}
+              >
+                Canva Presentation
+              </button>
+              <button 
                 className={currentPresentationIndex === 1 ? 'active' : ''}
                 onClick={() => setCurrentPresentationIndex(1)}
               >
-                PDF Course Material
-              </li>
-            )}
-          </ul>
-        </nav>
-        <div className="course-container">
-          <main className="course-content">
-            <div className="presentation-container current-presentation">
-              {currentPresentationIndex === 0 && courseData.canvaLink && (
-                <>
-                  <h3>{courseData.title} (Canva Presentation)</h3>
-                  <div className="presentation-content">
-                    <iframe
-                      src={courseData.canvaLink}
-                      frameBorder="0"
-                      allowFullScreen
-                      title={courseData.title}
-                      className="presentation-iframe"
-                    ></iframe>
-                  </div>
-                </>
-              )}
-              {currentPresentationIndex === 1 && courseData.pdfPath && (
-                <>
-                  <h3>{courseData.title} (PDF Course Material)</h3>
-                  <div className="presentation-content">
-                    <p>PDF content for this course will be discussed by the AI tutor.</p>
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="presentation-controls">
-              <button
-                onClick={handlePrevPresentation}
-                disabled={currentPresentationIndex === 0}
-              >
-                Previous
-              </button>
-              <button
-                onClick={handleNextPresentation}
-                disabled={currentPresentationIndex === (courseData.pdfPath ? 1 : 0)}
-              >
-                Next
-              </button>
-              <button onClick={toggleAITutor}>
-                {showAITutor ? 'Hide AI Tutor' : 'Show AI Tutor'}
+                Course Material
               </button>
             </div>
-          </main>
+
+            <div className="presentation-viewer">
+              {currentPresentationIndex === 0 && courseData?.canvaLink && (
+                <iframe
+                  src={courseData.canvaLink}
+                  frameBorder="0"
+                  allowFullScreen
+                  title={courseData.title}
+                  className="canva-presentation"
+                />
+              )}
+              {currentPresentationIndex === 1 && courseData?.pdfPath && (
+                <div className="pdf-viewer">
+                  <h3>Course Material</h3>
+                  {/* PDF Viewer Component */}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="ai-tutor-section">
+            <div className="tutor-character">
+              <div className={`tutor-avatar ${tutorCharacter.mood}`}>
+                {/* Add your tutor character image/animation here */}
+              </div>
+              <div className="tutor-stats">
+                <div className="level-badge">Level {tutorCharacter.level}</div>
+                <div className="experience-bar">
+                  <div 
+                    className="experience-fill" 
+                    style={{ width: `${tutorCharacter.experience}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <AITutor
+              selectedCourseId={selectedCourseId}
+              content={aiTutorContent}
+              onClose={toggleAITutor}
+              onProgress={updateTutorProgress}
+              character={tutorCharacter}
+            />
+          </div>
         </div>
       </div>
-
-      {showAITutor && (
-        <AITutor
-          selectedCourseId={selectedCourseId}
-          content={aiTutorContent}
-          screenshot={screenshot}  // Pass the screenshot as a prop to AITutor
-          onClose={toggleAITutor}
-        />
-      )}
-
-      {/* Display the captured screenshot for debugging purposes */}
-      {preview && (
-        <div style={{ marginTop: '20px' }}>
-          <h3>Captured Screenshot Preview</h3>
-          <img src={preview} alt="Captured Screenshot Preview" style={{ width: '300px', border: '2px solid black' }} />
-        </div>
-      )}
     </div>
   );
 };

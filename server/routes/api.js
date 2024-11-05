@@ -2,20 +2,21 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const OpenAI = require('openai'); // Import OpenAI directly
-const axios = require('axios');
+const fs = require('fs');
+const OpenAI = require('openai');
+const Course = require('../models/Course');
 const { PDFLoader } = require('@langchain/community/document_loaders/fs/pdf');
-const { OpenAIEmbeddings } = require('@langchain/openai');
-const { RecursiveCharacterTextSplitter } = require('@langchain/textsplitters');
-const { MemoryVectorStore } = require('langchain/vectorstores/memory');
-const Course = require('../models/Course'); // Assuming the course model is in a models directory
-const qs = require('qs');
+
+// Create uploads directory if it doesn't exist
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 // Multer setup to handle file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, '../uploads');
-        cb(null, uploadPath);
+        cb(null, uploadDir);  // Use the uploadDir constant
     },
     filename: (req, file, cb) => {
         const uniqueName = Date.now() + path.extname(file.originalname);
@@ -28,7 +29,7 @@ const upload = multer({ storage });
 // Global vectorStore variable
 let vectorStore = null;
 
-// OpenAI configuration (ensure you have your OpenAI API key in the environment variables)
+// Update OpenAI configuration
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY, // Replace with your API key
 });
@@ -225,9 +226,13 @@ router.post('/courses', upload.single('pdf'), async (req, res) => {
     try {
         const { title, instructor, duration, level, category, description, canvaLink } = req.body;
 
+        // Log the received data
+        console.log('Received course data:', { title, instructor, duration, level, category, description, canvaLink });
+        console.log('Received file:', req.file);
+
         const pdfPath = req.file ? req.file.path : null;
 
-        // Create and save the course, including the Canva link and PDF path
+        // Create and save the course
         const course = new Course({
             title,
             instructor,
@@ -235,40 +240,20 @@ router.post('/courses', upload.single('pdf'), async (req, res) => {
             level,
             category,
             description,
-            pdfPath,  // Save the PDF path if uploaded
-            canvaLink  // Save the Canva link
+            pdfPath,
+            canvaLink
         });
 
-        await course.save();
+        const savedCourse = await course.save();
+        console.log('Course saved successfully:', savedCourse);
 
-        // Process the PDF after saving the course
-        if (pdfPath) {
-            const loader = new PDFLoader(pdfPath);
-            const docs = await loader.load();
-
-            // Split the PDF content into smaller chunks
-            const textSplitter = new RecursiveCharacterTextSplitter({
-                chunkSize: 1000,  // Size of each chunk
-                chunkOverlap: 200,  // Overlap between chunks
-            });
-            const splits = await textSplitter.splitDocuments(docs);
-
-            // Create embeddings and store documents in the in-memory vector store
-            const embeddings = new OpenAIEmbeddings({
-                model: "text-embedding-ada-002",  // Choose a suitable model
-                apiKey: process.env.OPENAI_API_KEY,
-            });
-
-            // Create a MemoryVectorStore from documents using embeddings
-            vectorStore = await MemoryVectorStore.fromDocuments(splits, embeddings);
-
-            console.log('VectorStore initialized and ready for queries');
-        }
-
-        res.status(201).json({ message: 'Course created and PDF processed successfully', course });
+        res.status(201).json({ message: 'Course created successfully', course: savedCourse });
     } catch (err) {
-        console.error('Error uploading PDF and creating course:', err);
-        res.status(500).json({ error: 'Error uploading PDF and creating course' });
+        console.error('Error creating course:', err);
+        res.status(500).json({ 
+            error: 'Error creating course', 
+            details: err.message 
+        });
     }
 });
 // Retrieve PDF content for a specific course

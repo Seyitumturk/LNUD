@@ -76,11 +76,17 @@ const LMS = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/courses'); // Use full URL with port 5000
+      const response = await fetch('http://localhost:5000/api/courses');
       const data = await response.json();
-      setCourses(data);
+      if (Array.isArray(data)) {
+        setCourses(data);
+      } else {
+        console.error('Expected array of courses but received:', data);
+        setCourses([]);
+      }
     } catch (error) {
       console.error('Error fetching courses:', error);
+      setCourses([]);
     }
   };
   const handleCourseClick = (courseId) => {
@@ -141,11 +147,11 @@ const LMS = () => {
     }
   };
 
-  const filteredCourses = courses.filter(course =>
+  const filteredCourses = Array.isArray(courses) ? courses.filter(course =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (filterLevel === 'All' || course.level === filterLevel) &&
     (filterCategory === 'All' || course.category === filterCategory)
-  );
+  ) : [];
 
   const categories = [
     { name: 'All', color: 'var(--blue)' },
