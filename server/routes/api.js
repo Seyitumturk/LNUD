@@ -6,6 +6,12 @@ const fs = require('fs');
 const OpenAI = require('openai');
 const Course = require('../models/Course');
 const { PDFLoader } = require('@langchain/community/document_loaders/fs/pdf');
+const { RecursiveCharacterTextSplitter } = require('langchain/text_splitter');
+const { OpenAIEmbeddings } = require('@langchain/openai');
+const { ChatOpenAI } = require('@langchain/openai');
+const { RetrievalQAChain } = require('langchain/chains');
+const { Document } = require('@langchain/core/documents');
+const { FaissStore } = require('@langchain/community/vectorstores/faiss');
 
 // Create uploads directory if it doesn't exist
 const uploadDir = path.join(__dirname, '../uploads');
@@ -41,6 +47,32 @@ const CLIENT_ID = 'd6a13406-b3c8-4cb5-8d25-191bbe9191a1';
 const CLIENT_SECRET = 'm2RwOgBHTCgqiaDzutuiksAf8EpySx2H';
 const TOKEN_URL = 'https://services.sentinel-hub.com/auth/realms/main/protocol/openid-connect/token';
 const PROCESS_URL = 'https://services.sentinel-hub.com/api/v1/process';
+
+// Initialize OpenAI embeddings
+const embeddings = new OpenAIEmbeddings({
+    openAIApiKey: process.env.OPENAI_API_KEY,
+});
+
+// Store vector stores for each course
+const courseVectorStores = new Map();
+
+// Function to process PDF content and create vector store
+async function processAndStorePDFContent(courseId, pdfContent) {
+    const textSplitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 1000,
+        chunkOverlap: 200,
+    });
+
+    const docs = await textSplitter.splitDocuments([
+        new Document({ pageContent: pdfContent })
+    ]);
+    
+    const vectorStore = await FaissStore.fromDocuments(
+        docs, 
+        new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY })
+    );
+    courseVectorStores.set(courseId, vectorStore);
+}
 
 // Endpoint to fetch the Sentinel Hub map image
 router.post('/sentinel-image', async (req, res) => {
@@ -164,49 +196,128 @@ router.get('/datasets', async (req, res) => {
 // Handle AI tutor queries
 router.post('/ai-tutor', async (req, res) => {
     try {
-        const { question, screenshot } = req.body;
-
-        console.log(`Received question: ${question}`);
-
-        // Log the received screenshot data to ensure it's passed correctly
-        if (screenshot) {
-            console.log(`Received screenshot data (length): ${screenshot.length}`);
-        } else {
-            console.log('No screenshot data received.');
+        console.log('Received AI tutor request:', req.body);
+        const { question, courseId, isInitialGreeting } = req.body;
+        
+        if (!courseId) {
+            console.error('No courseId provided');
+            return res.status(400).json({ error: 'courseId is required' });
         }
 
-        if (!vectorStore) {
-            return res.status(400).json({ error: 'No PDF content processed yet. Please upload a PDF first.' });
+        const course = await Course.findById(courseId);
+        console.log('Found course:', course);
+
+        if (!course) {
+            console.error('Course not found for id:', courseId);
+            return res.status(404).json({ error: 'Course not found' });
         }
 
-        let visionAnalysis = '';
-        if (screenshot) {
+        // If it's an initial greeting or no PDF is available, use regular chat
+        if (isInitialGreeting || !course.pdfPath) {
+            const completion = await openai.chat.completions.create({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    {
+                        role: "system",
+                        content: `You are Pipi, a friendly and enthusiastic AI tutor designed for high school students. 
+                                You teach the course "${course.title}". Use a Socratic teaching method and maintain an 
+                                encouraging, supportive tone. Engage students with questions that promote critical thinking.
+                                Course description: ${course.description}`
+                    },
+                    {
+                        role: "user",
+                        content: isInitialGreeting ? 
+                            "Please introduce yourself and give a brief overview of the course. Be friendly and encouraging!" :
+                            question
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 500
+            });
+
+            return res.json({ response: completion.choices[0].message.content });
+        }
+
+        // For content-related questions, use RAG
+        let vectorStore = courseVectorStores.get(courseId);
+        
+        // If vector store doesn't exist for this course, create it
+        if (!vectorStore && course.pdfPath) {
             try {
-                console.log('Sending screenshot to GPT-4 Vision API...');
-
-                const visionResponse = await openai.chat.completions.create({
-                    model: 'gpt-4o',  // Use the vision-capable model
+                console.log('Loading PDF from:', course.pdfPath);
+                const loader = new PDFLoader(course.pdfPath);
+                const pdfDocs = await loader.load();
+                const pdfContent = pdfDocs.map(doc => doc.pageContent).join(' ');
+                await processAndStorePDFContent(courseId, pdfContent);
+                vectorStore = courseVectorStores.get(courseId);
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                // If PDF loading fails, fall back to regular chat
+                const completion = await openai.chat.completions.create({
+                    model: "gpt-3.5-turbo",
                     messages: [
-                        { role: 'system', content: 'You are a helpful assistant that can analyze both text and images.' },
-                        { role: 'user', content: question, image: screenshot }  // Include the screenshot in the request
-                    ]
+                        {
+                            role: "system",
+                            content: `You are Pipi, a friendly AI tutor. Answer based on the course description: ${course.description}`
+                        },
+                        {
+                            role: "user",
+                            content: question
+                        }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 500
                 });
-
-                console.log('Vision API Response:', visionResponse);
-
-                // Extract the text or analysis from the vision API response
-                visionAnalysis = visionResponse.choices[0]?.message?.content || 'No analysis available for the screenshot';
-                console.log(`Extracted vision analysis: ${visionAnalysis}`);
-            } catch (visionError) {
-                console.error('Error analyzing screenshot with GPT-4 Vision API:', visionError.message);
-                return res.status(500).json({ error: 'Error processing the screenshot with GPT-4 Vision API.' });
+                return res.json({ response: completion.choices[0].message.content });
             }
         }
 
-        res.json({ response: visionAnalysis });
+        if (!vectorStore) {
+            throw new Error('Vector store could not be created');
+        }
+
+        // Create chain for question answering
+        const chain = RetrievalQAChain.fromLLM(
+            new ChatOpenAI({
+                openAIApiKey: process.env.OPENAI_API_KEY,
+                modelName: 'gpt-3.5-turbo',
+                temperature: 0.7
+            }),
+            vectorStore.asRetriever()
+        );
+
+        // Get answer using the chain
+        const response = await chain.call({
+            query: question
+        });
+
+        // Format the response with the Socratic method
+        const formattedResponse = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+                {
+                    role: "system",
+                    content: `You are Pipi, a friendly AI tutor using the Socratic method. 
+                             Format this answer in an engaging way for high school students, 
+                             using the following information: ${response.text}`
+                },
+                {
+                    role: "user",
+                    content: question
+                }
+            ],
+            temperature: 0.7,
+            max_tokens: 500
+        });
+
+        res.json({ response: formattedResponse.choices[0].message.content });
+
     } catch (error) {
-        console.error('Error with AI Tutor:', error.message);
-        res.status(500).json({ error: error.message });
+        console.error('Error in AI Tutor endpoint:', error);
+        res.status(500).json({ 
+            error: 'Error processing request', 
+            details: error.message 
+        });
     }
 });
 

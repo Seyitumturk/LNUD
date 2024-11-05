@@ -117,17 +117,25 @@ const Course = () => {
             <div className="presentation-viewer">
               {currentPresentationIndex === 0 && courseData?.canvaLink && (
                 <iframe
-                  src={courseData.canvaLink}
+                  src={courseData.canvaLink.includes('?embed') ? 
+                    courseData.canvaLink : 
+                    `${courseData.canvaLink}/embed`}
                   frameBorder="0"
                   allowFullScreen
-                  title={courseData.title}
+                  title="Canva Presentation"
                   className="canva-presentation"
+                  allow="fullscreen"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    minHeight: '500px'
+                  }}
                 />
               )}
               {currentPresentationIndex === 1 && courseData?.pdfPath && (
                 <div className="pdf-viewer">
                   <h3>Course Material</h3>
-                  {/* PDF Viewer Component */}
+                  {/* Add PDF viewer component here */}
                 </div>
               )}
             </div>
