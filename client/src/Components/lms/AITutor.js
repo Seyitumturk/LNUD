@@ -93,49 +93,47 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
     <div className="ai-tutor-container">
       <div className="ai-tutor-messages">
         {messages.map((message, index) => (
-          <div key={index} className={`message ${message.type}`}>
-            {message.type === 'bot' && (
-              <div className="bot-avatar">
-                {/* Add your bot avatar image here */}
-              </div>
+          <div 
+            key={index} 
+            className={`message ${message.type} ${message.isNew ? 'new' : ''}`}
+          >
+            {message.type === 'bot' && message.isNew ? (
+              <TypeWriter content={message.content} />
+            ) : (
+              message.content
             )}
-            <div className="message-content">
-              {message.isNew && message.type === 'bot' ? (
-                <TypeWriter content={message.content} />
-              ) : (
-                message.content
-              )}
-            </div>
           </div>
         ))}
         {isTyping && (
           <div className="typing-indicator">
-            <span></span>
-            <span></span>
-            <span></span>
+            <div className="typing-dot"></div>
+            <div className="typing-dot"></div>
+            <div className="typing-dot"></div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="ai-tutor-input-container">
-        <input
-          type="text"
-          className="ai-tutor-input"
-          placeholder="Type your message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
-        />
-        <button 
-          className="ai-tutor-send-button"
-          onClick={handleSubmit}
-          aria-label="Send message"
-        >
-          <svg viewBox="0 0 24 24">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-          </svg>
-        </button>
+      <div className="ai-tutor-input-wrapper">
+        <form className="ai-tutor-input-container" onSubmit={handleSubmit}>
+          <input
+            type="text"
+            className="ai-tutor-input"
+            placeholder="Ask me anything..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            autoComplete="off"
+          />
+          <button 
+            type="submit"
+            className="ai-tutor-send-button"
+            aria-label="Send message"
+          >
+            <svg viewBox="0 0 24 24">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </button>
+        </form>
       </div>
     </div>
   );
