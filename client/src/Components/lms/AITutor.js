@@ -1,19 +1,44 @@
 // AITutor.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './AITutor.css';
+
+const TypeWriter = ({ content }) => {
+  const [displayedContent, setDisplayedContent] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  useEffect(() => {
+    if (currentIndex < content.length) {
+      const timeout = setTimeout(() => {
+        setDisplayedContent(prev => prev + content[currentIndex]);
+        setCurrentIndex(currentIndex + 1);
+      }, 20); // Adjust speed here
+      
+      return () => clearTimeout(timeout);
+    }
+  }, [currentIndex, content]);
+  
+  return <div>{displayedContent}</div>;
+};
 
 const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [isThinking, setIsThinking] = useState(false);
-  const [context, setContext] = useState([]);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     if (content) {
-      setMessages([{ type: 'bot', content: content }]);
+      setMessages([{ type: 'bot', content, isNew: true }]);
     }
   }, [content]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,10 +47,9 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
     const userMessage = { type: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
-    setIsThinking(true);
+    setIsTyping(true);
 
     try {
-      console.log('Sending request with courseId:', selectedCourseId);
       const response = await fetch('http://localhost:5000/api/ai-tutor', {
         method: 'POST',
         headers: {
@@ -40,19 +64,12 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Server response:', errorText);
         throw new Error(`Server error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('Received response:', data);
       
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      setIsThinking(false);
+      setIsTyping(false);
       setMessages(prev => [...prev, { 
         type: 'bot', 
         content: data.response,
@@ -62,11 +79,11 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
       onProgress(10);
 
     } catch (error) {
-      console.error('Error in AI Tutor:', error);
-      setIsThinking(false);
+      console.error('Error:', error);
+      setIsTyping(false);
       setMessages(prev => [...prev, { 
         type: 'bot', 
-        content: `I'm sorry, I encountered an error. Please try again later.`,
+        content: "I'm sorry, I encountered an error. Please try again later.",
         isError: true 
       }]);
     }
@@ -74,7 +91,7 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
 
   return (
     <div className="ai-tutor-container">
-      <div className="messages-container">
+      <div className="ai-tutor-messages">
         {messages.map((message, index) => (
           <div key={index} className={`message ${message.type}`}>
             {message.type === 'bot' && (
@@ -83,7 +100,11 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
               </div>
             )}
             <div className="message-content">
-              {message.content}
+              {message.isNew && message.type === 'bot' ? (
+                <TypeWriter content={message.content} />
+              ) : (
+                message.content
+              )}
             </div>
           </div>
         ))}
@@ -94,20 +115,28 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
             <span></span>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSubmit} className="input-form">
+      <div className="ai-tutor-input-container">
         <input
           type="text"
+          className="ai-tutor-input"
+          placeholder="Type your message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask me anything about the course..."
-          className="chat-input"
+          onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
         />
-        <button type="submit" className="send-button">
-          Send
+        <button 
+          className="ai-tutor-send-button"
+          onClick={handleSubmit}
+          aria-label="Send message"
+        >
+          <svg viewBox="0 0 24 24">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+          </svg>
         </button>
-      </form>
+      </div>
     </div>
   );
 };

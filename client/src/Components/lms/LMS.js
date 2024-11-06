@@ -169,6 +169,10 @@ const LMS = () => {
     { title: "Find Bursary", description: "Discover financial aid opportunities", color: "var(--purple)", icon: <SearchIcon fontSize="large" />, onClick: () => {/* Add bursary search functionality */ }, subtitle: "by Elev" },
   ];
 
+  const handleCanvaLinkChange = (e) => {
+    setNewCourse({ ...newCourse, canvaLink: e.target.value.trim() });
+  };
+
   return (
     <div className={`lms-container ${isCollapsed ? 'sidebar-collapsed' : ''}`}>
       <Sidebar />
@@ -350,7 +354,7 @@ const LMS = () => {
                 fullWidth
                 label="Canva Presentation Link"  // New field for Canva link
                 value={newCourse.canvaLink}
-                onChange={(e) => setNewCourse({ ...newCourse, canvaLink: e.target.value })}
+                onChange={handleCanvaLinkChange}
                 margin="normal"
               />
               <FormControl fullWidth margin="normal">

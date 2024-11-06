@@ -14,7 +14,8 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-height: calc(100vh - 300px);
+  max-height: calc(100vh - 200px);
+  scroll-behavior: smooth;
 }
 
 .message {
@@ -46,36 +47,30 @@
 }
 
 .message-content {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1rem;
-  border-radius: 15px;
-  color: white;
-  font-size: 0.9rem;
-  line-height: 1.4;
-  word-wrap: break-word;
-  max-width: 100%;
+  background: #20212c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1rem 1.2rem;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  box-shadow: none;
 }
 
 .message.user .message-content {
-  background: rgba(79, 195, 247, 0.2);
+  background: #2f3142;
 }
 
 .input-form {
-  display: flex;
-  gap: 0.5rem;
+  background: #20212c;
   padding: 1rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .chat-input {
-  flex-grow: 1;
-  padding: 0.8rem 1rem;
-  border: none;
-  border-radius: 25px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  font-size: 0.9rem;
+  background: #2f3142;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
 }
 
 .chat-input::placeholder {
@@ -83,44 +78,30 @@
 }
 
 .chat-input:focus {
-  outline: none;
-  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: #2f3142;
 }
 
 .send-button {
-  padding: 0.8rem 1.5rem;
-  border: none;
-  border-radius: 25px;
-  background: linear-gradient(45deg, #4CAF50, #8BC34A);
-  color: white;
+  background: #3b82f6;
+  padding: 0.8rem 1.2rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: transform 0.2s ease;
+  box-shadow: none;
 }
 
 .send-button:hover {
-  transform: scale(1.05);
+  background: #2563eb;
+  transform: none;
 }
 
 .typing-indicator {
-  display: flex;
-  gap: 0.3rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  width: fit-content;
+  background: #20212c;
+  padding: 0.6rem 1rem;
 }
 
 .typing-indicator span {
-  width: 8px;
-  height: 8px;
-  background: white;
-  border-radius: 50%;
-  animation: bounce 0.8s infinite;
+  background: #3b82f6;
 }
-
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
@@ -128,6 +109,6 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

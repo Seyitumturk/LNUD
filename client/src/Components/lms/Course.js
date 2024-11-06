@@ -19,9 +19,16 @@ const Course = () => {
   const [tutorCharacter, setTutorCharacter] = useState({
     name: 'Pipi',
     mood: 'happy',
+    emoji: '🦊',
     experience: 0,
-    level: 1
+    level: 1,
+    streakCount: 0,
+    badges: [],
   });
+
+  const [learningPrompts, setLearningPrompts] = useState([]);
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
+  const [hasAnswered, setHasAnswered] = useState(false);
 
   const updateTutorProgress = (points) => {
     setTutorCharacter(prev => {
@@ -67,16 +74,59 @@ const Course = () => {
     setShowAITutor(!showAITutor);
   };
 
+  const generateLearningPrompts = (courseTitle) => {
+    const defaultPrompts = [
+      "What do you already know about this topic? 🤔",
+      "What questions do you have about what we're learning? 🌟",
+      "How would you explain this to a friend? 🗣️",
+      "Can you think of a real-world example of this? 🌍",
+      "What's the most interesting thing you've learned so far? ✨"
+    ];
+
+    setLearningPrompts(defaultPrompts);
+  };
+
   const handleAiTutorIntroduction = (courseTitle) => {
     const prompt = `
-      Hey there! 😊 Welcome to "${courseTitle}".
-      I'm your friendly AI tutor, ready to guide you through the course material and make learning fun and easy.
-      You can start by exploring the PDF course material—it's packed with all the info you'll need! 
-      Feel free to ask me anything about the course or if you're curious about something else, I'm here to help!
-      Let's start this learning adventure together!
+      Hey there, friend! 🦊 
+
+      I'm ${tutorCharacter.name}, your learning buddy for "${courseTitle}"! 
+      
+      I'm super excited to explore this topic with you! Here's what we can do together:
+      
+      🎯 Learn cool new things
+      💭 Think about interesting questions
+      🌟 Earn badges and level up
+      
+      Ready for an adventure? Let's start with a fun question:
+      ${learningPrompts[0]}
     `;
+    
     setAiTutorContent(prompt);
+    generateLearningPrompts(courseTitle);
     setShowAITutor(true);
+  };
+
+  const handleStudentResponse = (response) => {
+    setHasAnswered(true);
+    updateTutorProgress(10);
+    
+    const feedback = [
+      "That's a great thought! 🌟",
+      "Interesting perspective! 💡",
+      "You're doing amazing! 🎉",
+      "Keep going, you're on fire! 🔥"
+    ];
+    
+    const nextPrompt = `
+      ${feedback[Math.floor(Math.random() * feedback.length)]}
+      
+      Let's think about this:
+      ${learningPrompts[currentPromptIndex + 1]}
+    `;
+    
+    setAiTutorContent(nextPrompt);
+    setCurrentPromptIndex(prev => prev + 1);
   };
 
   if (!courseData) {
@@ -87,83 +137,96 @@ const Course = () => {
     <div className="course-page">
       <Sidebar />
       
-      <div className="course-main-content">
+      <div className={`course-main-content ${isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
         <div className="course-header">
-          <h1>{courseData?.title}</h1>
-          <div className="course-meta">
-            <span className="instructor">👨‍🏫 {courseData?.instructor}</span>
-            <span className="duration">⏱️ {courseData?.duration}</span>
-            <span className="level">📚 {courseData?.level}</span>
+          <div className="header-content">
+            <h1>{courseData?.title}</h1>
+            <div className="course-meta">
+              <span className="instructor">👨‍🏫 {courseData?.instructor}</span>
+              <span className="duration">⏱️ {courseData?.duration}</span>
+              <span className="level">📚 {courseData?.level}</span>
+            </div>
           </div>
         </div>
 
-        <div className="course-content-wrapper">
-          <div className="presentation-section">
+        <div className="course-content-layout">
+          <div className="main-presentation-area">
             <div className="presentation-tabs">
-              <button 
-                className={currentPresentationIndex === 0 ? 'active' : ''}
-                onClick={() => setCurrentPresentationIndex(0)}
-              >
-                Canva Presentation
-              </button>
-              <button 
-                className={currentPresentationIndex === 1 ? 'active' : ''}
-                onClick={() => setCurrentPresentationIndex(1)}
-              >
-                Course Material
-              </button>
+              {['Presentation', 'Course Material'].map((tab, index) => (
+                <button
+                  key={tab}
+                  className={currentPresentationIndex === index ? 'active' : ''}
+                  onClick={() => setCurrentPresentationIndex(index)}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
 
             <div className="presentation-viewer">
               {currentPresentationIndex === 0 && courseData?.canvaLink && (
-                <iframe
-                  src={courseData.canvaLink.includes('?embed') ? 
-                    courseData.canvaLink : 
-                    `${courseData.canvaLink}/embed`}
-                  frameBorder="0"
-                  allowFullScreen
-                  title="Canva Presentation"
-                  className="canva-presentation"
-                  allow="fullscreen"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    minHeight: '500px'
-                  }}
-                />
+                <div className="canva-container">
+                  <iframe
+                    className="canva-embed"
+                    src={`${courseData.canvaLink.split('?')[0]}?embed`}
+                    allowFullScreen
+                    allow="fullscreen"
+                    loading="lazy"
+                    title="Canva Presentation"
+                  />
+                </div>
               )}
               {currentPresentationIndex === 1 && courseData?.pdfPath && (
                 <div className="pdf-viewer">
                   <h3>Course Material</h3>
-                  {/* Add PDF viewer component here */}
+                  {/* PDF viewer component */}
                 </div>
               )}
             </div>
           </div>
 
-          <div className="ai-tutor-section">
+          <div className="ai-tutor-panel">
             <div className="tutor-character">
-              <div className={`tutor-avatar ${tutorCharacter.mood}`}>
-                {/* Add your tutor character image/animation here */}
+              <div className="tutor-avatar">
+                {tutorCharacter.emoji}
+                {tutorCharacter.streakCount > 0 && (
+                  <div className="streak-badge">
+                    🔥 {tutorCharacter.streakCount} day streak!
+                  </div>
+                )}
               </div>
-              <div className="tutor-stats">
-                <div className="level-badge">Level {tutorCharacter.level}</div>
-                <div className="experience-bar">
-                  <div 
-                    className="experience-fill" 
-                    style={{ width: `${tutorCharacter.experience}%` }}
-                  />
+              <div className="tutor-info">
+                <h3>{tutorCharacter.name}</h3>
+                <div className="tutor-stats">
+                  <div className="level-badge">Level {tutorCharacter.level}</div>
+                  <div className="experience-bar">
+                    <div 
+                      className="experience-fill" 
+                      style={{ width: `${tutorCharacter.experience}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="badges-container">
+                  {tutorCharacter.badges.map((badge, index) => (
+                    <span key={index} className="badge" title={badge.name}>
+                      {badge.emoji}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
 
-            <AITutor
-              selectedCourseId={selectedCourseId}
-              content={aiTutorContent}
-              onClose={toggleAITutor}
-              onProgress={updateTutorProgress}
-              character={tutorCharacter}
-            />
+            <div className="ai-tutor-content">
+              <AITutor
+                selectedCourseId={selectedCourseId}
+                content={aiTutorContent}
+                onClose={toggleAITutor}
+                onProgress={updateTutorProgress}
+                character={tutorCharacter}
+                onResponse={handleStudentResponse}
+                hasAnswered={hasAnswered}
+              />
+            </div>
           </div>
         </div>
       </div>
