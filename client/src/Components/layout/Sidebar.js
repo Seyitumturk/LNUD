@@ -89,26 +89,28 @@ const Sidebar = ({ onWidthChange }) => {
                 </div>
                 <h2>LNUD V.0.1</h2>
             </div>
-            <nav className="sidebar-nav">
-                {sidebarItems.map((item) => (
-                    <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`sidebar-item ${activeItem === item.path ? 'active' : ''}`}
-                        aria-label={item.label}
-                    >
-                        <item.icon />
-                        {!isCollapsed && <span>{item.label}</span>}
-                    </Link>
-                ))}
-            </nav>
+            <div className="sidebar-content">
+                <nav className="sidebar-nav">
+                    {sidebarItems.map((item) => (
+                        <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`sidebar-item ${activeItem === item.path ? 'active' : ''}`}
+                            aria-label={item.label}
+                        >
+                            <item.icon />
+                            {!isCollapsed && <span>{item.label}</span>}
+                        </Link>
+                    ))}
+                </nav>
 
-            {!isCollapsed && showFact && (
-                <div className="sidebar-fact" style={{ opacity: factOpacity, transition: 'opacity 0.5s ease-in-out' }}>
-                    <h3 style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.2)', paddingBottom: '10px', marginBottom: '10px' }}>Did you know?</h3>
-                    <p>{mikmaqFacts[factIndex]}</p>
-                </div>
-            )}
+                {!isCollapsed && showFact && (
+                    <div className="sidebar-fact" style={{ opacity: factOpacity, transition: 'opacity 0.5s ease-in-out' }}>
+                        <h3 style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.2)', paddingBottom: '10px', marginBottom: '10px' }}>Did you know?</h3>
+                        <p>{mikmaqFacts[factIndex]}</p>
+                    </div>
+                )}
+            </div>
             <button className="sidebar-toggle" onClick={toggleSidebar}>
                 {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
             </button>

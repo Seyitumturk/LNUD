@@ -12,6 +12,14 @@ const { ChatOpenAI } = require('@langchain/openai');
 const { RetrievalQAChain } = require('langchain/chains');
 const { Document } = require('@langchain/core/documents');
 const { FaissStore } = require('@langchain/community/vectorstores/faiss');
+const { ConversationSummaryMemory } = require('langchain/memory');
+const { MessagesPlaceholder } = require('@langchain/core/prompts');
+const { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } = require('@langchain/core/prompts');
+const { RunnableSequence, RunnablePassthrough } = require('@langchain/core/runnables');
+const { StringOutputParser } = require('@langchain/core/output_parsers');
+const { BufferMemory } = require('langchain/memory');
+const { ChatMessageHistory } = require('langchain/stores/message/in_memory');
+const { HumanMessage, AIMessage } = require('@langchain/core/messages');
 
 // Create uploads directory if it doesn't exist
 const uploadDir = path.join(__dirname, '../uploads');
@@ -56,22 +64,43 @@ const embeddings = new OpenAIEmbeddings({
 // Store vector stores for each course
 const courseVectorStores = new Map();
 
+// Update the chat histories Map to use ConversationSummaryBufferMemory
+const chatMemories = new Map();
+
+// Add this near other global variables
+const messageStore = new Map();
+
 // Function to process PDF content and create vector store
 async function processAndStorePDFContent(courseId, pdfContent) {
+    try {
+        console.log(`Processing PDF content for course ${courseId}`);
     const textSplitter = new RecursiveCharacterTextSplitter({
         chunkSize: 1000,
         chunkOverlap: 200,
     });
 
+        console.log('Splitting documents...');
     const docs = await textSplitter.splitDocuments([
         new Document({ pageContent: pdfContent })
     ]);
+        console.log(`Created ${docs.length} document chunks`);
     
+        console.log('Creating vector store...');
     const vectorStore = await FaissStore.fromDocuments(
         docs, 
-        new OpenAIEmbeddings({ openAIApiKey: process.env.OPENAI_API_KEY })
+            new OpenAIEmbeddings({ 
+                openAIApiKey: process.env.OPENAI_API_KEY,
+                modelName: 'text-embedding-3-small' // Using latest embedding model
+            })
     );
+        console.log('Vector store created successfully');
+        
     courseVectorStores.set(courseId, vectorStore);
+        return vectorStore;
+    } catch (error) {
+        console.error('Error in processAndStorePDFContent:', error);
+        throw error;
+    }
 }
 
 // Endpoint to fetch the Sentinel Hub map image
@@ -196,121 +225,116 @@ router.get('/datasets', async (req, res) => {
 // Handle AI tutor queries
 router.post('/ai-tutor', async (req, res) => {
     try {
-        console.log('Received AI tutor request:', req.body);
-        const { question, courseId, isInitialGreeting } = req.body;
+        const { question, courseId, isInitialGreeting, sessionId } = req.body;
         
         if (!courseId) {
-            console.error('No courseId provided');
             return res.status(400).json({ error: 'courseId is required' });
         }
 
         const course = await Course.findById(courseId);
-        console.log('Found course:', course);
-
         if (!course) {
-            console.error('Course not found for id:', courseId);
             return res.status(404).json({ error: 'Course not found' });
         }
 
-        // If it's an initial greeting or no PDF is available, use regular chat
+        // Get or initialize message history
+        if (!messageStore.has(sessionId)) {
+            messageStore.set(sessionId, new ChatMessageHistory());
+        }
+        const messageHistory = messageStore.get(sessionId);
+
+        // For initial greeting or when no PDF is available
         if (isInitialGreeting || !course.pdfPath) {
-            const completion = await openai.chat.completions.create({
-                model: "gpt-3.5-turbo",
-                messages: [
-                    {
-                        role: "system",
-                        content: `You are Pipi, a friendly and enthusiastic AI tutor designed for high school students. 
-                                You teach the course "${course.title}". Use a Socratic teaching method and maintain an 
-                                encouraging, supportive tone. Engage students with questions that promote critical thinking.
-                                Course description: ${course.description}`
-                    },
-                    {
-                        role: "user",
-                        content: isInitialGreeting ? 
-                            "Please introduce yourself and give a brief overview of the course. Be friendly and encouraging!" :
-                            question
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 500
+            const chat = new ChatOpenAI({ 
+                    modelName: "gpt-3.5-turbo",
+                    temperature: 0.7 
             });
 
-            return res.json({ response: completion.choices[0].message.content });
+            const response = await chat.call([
+                { role: "system", content: `You are Pipi, a friendly and enthusiastic AI tutor for "${course.title}".` },
+                ...(await messageHistory.getMessages()),
+                { role: "user", content: question }
+            ]);
+
+            // Save messages to history
+            await messageHistory.addMessage(new HumanMessage(question));
+            await messageHistory.addMessage(new AIMessage(response.content));
+
+            return res.json({ 
+                response: response.content,
+                sessionId: sessionId 
+            });
         }
 
-        // For content-related questions, use RAG
+        // Use RAG with chat history for document-based responses
         let vectorStore = courseVectorStores.get(courseId);
         
-        // If vector store doesn't exist for this course, create it
         if (!vectorStore && course.pdfPath) {
-            try {
-                console.log('Loading PDF from:', course.pdfPath);
-                const loader = new PDFLoader(course.pdfPath);
-                const pdfDocs = await loader.load();
-                const pdfContent = pdfDocs.map(doc => doc.pageContent).join(' ');
-                await processAndStorePDFContent(courseId, pdfContent);
-                vectorStore = courseVectorStores.get(courseId);
-            } catch (error) {
-                console.error('Error loading PDF:', error);
-                // If PDF loading fails, fall back to regular chat
-                const completion = await openai.chat.completions.create({
-                    model: "gpt-3.5-turbo",
-                    messages: [
-                        {
-                            role: "system",
-                            content: `You are Pipi, a friendly AI tutor. Answer based on the course description: ${course.description}`
-                        },
-                        {
-                            role: "user",
-                            content: question
-                        }
-                    ],
-                    temperature: 0.7,
-                    max_tokens: 500
-                });
-                return res.json({ response: completion.choices[0].message.content });
-            }
+            const loader = new PDFLoader(course.pdfPath);
+            const pdfDocs = await loader.load();
+            const pdfContent = pdfDocs.map(doc => doc.pageContent).join(' ');
+            await processAndStorePDFContent(courseId, pdfContent);
+            vectorStore = courseVectorStores.get(courseId);
         }
 
-        if (!vectorStore) {
-            throw new Error('Vector store could not be created');
-        }
+        // Create contextual question prompt
+        const contextualQuestionPrompt = ChatPromptTemplate.fromMessages([
+            ["system", `Given the chat history and the latest question, formulate a standalone question 
+                       that captures the full context. If the question is already standalone, return it as is.`],
+            new MessagesPlaceholder("chat_history"),
+            ["human", "{question}"]
+        ]);
 
-        // Create chain for question answering
-        const chain = RetrievalQAChain.fromLLM(
-            new ChatOpenAI({
-                openAIApiKey: process.env.OPENAI_API_KEY,
-                modelName: 'gpt-3.5-turbo',
-                temperature: 0.7
-            }),
-            vectorStore.asRetriever()
-        );
+        // Create answer prompt
+        const answerPrompt = ChatPromptTemplate.fromMessages([
+            ["system", `You are Pipi, a friendly and enthusiastic AI tutor for "${course.title}". 
+                       Use the following context to answer the question: {context}`],
+            new MessagesPlaceholder("chat_history"),
+            ["human", "{question}"]
+        ]);
 
-        // Get answer using the chain
-        const response = await chain.call({
-            query: question
-        });
-
-        // Format the response with the Socratic method
-        const formattedResponse = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-                {
-                    role: "system",
-                    content: `You are Pipi, a friendly AI tutor using the Socratic method. 
-                             Format this answer in an engaging way for high school students, 
-                             using the following information: ${response.text}`
+        // Create the chain
+        const chain = RunnableSequence.from([
+            {
+                // Get standalone question
+                standaloneQuestion: RunnableSequence.from([
+                    {
+                        question: (input) => input.question,
+                        chat_history: async () => await messageHistory.getMessages()
+                    },
+                    contextualQuestionPrompt,
+                    new ChatOpenAI({ temperature: 0 }),
+                    new StringOutputParser()
+                ]),
+                // Pass through original input
+                originalInput: input => input
+            },
+            {
+                // Get relevant documents
+                context: async (input) => {
+                    const docs = await vectorStore.asRetriever().getRelevantDocuments(input.standaloneQuestion);
+                    return docs.map(doc => doc.pageContent).join('\n');
                 },
-                {
-                    role: "user",
-                    content: question
-                }
-            ],
-            temperature: 0.7,
-            max_tokens: 500
+                question: input => input.originalInput.question,
+                chat_history: async () => await messageHistory.getMessages()
+            },
+            answerPrompt,
+            new ChatOpenAI({ temperature: 0.7 }),
+            new StringOutputParser()
+        ]);
+
+        // Execute chain
+        const response = await chain.invoke({
+            question: question
         });
 
-        res.json({ response: formattedResponse.choices[0].message.content });
+        // Save to history
+        await messageHistory.addMessage(new HumanMessage(question));
+        await messageHistory.addMessage(new AIMessage(response));
+
+        res.json({ 
+            response: response,
+            sessionId: sessionId 
+        });
 
     } catch (error) {
         console.error('Error in AI Tutor endpoint:', error);
@@ -337,11 +361,8 @@ router.post('/courses', upload.single('pdf'), async (req, res) => {
     try {
         const { title, instructor, duration, level, category, description, canvaLink } = req.body;
 
-        // Log the received data
-        console.log('Received course data:', { title, instructor, duration, level, category, description, canvaLink });
         console.log('Received file:', req.file);
-
-        const pdfPath = req.file ? req.file.path : null;
+        const pdfPath = req.file ? path.resolve(req.file.path) : null; // Use absolute path
 
         // Create and save the course
         const course = new Course({
@@ -351,12 +372,12 @@ router.post('/courses', upload.single('pdf'), async (req, res) => {
             level,
             category,
             description,
-            pdfPath,
+            pdfPath, // Make sure this is being saved correctly
             canvaLink
         });
 
         const savedCourse = await course.save();
-        console.log('Course saved successfully:', savedCourse);
+        console.log('Course saved with PDF path:', savedCourse.pdfPath);
 
         res.status(201).json({ message: 'Course created successfully', course: savedCourse });
     } catch (err) {

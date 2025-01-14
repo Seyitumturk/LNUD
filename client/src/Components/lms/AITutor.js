@@ -24,7 +24,13 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    // Generate a unique session ID when the component mounts
+    setSessionId(Math.random().toString(36).substring(7));
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,7 +65,8 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
         body: JSON.stringify({
           question: input,
           courseId: selectedCourseId,
-          isInitialGreeting: false
+          isInitialGreeting: false,
+          sessionId: sessionId
         })
       });
 

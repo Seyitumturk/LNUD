@@ -10,39 +10,76 @@ import './lms.css';
 import { useSidebar } from '../../context/SidebarContext';
 import { Link } from 'react-router-dom';
 
+const categoryBackgrounds = {
+  Science: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d',
+  Technology: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c',
+  Engineering: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12',
+  Arts: 'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8',
+  Mathematics: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb',
+  All: 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e'
+};
+
 function generateSlug(title) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
-const CourseCard = ({ title, instructor, duration, level, description, featured, progress, bgImage, courseId, onCourseClick, isAIRecommended }) => {
+const categories = [
+  { name: 'All', color: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' },
+  { name: 'Science', color: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' },
+  { name: 'Technology', color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' },
+  { name: 'Engineering', color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' },
+  { name: 'Arts', color: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)' },
+  { name: 'Mathematics', color: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' }
+];
+
+const CourseCard = ({ title, instructor, duration, level, description, featured, progress, category, courseId, onCourseClick, isAIRecommended }) => {
   const slug = generateSlug(title);
+  const bgImage = categoryBackgrounds[category] || categoryBackgrounds.All;
+  const categoryColor = categories.find(c => c.name === category)?.color || categories[0].color;
+
   return (
     <Link to={`/course/${slug}`} state={{ courseId: courseId }} className={`course-card ${featured ? 'featured' : ''} ${isAIRecommended ? 'ai-recommended' : ''}`}>
-      <div onClick={onCourseClick} className={`course-card`}>
-        <div className="course-card-image" style={{ backgroundImage: `url(${bgImage})` }}></div>
-        <div className="course-card-content">
+      <div onClick={onCourseClick}>
+        <div 
+          className="course-card-image" 
+          style={{ 
+            backgroundImage: `url(${bgImage}?auto=format&fit=crop&w=800&q=80)`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover'
+          }}
+        >
           {featured && <div className="featured-badge">Featured</div>}
-          <h3 className="course-title">{title}</h3>
-          <div className="course-details">
-            <span className="course-instructor">{instructor}</span>
-            <span className="course-duration">{duration}</span>
-            <span className="course-level">{level}</span>
+          <div className="category-tag" style={{ background: categoryColor }}>
+            {category}
           </div>
-          <p className="course-description">{description}</p>
-          {progress !== undefined && (
-            <div className="course-progress">
-              <div className="progress-bar" style={{ width: `${progress}%` }}></div>
-              <span className="progress-text">{progress}% Complete</span>
+        </div>
+        <div className="course-card-content">
+          <div>
+            <h3 className="course-title">{title}</h3>
+            <div className="course-details">
+              <span className="course-instructor">{instructor}</span>
+              <span className="course-duration">{duration}</span>
+              <span className="course-level">{level}</span>
             </div>
-          )}
-          <button className="enroll-button">{progress !== undefined ? 'Continue' : 'Enroll Now'}</button>
+            <p className="course-description">{description}</p>
+          </div>
+          
+          <div className="card-footer">
+            {progress !== undefined && (
+              <div className="course-progress">
+                <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+                <span className="progress-text">{progress}% Complete</span>
+              </div>
+            )}
+            <button className="enroll-button">
+              {progress !== undefined ? 'Continue Learning' : 'Enroll Now'}
+            </button>
+          </div>
         </div>
       </div>
     </Link>
   );
 };
-
-
 
 const LMS = () => {
   const { isCollapsed } = useSidebar();
@@ -153,20 +190,36 @@ const LMS = () => {
     (filterCategory === 'All' || course.category === filterCategory)
   ) : [];
 
-  const categories = [
-    { name: 'All', color: 'var(--blue)' },
-    { name: 'Science', color: 'var(--orange)' },
-    { name: 'Technology', color: 'var(--yellow)' },
-    { name: 'Engineering', color: 'var(--red)' },
-    { name: 'Arts', color: 'var(--blue)' },
-    { name: 'Mathematics', color: 'var(--orange)' }
-  ];
-
   const services = [
-    { title: "Pipanimi - My Tutor", description: "Get personalized assistance", color: "var(--dark-blue)", icon: <SchoolIcon fontSize="large" />, onClick: toggleChatbot },
-    { title: "Generate Career Pathway", description: "Create a personalized learning path", color: "var(--dark-orange)", icon: <RouteIcon fontSize="large" />, onClick: () => setIsPathwayModalOpen(true) },
-    { title: "Add Course", description: "Contribute to our course catalog", color: "var(--dark-yellow)", icon: <AddIcon fontSize="large" />, onClick: () => setIsAddCourseModalOpen(true) },
-    { title: "Find Bursary", description: "Discover financial aid opportunities", color: "var(--purple)", icon: <SearchIcon fontSize="large" />, onClick: () => {/* Add bursary search functionality */ }, subtitle: "by Elev" },
+    { 
+      title: "Pipanimi - My Tutor", 
+      description: "Get personalized AI assistance with your learning journey", 
+      icon: <SchoolIcon fontSize="large" />, 
+      onClick: toggleChatbot,
+      className: "tutor"
+    },
+    { 
+      title: "Generate Career Pathway", 
+      description: "Create a customized learning path for your career goals", 
+      icon: <RouteIcon fontSize="large" />, 
+      onClick: () => setIsPathwayModalOpen(true),
+      className: "pathway"
+    },
+    { 
+      title: "Add Course", 
+      description: "Share your knowledge by contributing to our course catalog", 
+      icon: <AddIcon fontSize="large" />, 
+      onClick: () => setIsAddCourseModalOpen(true),
+      className: "add-course"
+    },
+    { 
+      title: "Find Bursary", 
+      description: "Discover financial aid opportunities to support your education", 
+      icon: <SearchIcon fontSize="large" />, 
+      onClick: () => {/* Add bursary search functionality */}, 
+      subtitle: "by Elev",
+      className: "bursary"
+    },
   ];
 
   const handleCanvaLinkChange = (e) => {
@@ -220,33 +273,17 @@ const LMS = () => {
         </div>
 
         <h2 className="services-title">Services</h2>
-        <div className="lms-actions" style={{ display: 'flex', gap: '20px' }}>
+        <div className="lms-actions">
           {services.map((service, index) => (
             <div
               key={index}
-              className={`action-card ${service.title === "Add Course" ? "highlight" : ""}`}
+              className={`action-card ${service.className}`}
               onClick={service.onClick}
-              style={{
-                backgroundColor: service.color,
-                height: '250px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                cursor: 'pointer',
-                borderRadius: '15px',
-                padding: '20px',
-                color: 'white',
-                textAlign: 'center',
-                transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                flex: '1',
-                minWidth: '200px',
-              }}
             >
+              <div className="action-icon">{service.icon}</div>
               <h3>{service.title}</h3>
               <p>{service.description}</p>
-              <div className="action-icon">{service.icon}</div>
-              {service.subtitle && <small style={{ marginTop: '10px' }}>{service.subtitle}</small>}
+              {service.subtitle && <small>{service.subtitle}</small>}
             </div>
           ))}
         </div>
