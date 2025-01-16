@@ -245,7 +245,7 @@ router.post('/ai-tutor', async (req, res) => {
         // For initial greeting or when no PDF is available
         if (isInitialGreeting || !course.pdfPath) {
             const chat = new ChatOpenAI({ 
-                    modelName: "gpt-3.5-turbo",
+                    modelName: "gpt-4o-mini",
                     temperature: 0.7 
             });
 
@@ -287,7 +287,12 @@ router.post('/ai-tutor', async (req, res) => {
         // Create answer prompt
         const answerPrompt = ChatPromptTemplate.fromMessages([
             ["system", `You are Pipi, a friendly and enthusiastic AI tutor for "${course.title}". 
-                       Use the following context to answer the question: {context}`],
+                Use the following context to answer the question: {context}
+                
+                Format your response using these markers:
+                - Use **text** for important concepts, terms, or key points
+                - Use __text__ for definitions or crucial explanations
+                Be natural with the formatting - don't overuse it.`],
             new MessagesPlaceholder("chat_history"),
             ["human", "{question}"]
         ]);

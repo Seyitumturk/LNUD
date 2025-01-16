@@ -185,48 +185,15 @@ const Course = () => {
             </div>
           </div>
 
-          <div className="ai-tutor-panel">
-            <div className="tutor-character">
-              <div className="tutor-avatar">
-                {tutorCharacter.emoji}
-                {tutorCharacter.streakCount > 0 && (
-                  <div className="streak-badge">
-                    🔥 {tutorCharacter.streakCount} day streak!
-                  </div>
-                )}
-              </div>
-              <div className="tutor-info">
-                <h3>{tutorCharacter.name}</h3>
-                <div className="tutor-stats">
-                  <div className="level-badge">Level {tutorCharacter.level}</div>
-                  <div className="experience-bar">
-                    <div 
-                      className="experience-fill" 
-                      style={{ width: `${tutorCharacter.experience}%` }}
-                    />
-                  </div>
-                </div>
-                <div className="badges-container">
-                  {tutorCharacter.badges.map((badge, index) => (
-                    <span key={index} className="badge" title={badge.name}>
-                      {badge.emoji}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="ai-tutor-content">
-              <AITutor
-                selectedCourseId={selectedCourseId}
-                content={aiTutorContent}
-                onClose={toggleAITutor}
-                onProgress={updateTutorProgress}
-                character={tutorCharacter}
-                onResponse={handleStudentResponse}
-                hasAnswered={hasAnswered}
-              />
-            </div>
+          <div className="ai-tutor-sidebar">
+            <AITutor
+              selectedCourseId={selectedCourseId}
+              content={aiTutorContent}
+              onClose={toggleAITutor}
+              onProgress={updateTutorProgress}
+              onResponse={handleStudentResponse}
+              hasAnswered={hasAnswered}
+            />
           </div>
         </div>
       </div>

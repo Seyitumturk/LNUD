@@ -7,20 +7,104 @@ const TypeWriter = ({ content }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   
   useEffect(() => {
+    // Scroll to bottom whenever displayedContent changes
+    const scrollToBottom = () => {
+      window.requestAnimationFrame(() => {
+        const messages = document.querySelector('.ai-tutor-messages');
+        if (messages) {
+          messages.scrollTop = messages.scrollHeight;
+        }
+      });
+    };
+    
+    scrollToBottom();
+  }, [displayedContent]); // Dependency on displayedContent ensures scroll on each update
+  
+  useEffect(() => {
     if (currentIndex < content.length) {
       const timeout = setTimeout(() => {
         setDisplayedContent(prev => prev + content[currentIndex]);
         setCurrentIndex(currentIndex + 1);
-      }, 20); // Adjust speed here
+      }, 10);
       
       return () => clearTimeout(timeout);
     }
   }, [currentIndex, content]);
   
-  return <div>{displayedContent}</div>;
+  // Process text to add highlights and underlines
+  const processText = (text) => {
+    // First, split the text into paragraphs
+    const paragraphs = text.split('\n').filter(Boolean);
+    
+    return paragraphs.map((paragraph, pIndex) => {
+      // Check if it's a bullet point
+      if (paragraph.trim().startsWith('- ')) {
+        return (
+          <li key={pIndex} className="chat-bullet-point">
+            {processSegments(paragraph.substring(2))}
+          </li>
+        );
+      }
+      
+      // Check if it's a numbered point
+      if (/^\d+\.\s/.test(paragraph)) {
+        return (
+          <div key={pIndex} className="chat-numbered-point">
+            {processSegments(paragraph)}
+          </div>
+        );
+      }
+      
+      // Regular paragraph
+      return (
+        <p key={pIndex} className="chat-paragraph">
+          {processSegments(paragraph)}
+        </p>
+      );
+    });
+  };
+  
+  // Helper function to process text segments with highlights and underlines
+  const processSegments = (text) => {
+    const segments = text.split(/(\*\*.*?\*\*)|(__.*?__)/g).filter(Boolean);
+    let highlightColorIndex = 0;
+    const highlightColors = [
+      'highlight-yellow',
+      'highlight-blue',
+      'highlight-green',
+      'highlight-purple'
+    ];
+    
+    return segments.map((segment, index) => {
+      if (segment.startsWith('**') && segment.endsWith('**')) {
+        // Rotate through highlight colors
+        const colorClass = highlightColors[highlightColorIndex % highlightColors.length];
+        highlightColorIndex++;
+        return (
+          <span key={index} className={`highlight ${colorClass}`}>
+            {segment.slice(2, -2)}
+          </span>
+        );
+      } else if (segment.startsWith('__') && segment.endsWith('__')) {
+        return (
+          <span key={index} className="underline">
+            {segment.slice(2, -2)}
+          </span>
+        );
+      }
+      return segment;
+    });
+  };
+  
+  return (
+    <div className="chat-content">
+      {processText(displayedContent)}
+      {currentIndex < content.length && <span className="typing-cursor" />}
+    </div>
+  );
 };
 
-const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) => {
+const AITutor = ({ selectedCourseId, content, onClose, onProgress }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -76,10 +160,25 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
 
       const data = await response.json();
       
+      // Process the response to add formatting markers
+      let formattedResponse = data.response;
+      
+      // Add highlights to important terms (you can customize these patterns)
+      formattedResponse = formattedResponse.replace(
+        /\b(important|note|key concept|remember|crucial|essential|significant)\b/gi,
+        '**$1**'
+      );
+      
+      // Add underlines to definitions or key phrases
+      formattedResponse = formattedResponse.replace(
+        /(is defined as|means|refers to|is called)/gi,
+        '__$1__'
+      );
+
       setIsTyping(false);
       setMessages(prev => [...prev, { 
         type: 'bot', 
-        content: data.response,
+        content: formattedResponse,
         isNew: true 
       }]);
       
@@ -98,6 +197,16 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress, character }) 
 
   return (
     <div className="ai-tutor-container">
+      <div className="tutor-character">
+        <div className="bot-avatar">
+          <span>🤖</span>
+        </div>
+        <div className="tutor-info">
+          <div className="tutor-name">Pipi</div>
+          <div className="tutor-status">AI Learning Assistant</div>
+        </div>
+      </div>
+      
       <div className="ai-tutor-messages">
         {messages.map((message, index) => (
           <div 
