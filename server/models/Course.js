@@ -26,6 +26,13 @@ const courseSchema = new mongoose.Schema({
         required: true
     },
     pdfPath: {
+        type: String,
+        required: true,
+        get: function(filename) {
+            return filename ? `/uploads/pdfs/${filename}` : null;
+        }
+    },
+    pptxPath: {
         type: String
     },
     canvaLink: {

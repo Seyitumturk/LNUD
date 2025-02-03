@@ -2,26 +2,40 @@
 .lms-page {
   min-height: 100vh;
   display: flex;
+  position: relative;
+  overflow-x: hidden;
   background: var(--warm-bg);
 }
 
 .lms-main-content {
   flex: 1;
-  padding: 2rem;
-  transition: margin-left 0.3s ease;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 20px;
+  padding-bottom: 100px; /* Add space for the chat button */
+  position: relative;
+  transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
 .lms-main-content.sidebar-expanded {
   margin-left: 250px;
+  width: calc(100% - 250px);
 }
 
 .lms-main-content.sidebar-collapsed {
   margin-left: 64px;
+  width: calc(100% - 64px);
 }
 
 /* Header Styles */
 .lms-header {
-  margin-bottom: 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: linear-gradient(135deg, #1a1f35 0%, #2a2a3c 100%);
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 12px;
 }
 
 .lms-header h1 {
@@ -111,59 +125,99 @@
   z-index: 2;
 }
 
+.action-card.analytics {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  text-decoration: none;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.action-card.analytics:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+
 /* Course Grid */
 .courses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  padding: 1rem 0;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  margin-bottom: 60px; /* Add space for the chat button */
 }
 
 .course-card {
-  background: var(--card-bg);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
   overflow: hidden;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .course-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .course-image {
-  height: 160px;
-  background: rgba(255, 255, 255, 0.1);
+  height: 200px;
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 1.5rem;
+}
+
+.course-title {
+  color: #ffffff;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 1;
 }
 
 .course-info {
   padding: 1.5rem;
-}
-
-.course-info h3 {
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
-  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .course-info p {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
 }
 
 .course-meta {
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.course-meta span {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .lms-main-content {
-    padding: 1rem;
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 10px;
   }
   
   .actions-grid {
@@ -172,6 +226,20 @@
   
   .courses-grid {
     grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+  
+  .course-image {
+    height: 180px;
+  }
+  
+  .course-title {
+    font-size: 1.5rem;
+  }
+
+  .modal-content {
+    max-height: 80vh;
+    margin: 10px;
   }
 }
 
@@ -180,14 +248,10 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: auto;
+  z-index: 1000;
+  /* Remove any height/width constraints */
   height: auto;
-  background: none;
-  box-shadow: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  z-index: 9999;
+  width: auto;
 }
 
 .chat-modal-content {
@@ -216,4 +280,144 @@
 .glass-chat-button:hover {
   background: rgba(255, 152, 0, 0.6);
   box-shadow: 0 4px 10px rgba(255, 152, 0, 0.5);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.modal-content {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-content h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #444;
+}
+
+.form-group input[type="text"],
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input[type="file"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px dashed #ddd;
+  border-radius: 6px;
+  background: #f8f9fa;
+}
+
+.form-group .file-hint {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.modal-actions button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.submit-btn:hover {
+  background: #2563eb;
+}
+
+.cancel-btn {
+  background: white;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.cancel-btn:hover {
+  background: #f8f9fa;
+  border-color: #ccc;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Scrollbar Styles for Modal */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Add smooth scrolling to the main content */
+.lms-main-content {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }

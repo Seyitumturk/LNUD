@@ -15,6 +15,8 @@ const Course = () => {
   const [courseData, setCourseData] = useState(null);
   const location = useLocation();
   const selectedCourseId = location.state?.courseId;
+  const [currentView, setCurrentView] = useState('powerpoint');
+  const [isLoading, setIsLoading] = useState(true);
 
   const [tutorCharacter, setTutorCharacter] = useState({
     name: 'Pipi',
@@ -42,23 +44,6 @@ const Course = () => {
       };
     });
   };
-
-  useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/api/courses/${selectedCourseId}`);
-        const data = await response.json();
-        setCourseData(data);
-        handleAiTutorIntroduction(data.title);
-      } catch (error) {
-        console.error('Error fetching course:', error);
-      }
-    };
-
-    if (selectedCourseId) {
-      fetchCourse();
-    }
-  }, [selectedCourseId]);
 
   const handleNextPresentation = () => {
     setCurrentPresentationIndex((prevIndex) =>
@@ -129,8 +114,78 @@ const Course = () => {
     setCurrentPromptIndex(prev => prev + 1);
   };
 
+  const formatOneDriveUrl = (url) => {
+    if (!url) return '';
+    
+    console.log('Original URL:', url);
+
+    try {
+      // Handle the case where the full iframe code is pasted
+      if (url.includes('<iframe')) {
+        // Extract the URL from src attribute
+        const srcMatch = url.match(/src="([^"]+)"/);
+        if (srcMatch && srcMatch[1]) {
+          console.log('Extracted URL from iframe:', srcMatch[1]);
+          // Replace HTML entities and return the clean URL
+          return srcMatch[1].replace(/&amp;/g, '&');
+        }
+      }
+
+      // Handle direct 1drv.ms links
+      if (url.includes('1drv.ms')) {
+        // Ensure the embed parameters are added
+        if (!url.includes('embed=1')) {
+          const separator = url.includes('?') ? '&' : '?';
+          return `${url}${separator}embed=1&em=2`;
+        }
+        return url;
+      }
+
+      // Return the URL as is if none of the above conditions match
+      return url;
+    } catch (error) {
+      console.error('Error formatting OneDrive URL:', error);
+      return url;
+    }
+  };
+
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        console.log('Fetching course with ID:', selectedCourseId); // Debug log
+        const response = await fetch(`http://localhost:5000/api/courses/${selectedCourseId}`);
+        const data = await response.json();
+        console.log('Fetched course data:', data); // Debug log
+        setCourseData(data);
+        handleAiTutorIntroduction(data.title);
+      } catch (error) {
+        console.error('Error fetching course:', error);
+      }
+    };
+
+    if (selectedCourseId) {
+      fetchCourse();
+    } else {
+      console.log('No courseId provided'); // Debug log
+    }
+  }, [selectedCourseId]);
+
+  useEffect(() => {
+    console.log('Current courseData:', courseData);
+  }, [courseData]);
+
   if (!courseData) {
-    return <div>Loading...</div>;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        color: 'white' 
+      }}>
+        Loading course data...
+      </div>
+    );
   }
 
   return (
@@ -152,11 +207,11 @@ const Course = () => {
         <div className="course-content-layout">
           <div className="main-presentation-area">
             <div className="presentation-tabs">
-              {['Presentation', 'Course Material'].map((tab, index) => (
+              {['PowerPoint', 'Course Material'].map((tab, index) => (
                 <button
                   key={tab}
-                  className={currentPresentationIndex === index ? 'active' : ''}
-                  onClick={() => setCurrentPresentationIndex(index)}
+                  className={currentView === tab.toLowerCase() ? 'active' : ''}
+                  onClick={() => setCurrentView(tab.toLowerCase())}
                 >
                   {tab}
                 </button>
@@ -164,22 +219,68 @@ const Course = () => {
             </div>
 
             <div className="presentation-viewer">
-              {currentPresentationIndex === 0 && courseData?.canvaLink && (
-                <div className="canva-container">
-                  <iframe
-                    className="canva-embed"
-                    src={`${courseData.canvaLink.split('?')[0]}?embed`}
-                    allowFullScreen
-                    allow="fullscreen"
-                    loading="lazy"
-                    title="Canva Presentation"
-                  />
+              {currentView === 'powerpoint' && (
+                <div className="powerpoint-container">
+                  {isLoading && <div className="loading-message">Loading presentation...</div>}
+                  {courseData?.pptxPath ? (
+                    <div className="powerpoint-wrapper">
+                      <iframe
+                        src={formatOneDriveUrl(courseData.pptxPath)}
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        scrolling="no"
+                        allowFullScreen={true}
+                        title="PowerPoint Presentation"
+                        loading="lazy"
+                        onLoad={(e) => {
+                          console.log('PowerPoint iframe loaded:', e.target.src);
+                          setIsLoading(false);
+                        }}
+                        onError={(e) => {
+                          console.error('PowerPoint loading error:', e);
+                          setIsLoading(false);
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ color: '#666', padding: '2rem' }}>
+                      No PowerPoint presentation available for this course
+                    </div>
+                  )}
                 </div>
               )}
-              {currentPresentationIndex === 1 && courseData?.pdfPath && (
-                <div className="pdf-viewer">
-                  <h3>Course Material</h3>
-                  {/* PDF viewer component */}
+              {currentView === 'course material' && (
+                <div className="pdf-viewer" style={{ 
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  alignItems: 'center',
+                  padding: '0',
+                  margin: '0'
+                }}>
+                  {courseData?.pdfPath ? (
+                    <iframe
+                      src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/pdf/${courseData._id}`}
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      title="Course Material PDF"
+                      style={{ 
+                        minHeight: '600px',
+                        maxWidth: '100%',
+                        border: 'none',
+                        margin: '0',
+                        padding: '0',
+                        display: 'block'
+                      }}
+                    />
+                  ) : (
+                    <div style={{ color: '#666', padding: '2rem' }}>
+                      No course material available
+                    </div>
+                  )}
                 </div>
               )}
             </div>

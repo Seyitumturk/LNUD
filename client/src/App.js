@@ -15,6 +15,7 @@ import { SidebarProvider } from './context/SidebarContext';
 import Course from './Components/lms/Course';
 import FundingList from './Components/funder/Funder';
 import Asitulisk from './Components/asitulisk/Asitulisk'; // Import the new Asitulisk component
+import AdminPanel from './Components/lms/admin/AdminPanel';
 
 function App() {
     return (
@@ -77,6 +78,7 @@ function App() {
                                     </ProtectedRoute>
                                 }
                             />
+                            <Route path="/admin" element={<AdminPanel />} />
                         </Routes>
                     </div>
                 </div>
