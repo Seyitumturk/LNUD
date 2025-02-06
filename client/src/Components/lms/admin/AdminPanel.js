@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSidebar } from '../../../context/SidebarContext';
 import './AdminPanel.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 const AdminPanel = () => {
   const [courses, setCourses] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -22,7 +24,7 @@ const AdminPanel = () => {
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/courses');
+      const response = await fetch(`${API_URL}/courses`);
       const data = await response.json();
       setCourses(data);
       setLoading(false);
@@ -34,7 +36,7 @@ const AdminPanel = () => {
 
   const fetchTranscripts = async (courseId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/chat-transcripts/${courseId}`);
+      const response = await fetch(`${API_URL}/chat-transcripts/${courseId}`);
       const data = await response.json();
       setTranscripts(data);
     } catch (error) {
