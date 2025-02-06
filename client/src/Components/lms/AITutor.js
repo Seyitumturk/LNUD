@@ -104,7 +104,7 @@ const TypeWriter = ({ content }) => {
   );
 };
 
-const AITutor = ({ selectedCourseId, content, onClose, onProgress }) => {
+const AITutor = ({ selectedCourseId, content, onClose, onProgress, onResponse, hasAnswered, initialHistory }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -114,7 +114,16 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress }) => {
   useEffect(() => {
     // Generate a unique session ID when the component mounts
     setSessionId(Math.random().toString(36).substring(7));
-  }, []);
+    
+    // Initialize messages with chat history if available
+    if (initialHistory && initialHistory.length > 0) {
+      setMessages(initialHistory.map(msg => ({
+        type: msg.role === 'assistant' ? 'bot' : 'user',
+        content: msg.content,
+        isNew: false
+      })));
+    }
+  }, [initialHistory]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -216,7 +225,9 @@ const AITutor = ({ selectedCourseId, content, onClose, onProgress }) => {
             {message.type === 'bot' && message.isNew ? (
               <TypeWriter content={message.content} />
             ) : (
-              message.content
+              <div className="message-content">
+                {message.content}
+              </div>
             )}
           </div>
         ))}

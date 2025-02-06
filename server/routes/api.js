@@ -669,4 +669,23 @@ router.get('/pdf/:courseId', async (req, res) => {
   }
 });
 
+// Get chat history for a course
+router.get('/chat-history/:courseId', async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const transcripts = await ChatTranscript.find({ courseId })
+      .sort({ createdAt: -1 })
+      .limit(1); // Get the most recent transcript
+
+    if (transcripts.length > 0) {
+      res.json(transcripts[0].messages);
+    } else {
+      res.json([]);
+    }
+  } catch (error) {
+    console.error('Error fetching chat history:', error);
+    res.status(500).json({ error: 'Error fetching chat history' });
+  }
+});
+
 module.exports = router;

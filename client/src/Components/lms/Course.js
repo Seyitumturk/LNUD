@@ -17,6 +17,7 @@ const Course = () => {
   const selectedCourseId = location.state?.courseId;
   const [currentView, setCurrentView] = useState('powerpoint');
   const [isLoading, setIsLoading] = useState(true);
+  const [chatHistory, setChatHistory] = useState([]);
 
   const [tutorCharacter, setTutorCharacter] = useState({
     name: 'Pipi',
@@ -152,12 +153,26 @@ const Course = () => {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        console.log('Fetching course with ID:', selectedCourseId); // Debug log
+        console.log('Fetching course with ID:', selectedCourseId);
         const response = await fetch(`http://localhost:5000/api/courses/${selectedCourseId}`);
         const data = await response.json();
-        console.log('Fetched course data:', data); // Debug log
+        console.log('Fetched course data:', data);
         setCourseData(data);
-        handleAiTutorIntroduction(data.title);
+        
+        // Fetch chat history for this course
+        const historyResponse = await fetch(`http://localhost:5000/api/chat-history/${selectedCourseId}`);
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          setChatHistory(historyData);
+          // If there's chat history, set the last message as content
+          if (historyData.length > 0) {
+            setAiTutorContent(historyData[historyData.length - 1].content);
+          } else {
+            handleAiTutorIntroduction(data.title);
+          }
+        } else {
+          handleAiTutorIntroduction(data.title);
+        }
       } catch (error) {
         console.error('Error fetching course:', error);
       }
@@ -166,7 +181,7 @@ const Course = () => {
     if (selectedCourseId) {
       fetchCourse();
     } else {
-      console.log('No courseId provided'); // Debug log
+      console.log('No courseId provided');
     }
   }, [selectedCourseId]);
 
@@ -294,6 +309,7 @@ const Course = () => {
               onProgress={updateTutorProgress}
               onResponse={handleStudentResponse}
               hasAnswered={hasAnswered}
+              initialHistory={chatHistory}
             />
           </div>
         </div>
